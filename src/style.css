@@ -25,3 +25,83 @@ footer { position: absolute; bottom: 0; left: 0; right: 0; z-index: 3; display: 
 .label-buttons button { flex:1; padding:.7cqw; font-weight:700; }
 .label-buttons button:first-child[aria-pressed=true] { background:#177245; }
 .label-buttons button:last-child[aria-pressed=true] { background:#a52626; }
+/* -- Supervised Game Flow Overlays ---------------------------------- */
+.overlay {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10,18,24,0.78); backdrop-filter: blur(4px);
+  animation: fadeIn .25s ease;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+/* Training overlay */
+.training-card {
+  background: #1a2a38; border: 1.5px solid #4fc3f7; border-radius: 1.2cqw;
+  padding: 3cqw 4cqw; text-align: center; max-width: 50%;
+  box-shadow: 0 0 4cqw #4fc3f740;
+}
+.training-card h2 { font-size: 2.4cqw; margin: 0 0 1cqw; color: #e3f2fd; }
+.training-card p  { font-size: 1.4cqw; color: #b0bec5; margin: .6cqw 0; }
+.ai-core-img { width: 10cqw; height: 10cqw; object-fit: contain; display: block; margin: 0 auto 1.5cqw; }
+@keyframes pulseSlow { 0%,100%{filter:drop-shadow(0 0 1.5cqw #4fc3f7)} 50%{filter:drop-shadow(0 0 3cqw #4fc3f7cc)} }
+@keyframes pulseFast { 0%,100%{filter:drop-shadow(0 0 1cqw #ff9800)} 50%{filter:drop-shadow(0 0 2.5cqw #ff9800cc)} }
+.training-pulse { animation: pulseSlow 1.6s infinite; }
+.training-pulse-fast { animation: pulseFast 0.8s infinite; }
+.progress-bar { height: .8cqw; background: #263840; border-radius: .4cqw; margin-top: 1.5cqw; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: .4cqw; }
+.training-fill { background: linear-gradient(90deg,#4fc3f7,#81d4fa); animation: progressFill 3.2s ease forwards; }
+.retraining-fill { background: linear-gradient(90deg,#ff9800,#ffcc02); animation: progressFill 2.8s ease forwards; }
+@keyframes progressFill { from{width:0} to{width:100%} }
+
+/* Tracking review overlay */
+.tracking-card {
+  background: #1c2a36; border: 1.5px solid #78909c; border-radius: 1.2cqw;
+  padding: 2.5cqw 3cqw; width: 55%; max-height: 75%; display: flex; flex-direction: column;
+  box-shadow: 0 0 3cqw #00000080;
+}
+.tracking-card h2 { font-size: 1.8cqw; margin: 0 0 1.2cqw; color: #eceff1; }
+.history-list { list-style: none; padding: 0; margin: 0 0 1cqw; overflow-y: auto; flex: 1; }
+.history-empty { color: #78909c; font-style: italic; font-size: 1.3cqw; padding: .8cqw 0; }
+.history-entry { display: flex; gap: 1cqw; padding: .5cqw .4cqw; border-bottom: 1px solid #263640; font-size: 1.25cqw; }
+.history-entry.prim-suspicious_action { background: rgba(165,38,38,.15); }
+.history-entry.prim-run { background: rgba(255,152,0,.12); }
+.history-time { color: #80cbc4; min-width: 4cqw; font-family: monospace; }
+.history-zone { color: #b0bec5; min-width: 10cqw; }
+.history-behavior { color: #eceff1; font-weight: 600; }
+.verified-reveal { margin: 1cqw 0; padding: .8cqw 1.2cqw; background: #1b3626; border: 1px solid #4caf50; border-radius: .5cqw; font-size: 1.4cqw; color: #a5d6a7; }
+.tracking-actions { display: flex; gap: .8cqw; margin-top: 1cqw; }
+.btn-verify { background: #177245; border-color: #2e7d52; font-weight: 700; flex: 1; padding: .8cqw; font-size: 1.3cqw; }
+.btn-verify:disabled { opacity: .5; cursor: default; }
+.btn-close  { background: #37474f; flex: 0 0 auto; padding: .8cqw 1.5cqw; font-size: 1.3cqw; }
+.btn-tracking { background: #1a3a4a; border-color: #4fc3f7; color: #b3e5fc; font-size: 1.2cqw; padding: .5cqw .9cqw; }
+.btn-train { display: block; width: 100%; margin-top: 2cqw; padding: 1cqw; font-size: 1.5cqw; font-weight: 700; background: linear-gradient(135deg,#1a6a3e,#177245); border-color: #2e7d52; border-radius: .5cqw; animation: subtlePulse 2s infinite; }
+@keyframes subtlePulse { 0%,100%{box-shadow:0 0 .8cqw #2e7d5240} 50%{box-shadow:0 0 2cqw #2e7d5280} }
+.verify-actions { display: flex; gap: .6cqw; margin-top: 1cqw; }
+.verify-actions .btn-tracking,.verify-actions .btn-verify { flex: 1; padding: .7cqw; font-size: 1.2cqw; text-align: center; }
+
+/* AI compare panel */
+.compare-panel .ai-result { margin-top: 1.2cqw; padding: 1cqw; border-radius: .6cqw; font-size: 1.3cqw; display: flex; flex-direction: column; gap: .5cqw; }
+.compare-panel .ai-agree    { background: #1b3626; border: 1px solid #4caf50; }
+.compare-panel .ai-disagree { background: #3a1a1a; border: 1px solid #ef5350; }
+.compare-panel .ai-conf    { color: #90a4ae; font-size: 1.1cqw; }
+.compare-panel .compare-hint { color: #78909c; font-style: italic; font-size: 1.2cqw; margin-top: .8cqw; }
+button:disabled { opacity: .4; cursor: default; }
+
+/* Final scan overlay */
+.scan-card { background: #0d1f2d; border: 2px solid #00e5ff; border-radius: 1.2cqw; padding: 2.5cqw 3cqw; width: 65%; text-align: center; box-shadow: 0 0 4cqw #00e5ff30; }
+.scan-card h2 { font-size: 2.2cqw; color: #e0f7fa; margin: 0 0 1.5cqw; }
+.scan-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: .8cqw; margin-bottom: 1.5cqw; }
+.scan-cell { background: #0a1a25; border: 1px solid #00acc1; border-radius: .5cqw; padding: .8cqw .4cqw; position: relative; overflow: hidden; }
+.scan-label { font-size: 1.1cqw; color: #80deea; display: block; margin-bottom: .4cqw; }
+.scan-line { position: absolute; top: 0; left: 0; right: 0; height: .3cqw; background: #00e5ff; animation: scanDown 1.2s linear infinite; }
+@keyframes scanDown { from{top:0} to{top:100%} }
+.scan-status { font-size: 1.5cqw; color: #80deea; animation: blink 1s step-end infinite; }
+@keyframes blink { 50%{opacity:0} }
+
+/* Complete screen */
+.complete-card { background: linear-gradient(160deg,#1a2a1a,#0d2040); border: 2px solid #69f0ae; border-radius: 1.5cqw; padding: 3.5cqw 4.5cqw; text-align: center; max-width: 55%; box-shadow: 0 0 5cqw #69f0ae30; }
+.complete-card h2 { font-size: 3cqw; margin: 0 0 1cqw; color: #ccff90; }
+.complete-card p { font-size: 1.4cqw; color: #c8e6c9; margin: .7cqw 0; }
+.complete-summary { list-style: none; padding: 0; margin: 1.5cqw 0; text-align: left; font-size: 1.3cqw; color: #a5d6a7; }
+.complete-summary li { padding: .4cqw 0; border-bottom: 1px solid #2e5a2e; }
+.complete-message { font-size: 1.8cqw !important; font-weight: 700; color: #b9f6ca !important; margin-top: 1.5cqw !important; }

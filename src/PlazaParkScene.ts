@@ -10,8 +10,9 @@ import {
   loadCameraZones, manualCharacterView, setUserLabel, visibleCharactersForZone,
   type CameraZone, type ManualLabelingState,
 } from './cctvManualLabeling';
-import type { CharacterId, CharacterLabel } from './characterPool';
-import { createRound1Group, DEFAULT_ROUND1_CONFIG, round1TrainingState, stepRound1Group, type Round1Group } from './plazaRound1';
+import type { BehaviorHistoryEntry, CharacterId, CharacterLabel } from './characterPool';
+import { createRound1Group, DEFAULT_ROUND1_CONFIG, round1TrainingState, stepRound1Group, verifyRoundTrainingSample, type Round1Group } from './plazaRound1';
+import { applyRound2ToGroup, ROUND2_COMPARISON_PLAN, round2TrainingState } from './plazaRound2';
 
 export class PlazaParkScene extends Phaser.Scene {
   private mapData!: GrayboxMap;
@@ -49,6 +50,7 @@ export class PlazaParkScene extends Phaser.Scene {
   private selectedCharacterId: CharacterId | null = null;
   private manualStateSignature = '';
   private cctvManualMode = false;
+  private currentRound: 1 | 2 = 1;
   constructor(
     private report: (value: string) => void,
     private reportSmoke: (value:string)=>void = ()=>{},
@@ -250,6 +252,52 @@ export class PlazaParkScene extends Phaser.Scene {
     if(!npc||!this.selectedCctv||!visibleCharactersForZone(this.manualNpcs(),this.selectedCctv).includes(npc))return;
     setUserLabel(npc.character,label);
     this.publishManualState(true);
+  }
+
+  /** Verify selected NPC: sets verifiedLabel = actualLabel. Returns actualLabel or null. */
+  verifySelected(): CharacterLabel | null {
+    if(!this.round1||!this.selectedCharacterId) return null;
+    const npc=this.round1.npcs.find(n=>n.assignment.characterId===this.selectedCharacterId);
+    if(!npc||npc.character.labels.userLabel===null) return null;
+    verifyRoundTrainingSample(npc);
+    this.publishManualState(true);
+    return npc.assignment.actualLabel;
+  }
+
+  /** Get behavior history of selected NPC for TRACKING_REVIEW overlay. */
+  getSelectedBehaviorHistory(): readonly BehaviorHistoryEntry[] {
+    if(!this.selectedCharacterId) return [];
+    const npc=this.manualNpcs().find(n=>n.definition.id===this.selectedCharacterId);
+    return npc?.character.world.behaviorHistory??[];
+  }
+
+  /** Perform Scenario Round Reset to Round 2. */
+  applyRound2(){
+    if(!this.round1) return;
+    applyRound2ToGroup(this.round1,this.mapData,this.cameraZones);
+    this.currentRound=2;
+    this.selectedCharacterId=null;
+    this.publishManualState(true);
+  }
+
+  /** Set AI label on a comparison target NPC (from ROUND2_COMPARISON_PLAN). */
+  revealAiLabels(){
+    if(!this.round1||this.currentRound!==2) return;
+    for(const entry of ROUND2_COMPARISON_PLAN){
+      const npc=this.round1.npcs.find(n=>n.assignment.characterId===entry.characterId);
+      if(npc){
+        npc.character.labels.aiLabel=entry.aiLabel;
+        npc.character.labels.aiConfidence=entry.aiConfidence;
+      }
+    }
+    this.publishManualState(true);
+  }
+
+  getCurrentRound():1|2{return this.currentRound;}
+
+  getRound2TrainingState(){
+    if(!this.round1||this.currentRound!==2) return null;
+    return round2TrainingState(this.round1);
   }
 
   private publishManualState(force=false){
