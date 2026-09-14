@@ -1,0 +1,156 @@
+{
+  "npc_count": 35,
+  "declared_area_counts": {
+    "Park": 11,
+    "CentralPlaza": 10,
+    "Cafe": 3,
+    "PublicFacility": 3,
+    "MainRoute": 5,
+    "EntryExit": 3
+  },
+  "actual_spatial_area_counts": {
+    "Park": 11,
+    "CentralPlaza": 10,
+    "Cafe": 3,
+    "PublicFacility": 3,
+    "MainRoute": 5,
+    "EntryExit": 3
+  },
+  "route_counts": {
+    "R1": 4,
+    "R2": 5,
+    "R3": 4,
+    "R4": 4,
+    "R5": 2,
+    "R6": 5,
+    "R7": 6,
+    "R8": 5
+  },
+  "species_counts": {
+    "Rabbit": 8,
+    "Cat": 7,
+    "Fox": 7,
+    "Dog": 7,
+    "Tiger": 6
+  },
+  "size_counts": {
+    "Small": 8,
+    "Medium": 21,
+    "Large": 6
+  },
+  "warmup_seconds": 30,
+  "measurement_seconds": 300,
+  "completed_routes": 58,
+  "waypoint_arrivals": 117,
+  "per_route": {
+    "R1": {
+      "trips": 2,
+      "arrivals": 7,
+      "max_wait": 300,
+      "blocked_events": 899
+    },
+    "R2": {
+      "trips": 1,
+      "arrivals": 6,
+      "max_wait": 1.95,
+      "blocked_events": 890
+    },
+    "R3": {
+      "trips": 2,
+      "arrivals": 4,
+      "max_wait": 300,
+      "blocked_events": 54
+    },
+    "R4": {
+      "trips": 0,
+      "arrivals": 1,
+      "max_wait": 6.967,
+      "blocked_events": 9
+    },
+    "R5": {
+      "trips": 0,
+      "arrivals": 1,
+      "max_wait": 298.483,
+      "blocked_events": 2
+    },
+    "R6": {
+      "trips": 25,
+      "arrivals": 46,
+      "max_wait": 0.333,
+      "blocked_events": 1457
+    },
+    "R7": {
+      "trips": 3,
+      "arrivals": 6,
+      "max_wait": 274.417,
+      "blocked_events": 1048
+    },
+    "R8": {
+      "trips": 25,
+      "arrivals": 46,
+      "max_wait": 0.333,
+      "blocked_events": 227
+    }
+  },
+  "blocked_time_total": 3049.683,
+  "max_continuous_blocked_time": 300,
+  "blocked_npc_count_end": 7,
+  "blocked_npc_count_peak": 8,
+  "severe_block_count": 7,
+  "deadlock_count": 7,
+  "ever_20sec_block_count": 7,
+  "unrecovered_20sec": 7,
+  "recoveries": 4,
+  "fixed_collision_violation": 0,
+  "npc_collision_violation": 0,
+  "world_bounds_violation": 0,
+  "collision_violation_total": 0,
+  "cafe_enter_count": 1,
+  "cafe_exit_count": 1,
+  "facility_enter_count": 0,
+  "facility_exit_count": 0,
+  "upper_narrow_pass_count": 2,
+  "lower_narrow_pass_count": 4,
+  "upper_narrow_max_queue": 0,
+  "lower_narrow_max_queue": 0,
+  "w12_max_queue": 4,
+  "w12_owner_change_count": 2,
+  "w12_queue_recovery_count": 0,
+  "phase": "COMPLETE",
+  "global_elapsed": 330,
+  "queue_status": {
+    "upper": {
+      "end": 0,
+      "max_wait": 0,
+      "unrecovered_20sec": 0
+    },
+    "lower": {
+      "end": 0,
+      "max_wait": 0,
+      "unrecovered_20sec": 0
+    },
+    "w12": {
+      "end": 4,
+      "max_wait": 300,
+      "unrecovered_20sec": 4
+    }
+  },
+  "note_blocked_time_total": "raw actor-seconds with blockedBy != empty (measurement phase)",
+  "harness_valid": true,
+  "run_started_at": "2026-09-13T11:42:20.764Z",
+  "browser_fps": "NOT MEASURED",
+  "verdict": "FAIL",
+  "pass_gates": {
+    "npc_count": true,
+    "actual_spatial_area_counts": true,
+    "measurement_complete": true,
+    "cafe_repeated_transitions": false,
+    "facility_repeated_transitions": false,
+    "queues_recovered": false,
+    "all_routes_have_trips": false,
+    "collision_violation_total_zero": true,
+    "deadlock_count_zero": false,
+    "ever_20sec_block_count_zero": false,
+    "unrecovered_20sec_zero": false
+  }
+}
