@@ -14,6 +14,9 @@
 
 import type { CharacterId, CharacterLabel, BehaviorHistoryEntry } from './characterPool.ts';
 import type { AIConfidence } from './characterPool.ts';
+import { setUserLabel } from './cctvManualLabeling.ts';
+import { verifyRoundTrainingSample, type RoundNpcRuntime } from './plazaRound1.ts';
+import { MONITORING_TARGET_IDS } from './plazaRound2.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -74,6 +77,13 @@ export function createGameFlow(): GameFlowState {
     aiMonitorVerifiedIds: [],
     scanComplete: false,
   };
+}
+
+/** Round 1's label choice is the verification action; there is no second submit. */
+export function labelAndVerifyRound1Sample(npc: RoundNpcRuntime, label: CharacterLabel): CharacterLabel {
+  setUserLabel(npc.character, label);
+  verifyRoundTrainingSample(npc);
+  return npc.assignment.actualLabel;
 }
 
 // ---------------------------------------------------------------------------
@@ -137,8 +147,14 @@ export function completeRetraining(flow: GameFlowState): void {
   flow.aiTraining.trainingStage = 'RETRAINED';
 }
 
-export function canStartFinalScan(flow: GameFlowState, aiMonitorVerifiedCount: number): boolean {
-  return flow.phase === 'AI_ASSISTED_MONITORING' && aiMonitorVerifiedCount >= 3;
+export function recordMonitoringVerification(flow: GameFlowState, id: CharacterId): void {
+  if (!MONITORING_TARGET_IDS.includes(id as typeof MONITORING_TARGET_IDS[number])) return;
+  if (!flow.aiMonitorVerifiedIds.includes(id)) flow.aiMonitorVerifiedIds = [...flow.aiMonitorVerifiedIds, id];
+}
+
+export function canStartFinalScan(flow: GameFlowState): boolean {
+  return flow.phase === 'AI_ASSISTED_MONITORING' &&
+    MONITORING_TARGET_IDS.every(id => flow.aiMonitorVerifiedIds.includes(id));
 }
 
 export function startFinalScan(flow: GameFlowState): void {

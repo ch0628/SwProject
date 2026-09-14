@@ -21,10 +21,12 @@ import {
 } from './plazaLaneRuntime.ts';
 import {
   loadNpcScenarioPoints,
+  verifyRoundTrainingSample,
   type RoundCameraId, type RoundCharacterAssignment, type RoundLifecycle,
   type RoundMovementRole, type RoundInitialState,
   type Round1Group, type RoundNpcRuntime,
 } from './plazaRound1.ts';
+import { setUserLabel } from './cctvManualLabeling.ts';
 import type { GrayboxMap } from './plazaPark.ts';
 import type { CameraZone } from './cctvManualLabeling.ts';
 
@@ -55,8 +57,32 @@ export const ROUND2_COMPARISON_PLAN: readonly Round2ComparisonEntry[] = Object.f
   Object.freeze({ characterId: 'NPC06' as CharacterId, aiLabel: 'VILLAIN' as CharacterLabel, aiConfidence: 'MEDIUM' as AIConfidence }), // AI CORRECT
 ]);
 
+export const MONITORING_TARGET_IDS = Object.freeze([
+  'NPC15', 'NPC16', 'NPC26',
+] as const satisfies readonly CharacterId[]);
+
 export const round2ComparisonFor = (id: CharacterId): Round2ComparisonEntry | undefined =>
   ROUND2_COMPARISON_PLAN.find(e => e.characterId === id);
+
+export type Round2TargetStatus = 'WAITING' | 'COMPARISON_COMPLETE' | 'TRACKING_REQUIRED' | 'VERIFIED';
+
+export function round2TargetStatus(npc: RoundNpcRuntime): Round2TargetStatus {
+  if (npc.verifiedLabel !== null) return 'VERIFIED';
+  const plan = round2ComparisonFor(npc.assignment.characterId);
+  if (!plan || npc.character.labels.userLabel === null || npc.character.labels.aiLabel === null) return 'WAITING';
+  return npc.character.labels.userLabel === plan.aiLabel ? 'COMPARISON_COMPLETE' : 'TRACKING_REQUIRED';
+}
+
+/** Record one comparison and auto-verify agreements. Disagreements stay pending for tracking. */
+export function submitRound2Comparison(npc: RoundNpcRuntime, userLabel: CharacterLabel): Round2TargetStatus {
+  const plan = round2ComparisonFor(npc.assignment.characterId);
+  if (!plan) return 'WAITING';
+  setUserLabel(npc.character, userLabel);
+  npc.character.labels.aiLabel = plan.aiLabel;
+  npc.character.labels.aiConfidence = plan.aiConfidence;
+  if (userLabel === plan.aiLabel) verifyRoundTrainingSample(npc);
+  return round2TargetStatus(npc);
+}
 
 // ---------------------------------------------------------------------------
 // Round 2 Assignment Table
@@ -279,6 +305,30 @@ export function applyRound2ToGroup(
     releaseStopReservation(group.laneRuntime, pt.name, a2.characterId);
   }
   (group as any).pointPlans = newPointPlans;
+}
+
+/** Keep AI-assisted review targets present at their authored points for reliable panel focus. */
+export function prepareMonitoringTargets(group:Round1Group):void{
+  for(const id of MONITORING_TARGET_IDS){
+    const npc=group.npcs.find(candidate=>candidate.assignment.characterId===id)!;
+    const target=npc.assignment.target!;
+    const point=group.scenarioPoints.get(target)??group.laneRuntime.stops.get(target);
+    if(!point)throw new Error(`Monitoring target point not found: ${target}`);
+    for(const [key,owner] of group.laneRuntime.coordination.stopReservations)if(owner===id)group.laneRuntime.coordination.stopReservations.delete(key);
+    for(const [key,owner] of group.laneRuntime.coordination.transitionReservations)if(owner===id)group.laneRuntime.coordination.transitionReservations.delete(key);
+    npc.active=true;npc.visible=true;npc.phase='HOLDING';npc.holdRemaining=Infinity;
+    npc.position={x:point.x,y:point.y};npc.currentObservationZone=npc.assignment.homeObservationZone;
+    npc.character.world.currentZone='PLAZA';npc.stopPoint=target;npc.admissionAt=Infinity;
+    npc.transitionReservation=undefined;npc.blockedByNpc=undefined;npc.stalledCandidate=false;
+    group.laneRuntime.coordination.stopReservations.set(target,id);
+  }
+}
+
+export function verifyMonitoringTarget(npc:RoundNpcRuntime):CharacterLabel|null{
+  if(!MONITORING_TARGET_IDS.includes(npc.assignment.characterId as typeof MONITORING_TARGET_IDS[number]))return null;
+  npc.verifiedLabel=npc.assignment.actualLabel;
+  npc.character.training.usedForTraining=true;
+  return npc.verifiedLabel;
 }
 
 // ---------------------------------------------------------------------------

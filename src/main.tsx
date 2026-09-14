@@ -7,17 +7,21 @@ import './style.css';
 import { CorridorCapacityScene } from './CorridorCapacityScene';
 import { CORRIDOR_CASES, type CorridorCase } from './corridorCapacity';
 import { PlazaParkScene } from './PlazaParkScene';
-import type { CharacterLabel, BehaviorHistoryEntry } from './characterPool';
+import type { CharacterId, CharacterLabel, BehaviorHistoryEntry } from './characterPool';
 import type { ManualLabelingState } from './cctvManualLabeling';
 import {
-  createGameFlow, canStartFirstTraining, startFirstTraining, completeFirstTraining,
+  createGameFlow, startFirstTraining, completeFirstTraining,
   openTrackingReview, closeTrackingReview, canStartRetraining, startRetraining,
   completeRetraining, canStartFinalScan, startFinalScan, completeFinalScan,
+  recordMonitoringVerification,
   type GameFlowState, type SupervisedGameState, type TrackingReviewContext,
 } from './supervisedGameFlow';
-import { ROUND2_COMPARISON_PLAN, round2ComparisonFor } from './plazaRound2';
+import { MONITORING_TARGET_IDS, round2ComparisonFor, type Round2TargetStatus } from './plazaRound2';
 
 const EMPTY_MANUAL_STATE: ManualLabelingState = { cctvs: [], selectedCctv: null, visibleCharacterIds: [], selectedCharacter: null, manualLabeledDistinctCount: 0, verifiedTrainingSampleCount: 0, trainingReady: false };
+const TARGET_STATUS_LABEL:Record<Round2TargetStatus,string>={
+  WAITING:'대기',COMPARISON_COMPLETE:'비교 완료',TRACKING_REQUIRED:'추적 필요',VERIFIED:'검증 완료',
+};
 
 function App() {
   const mount = useRef<HTMLDivElement>(null);
@@ -39,8 +43,6 @@ function App() {
   // Supervised learning game flow state
   const [flow, setFlow] = useState<GameFlowState>(createGameFlow);
   const [trackingHistory, setTrackingHistory] = useState<readonly BehaviorHistoryEntry[]>([]);
-  const [verifiedReveal, setVerifiedReveal] = useState<{ id?: string, actualLabel: CharacterLabel } | null>(null);
-  const [aiMonitorVerified, setAiMonitorVerified] = useState(0);
   useEffect(() => {
     const validation = new ScaleValidationScene(setStats);
     scene.current = validation;
@@ -97,7 +99,9 @@ function App() {
     action();
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   };
-  const labelSelected = (label: CharacterLabel) => mapAction(() => plazaRef.current?.setSelectedUserLabel(label));
+  const labelSelected = (label: CharacterLabel) => mapAction(() => {
+    plazaRef.current?.setSelectedUserLabel(label);
+  });
 
   // ── Supervised flow actions ──────────────────────────────────────────
   const doVerify = useCallback(() => {
@@ -108,18 +112,15 @@ function App() {
     const id = manual.selectedCharacter?.id || flow.trackingNpcId;
     if (!id) return;
     
-    const actualLabel = scene.verifyCharacter(id);
-    if (actualLabel) setVerifiedReveal({ id, actualLabel });
+    const monitoring=MONITORING_TARGET_IDS.includes(id as typeof MONITORING_TARGET_IDS[number])&&
+      scene.getCurrentRound()===2&&scene.getAiLabel(id)!==null;
+    const actualLabel = scene.verifyCharacter(id,monitoring);
     
     setFlow(f => {
-      if (f.phase === 'AI_ASSISTED_MONITORING') {
-        if (['NPC15', 'NPC16', 'NPC26'].includes(id) && !f.aiMonitorVerifiedIds.includes(id)) {
-          f.aiMonitorVerifiedIds = [...f.aiMonitorVerifiedIds, id];
-        }
-      }
+      if (monitoring&&actualLabel) recordMonitoringVerification(f,id);
       return { ...f };
     });
-  }, [manual.selectedCharacter, flow.trackingNpcId]);
+  }, [manual.selectedCharacter, flow.trackingNpcId, flow.trackingContext]);
 
   const doOpenTracking = useCallback((context: TrackingReviewContext) => {
     const scene = plazaRef.current;
@@ -138,7 +139,6 @@ function App() {
     // After brief animation completes, transition to Round 2
     setTimeout(() => {
       plazaRef.current?.applyRound2();
-      plazaRef.current?.revealPostRetrainingLabels();
       setFlow(f => { completeFirstTraining(f); return { ...f }; });
     }, 3500);
   }, [manual.verifiedTrainingSampleCount]);
@@ -148,6 +148,7 @@ function App() {
     if (!state) return;
     setFlow(f => { startRetraining(f, state.aiWrongVerifiedCount); return { ...f }; });
     setTimeout(() => {
+      plazaRef.current?.revealPostRetrainingLabels();
       setFlow(f => { completeRetraining(f); return { ...f }; });
     }, 3000);
   }, []);
@@ -162,8 +163,8 @@ function App() {
   const doCompare = useCallback((userGuess: CharacterLabel) => {
     const scene = plazaRef.current;
     if (!scene || !manual.selectedCharacter) return;
-    // Set user label
-    scene.setSelectedUserLabel(userGuess);
+    const id=manual.selectedCharacter.id;
+    scene.compareCharacter(id,userGuess);
     setFlow(f => ({ ...f }));
   }, [manual.selectedCharacter]);
 
@@ -171,6 +172,13 @@ function App() {
   const isPlazaCompare = plaza && flow.phase === 'HUMAN_AI_COMPARE';
   const isPlazaMonitor = plaza && flow.phase === 'AI_ASSISTED_MONITORING';
   const r2State = plaza && flow.round === 2 ? plazaRef.current?.getRound2TrainingState() : null;
+  const r2Targets = plazaRef.current?.getRound2TargetStatuses() ?? [];
+  const trackingId=flow.trackingNpcId;
+  const trackingVerified=trackingId?plazaRef.current?.getVerifiedLabel(trackingId):null;
+
+  const focusCharacter=(id:string)=>mapAction(()=>{
+    plazaRef.current?.focusCharacter(id as CharacterId);
+  });
 
   return <main className="stage">
     <div ref={mount} className="game" aria-label="ScaleValidationScene" />
@@ -214,14 +222,14 @@ function App() {
               </li>
             ))}
           </ul>
-          {verifiedReveal && (
+          {trackingVerified && (
             <div className="verified-reveal">
-              ✅ 정답: <strong>{verifiedReveal.actualLabel === 'VILLAIN' ? '악당' : '시민'}</strong>
+              검증 완료 · 실제 <strong>{trackingVerified === 'VILLAIN' ? '악당' : '시민'}</strong>
             </div>
           )}
           <div className="tracking-actions">
-            {flow.trackingContext === 'VERIFICATION' && !verifiedReveal && (
-              <button className="btn-verify" onClick={doVerify} disabled={!manual.selectedCharacter?.userLabel}>
+            {(flow.trackingContext === 'COMPARE'||flow.trackingContext === 'MONITORING') && !trackingVerified && (
+              <button className="btn-verify" onClick={doVerify}>
                 정답 확인
               </button>
             )}
@@ -319,10 +327,10 @@ function App() {
           <button className="btn-tracking" onClick={() => doOpenTracking('VERIFICATION')}>
             📋 추적 기록
           </button>
-          {manual.selectedCharacter.userLabel && (
-            <button className="btn-verify" onClick={doVerify}>정답 확인</button>
-          )}
         </div>
+        {plazaRef.current?.getVerifiedLabel(manual.selectedCharacter.id) && <div className="verified-reveal">
+          검증 완료 · 실제 <strong>{plazaRef.current.getVerifiedLabel(manual.selectedCharacter.id)==='VILLAIN'?'악당':'시민'}</strong>
+        </div>}
       </> : <p>선택된 캐릭터 없음</p>}
       {manual.trainingReady && (
         <button className="btn-train" onClick={doStartFirstTraining} id="start-first-training">
@@ -331,46 +339,73 @@ function App() {
       )}
     </aside> : isPlazaCompare ? <aside className="manual-panel compare-panel" data-testid="human-ai-compare">
       <h1>Round 2 — AI 비교</h1>
-      <p>비교 대상 {ROUND2_COMPARISON_PLAN.length}명 중 {r2State?.comparedCount ?? 0}명 비교 완료</p>
+      <p className="phase-guidance">{(r2State?.comparedCount??0)===0
+        ?'노란 ? 표시가 있는 8명을 AI와 함께 판단하세요.'
+        :(r2State?.comparedCount??0)<8
+          ?`비교 대상 8명 중 ${r2State?.comparedCount??0}명 완료`
+          :(r2State?.verifiedCount??0)<8
+            ?<>비교는 끝났어요.<br/>추적 확인이 필요한 {8-(r2State?.verifiedCount??0)}명이 남았습니다.</>
+            :'비교와 추적 확인이 모두 끝났습니다.'}</p>
+      <h2 className="target-heading">비교 대상</h2>
+      <div className="target-list">
+        {r2Targets.map(target=><button key={target.characterId} className={`target-row status-${target.status.toLowerCase()}`} onClick={()=>focusCharacter(target.characterId)}>
+          <span>{target.characterId}</span><strong>{TARGET_STATUS_LABEL[target.status]}</strong>
+        </button>)}
+      </div>
       {manual.selectedCharacter ? (() => {
         const comp = round2ComparisonFor(manual.selectedCharacter.id);
         const userLabel = manual.selectedCharacter.userLabel;
-        const aiLabel = comp?.aiLabel;
-        const showed = userLabel !== null && aiLabel !== undefined;
+        const aiLabel = plazaRef.current?.getAiLabel(manual.selectedCharacter.id)??null;
+        const actualLabel=plazaRef.current?.getVerifiedLabel(manual.selectedCharacter.id)??null;
+        const showed = userLabel !== null && aiLabel !== null;
         return <>
-          <h2>{manual.selectedCharacter.id}</h2>
-          <div className="label-buttons">
+          <h2 className="selected-target">{manual.selectedCharacter.id}</h2>
+          {comp&&<div className="label-buttons">
             <button aria-pressed={userLabel === 'CITIZEN'} disabled={showed} onClick={() => doCompare('CITIZEN')}>시민</button>
             <button aria-pressed={userLabel === 'VILLAIN'} disabled={showed} onClick={() => doCompare('VILLAIN')}>악당</button>
-          </div>
+          </div>}
           {showed && comp && (
-            <div className={`ai-result ${aiLabel === manual.selectedCharacter!.userLabel ? 'ai-agree' : 'ai-disagree'}`}>
+            <div className={`ai-result ${aiLabel === userLabel ? 'ai-agree' : 'ai-disagree'}`}>
+              <span>내 판단: <strong>{userLabel === 'VILLAIN' ? '악당' : '시민'}</strong></span>
               <span>AI 판단: <strong>{aiLabel === 'VILLAIN' ? '악당' : '시민'}</strong></span>
               <span className="ai-conf">신뢰도: {comp.aiConfidence}</span>
-              {aiLabel !== userLabel && (
+              {aiLabel !== userLabel && !actualLabel && (
                 <button className="btn-tracking" onClick={() => doOpenTracking('COMPARE')}>📋 추적 검증</button>
               )}
+              {actualLabel&&<span>실제 결과: <strong>{actualLabel==='VILLAIN'?'악당':'시민'}</strong></span>}
             </div>
           )}
-          {!showed && <p className="compare-hint">먼저 판단하세요</p>}
+          {comp&&!showed && <p className="compare-hint">시민 또는 악당을 판단하세요.</p>}
+          {!comp&&<p className="compare-hint">위 비교 대상 목록에서 선택하세요.</p>}
         </>;
       })() : <p>NPC를 선택하세요</p>}
       {canStartRetraining(flow, r2State || null) && (
-        <button className="btn-train" onClick={doStartRetraining} id="start-retraining">🔄 AI 재학습</button>
+        <button className="btn-train" onClick={doStartRetraining} id="start-retraining">AI 재학습 시작</button>
       )}
     </aside> : isPlazaMonitor ? <aside className="manual-panel monitor-panel" data-testid="ai-assisted-monitoring">
       <h1>AI 보조 모니터링</h1>
-      <p>AI가 분류 중 — 수상한 케이스를 확인하세요</p>
+      <p className="phase-guidance">AI가 새로 찾아낸 위험 대상을 확인하세요.</p>
+      <div className="target-list monitor-target-list">
+        {MONITORING_TARGET_IDS.map(id=>{
+          const done=flow.aiMonitorVerifiedIds.includes(id);
+          return <button key={id} className={`target-row ${done?'status-verified':'status-waiting'}`} onClick={()=>focusCharacter(id)}>
+            <span>{id}</span><strong>{done?'확인 완료':'확인하기'}</strong>
+          </button>;
+        })}
+      </div>
+      <p className="monitor-progress">확인 완료: {flow.aiMonitorVerifiedIds.length} / 3</p>
       {manual.selectedCharacter ? (() => {
-        const comp = round2ComparisonFor(manual.selectedCharacter.id);
+        const id=manual.selectedCharacter.id;
+        const aiLabel=plazaRef.current?.getAiLabel(id);
+        const isTarget=MONITORING_TARGET_IDS.includes(id as typeof MONITORING_TARGET_IDS[number]);
         return <>
-          <h2>{manual.selectedCharacter.id}</h2>
-          {comp && <p>AI: <strong>{comp.aiLabel === 'VILLAIN' ? '악당' : '시민'}</strong> ({comp.aiConfidence})</p>}
-          <button className="btn-tracking" onClick={() => doOpenTracking('MONITORING')}>📋 추적 확인</button>
+          <h2>{id}</h2>
+          {aiLabel&&<p>AI 판단: <strong>{aiLabel==='VILLAIN'?'악당':'시민'}</strong></p>}
+          {isTarget?<button className="btn-tracking" onClick={() => doOpenTracking('MONITORING')}>📋 추적 확인</button>
+            :<p className="compare-hint">모니터링 대상이 아닙니다.</p>}
         </>;
-      })() : <p>NPC를 선택하세요</p>}
-      <p>확인 완료: {aiMonitorVerified}/3</p>
-      {canStartFinalScan(flow, aiMonitorVerified) && (
+      })() : <p>위 대상의 확인하기를 누르세요.</p>}
+      {canStartFinalScan(flow) && (
         <button className="btn-train" onClick={doStartFinalScan} id="start-final-scan">🔍 최종 스캔</button>
       )}
     </aside> : plaza ? <aside className="manual-panel" data-testid="manual-labeling">
