@@ -39,7 +39,7 @@ function App() {
   // Supervised learning game flow state
   const [flow, setFlow] = useState<GameFlowState>(createGameFlow);
   const [trackingHistory, setTrackingHistory] = useState<readonly BehaviorHistoryEntry[]>([]);
-  const [verifiedReveal, setVerifiedReveal] = useState<{ actualLabel: CharacterLabel } | null>(null);
+  const [verifiedReveal, setVerifiedReveal] = useState<{ id?: string, actualLabel: CharacterLabel } | null>(null);
   const [aiMonitorVerified, setAiMonitorVerified] = useState(0);
   useEffect(() => {
     const validation = new ScaleValidationScene(setStats);
@@ -103,15 +103,28 @@ function App() {
   const doVerify = useCallback(() => {
     const scene = plazaRef.current;
     if (!scene) return;
-    const actualLabel = scene.verifySelected();
-    if (actualLabel) setVerifiedReveal({ actualLabel });
-    setFlow(f => ({ ...f })); // trigger re-render
-  }, []);
+    
+    // Allow verifying only the selected character if not in a specific tracking context
+    const id = manual.selectedCharacter?.id || flow.trackingNpcId;
+    if (!id) return;
+    
+    const actualLabel = scene.verifyCharacter(id);
+    if (actualLabel) setVerifiedReveal({ id, actualLabel });
+    
+    setFlow(f => {
+      if (f.phase === 'AI_ASSISTED_MONITORING') {
+        if (['NPC15', 'NPC16', 'NPC26'].includes(id) && !f.aiMonitorVerifiedIds.includes(id)) {
+          f.aiMonitorVerifiedIds = [...f.aiMonitorVerifiedIds, id];
+        }
+      }
+      return { ...f };
+    });
+  }, [manual.selectedCharacter, flow.trackingNpcId]);
 
   const doOpenTracking = useCallback((context: TrackingReviewContext) => {
     const scene = plazaRef.current;
     if (!scene || !manual.selectedCharacter) return;
-    const history = scene.getSelectedBehaviorHistory();
+    const history = scene.getBehaviorHistory(manual.selectedCharacter.id);
     setTrackingHistory(history);
     setFlow(f => { openTrackingReview(f, manual.selectedCharacter!.id, context); return { ...f }; });
   }, [manual.selectedCharacter]);
@@ -125,7 +138,7 @@ function App() {
     // After brief animation completes, transition to Round 2
     setTimeout(() => {
       plazaRef.current?.applyRound2();
-      plazaRef.current?.revealAiLabels();
+      plazaRef.current?.revealPostRetrainingLabels();
       setFlow(f => { completeFirstTraining(f); return { ...f }; });
     }, 3500);
   }, [manual.verifiedTrainingSampleCount]);
@@ -234,6 +247,14 @@ function App() {
               </div>
             ))}
           </div>
+          <div className="scan-stats" style={{ textAlign: 'center', marginTop: '1rem', fontWeight: 'bold' }}>
+            {(() => {
+              const npcs = (plazaRef.current as any)?.round1?.npcs ?? [];
+              const aiCit = npcs.filter((n: any) => n.character.labels.aiLabel === 'CITIZEN').length;
+              const aiVil = npcs.filter((n: any) => n.character.labels.aiLabel === 'VILLAIN').length;
+              return <p>AI 시민 {aiCit}명 / AI 악당 {aiVil}명 탐지 완료</p>;
+            })()}
+          </div>
           <p className="scan-status">스캔 중...</p>
         </div>
       </div>
@@ -248,6 +269,15 @@ function App() {
           <ul className="complete-summary">
             <li>Round 1 학습 데이터: <strong>{flow.aiTraining.totalVerifiedData}건</strong></li>
             <li>Round 2 오류 수정: <strong>{flow.aiTraining.correctionData}건</strong></li>
+            {(() => {
+              const npcs = (plazaRef.current as any)?.round1?.npcs ?? [];
+              if(npcs.length > 0) {
+                const aiCit = npcs.filter((n: any) => n.character.labels.aiLabel === 'CITIZEN').length;
+                const aiVil = npcs.filter((n: any) => n.character.labels.aiLabel === 'VILLAIN').length;
+                return <li>최종 분류 결과: <strong>AI 시민 {aiCit}명 / AI 악당 {aiVil}명</strong></li>;
+              }
+              return null;
+            })()}
           </ul>
           <p className="complete-message">여러분의 판단이 AI를 가르쳤습니다!</p>
         </div>
@@ -325,7 +355,7 @@ function App() {
           {!showed && <p className="compare-hint">먼저 판단하세요</p>}
         </>;
       })() : <p>NPC를 선택하세요</p>}
-      {canStartRetraining(flow, r2State?.aiWrongVerifiedCount ?? 0) && (
+      {canStartRetraining(flow, r2State || null) && (
         <button className="btn-train" onClick={doStartRetraining} id="start-retraining">🔄 AI 재학습</button>
       )}
     </aside> : isPlazaMonitor ? <aside className="manual-panel monitor-panel" data-testid="ai-assisted-monitoring">

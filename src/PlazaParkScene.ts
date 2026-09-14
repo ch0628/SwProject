@@ -12,7 +12,7 @@ import {
 } from './cctvManualLabeling';
 import type { BehaviorHistoryEntry, CharacterId, CharacterLabel } from './characterPool';
 import { createRound1Group, DEFAULT_ROUND1_CONFIG, round1TrainingState, stepRound1Group, verifyRoundTrainingSample, type Round1Group } from './plazaRound1';
-import { applyRound2ToGroup, ROUND2_COMPARISON_PLAN, round2TrainingState } from './plazaRound2';
+import { applyRound2ToGroup, getPostRetrainingPrediction, ROUND2_COMPARISON_PLAN, round2TrainingState } from './plazaRound2';
 
 export class PlazaParkScene extends Phaser.Scene {
   private mapData!: GrayboxMap;
@@ -208,16 +208,18 @@ export class PlazaParkScene extends Phaser.Scene {
     const authored=Number(new URLSearchParams(window.location.search).get('roundStagger'));
     const config={...DEFAULT_ROUND1_CONFIG,admissionIntervalSeconds:Number.isFinite(authored)&&authored>0?authored:DEFAULT_ROUND1_CONFIG.admissionIntervalSeconds};
     this.round1=createRound1Group(this.mapData,this.cameraZones,config);
-    const visualHeight={rabbit:56,cat:56,fox:68,dog:68,tiger:80};
+    const CCTV_CHARACTER_VISUAL_SCALE = 1.20;
+    const visualHeight={rabbit:56 * CCTV_CHARACTER_VISUAL_SCALE,cat:56 * CCTV_CHARACTER_VISUAL_SCALE,fox:68 * CCTV_CHARACTER_VISUAL_SCALE,dog:68 * CCTV_CHARACTER_VISUAL_SCALE,tiger:80 * CCTV_CHARACTER_VISUAL_SCALE};
     for(const npc of this.round1.npcs){
       const {species,gender,id}=npc.definition,sprite=this.add.image(0,0,characterTexture(species,gender,'down')).setOrigin(.5,1);
       sprite.setScale(visualHeight[species]/sprite.height);
       const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.phase}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
       const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
       const labelMarker=this.add.text(0,-visualHeight[species]-12,'',{fontSize:'24px',fontStyle:'bold',color:'#fff',padding:{x:5,y:3}}).setOrigin(.5).setVisible(false);
-      const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker]);
+      const phaseMarker=this.add.text(0,-visualHeight[species]-45,'',{fontSize:'24px',fontStyle:'bold',color:'#fff',padding:{x:4,y:2}}).setOrigin(.5).setVisible(false);
+      const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker,phaseMarker]);
       (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;(container as any).facing='down' as Facing;
-      (container as any).debugText=label;(container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;
+      (container as any).debugText=label;(container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;(container as any).phaseMarker=phaseMarker;
       this.supervisedSprites.push(container);
     }
     this.routeDebug.clear();
@@ -235,7 +237,7 @@ export class PlazaParkScene extends Phaser.Scene {
     this.selectedCharacterId=null;
     const camera=this.cameras.main,viewportWidth=LOGICAL.width*.75,toolbarAndSpriteSafeHeight=LOGICAL.height-160;
     camera.stopFollow().setViewport(0,0,viewportWidth,LOGICAL.height)
-      .setZoom(Math.min(viewportWidth/zone.width,toolbarAndSpriteSafeHeight/zone.height))
+      .setZoom(Math.min(viewportWidth/zone.width,toolbarAndSpriteSafeHeight/zone.height) * 1.08)
       .centerOn(zone.x+zone.width/2,zone.y+zone.height/2);
     this.publishManualState(true);
   }
@@ -254,20 +256,19 @@ export class PlazaParkScene extends Phaser.Scene {
     this.publishManualState(true);
   }
 
-  /** Verify selected NPC: sets verifiedLabel = actualLabel. Returns actualLabel or null. */
-  verifySelected(): CharacterLabel | null {
-    if(!this.round1||!this.selectedCharacterId) return null;
-    const npc=this.round1.npcs.find(n=>n.assignment.characterId===this.selectedCharacterId);
+  /** Verify a specific NPC and return actualLabel. */
+  verifyCharacter(id: CharacterId): CharacterLabel | null {
+    if(!this.round1) return null;
+    const npc=this.round1.npcs.find(n=>n.assignment.characterId===id);
     if(!npc||npc.character.labels.userLabel===null) return null;
     verifyRoundTrainingSample(npc);
     this.publishManualState(true);
     return npc.assignment.actualLabel;
   }
 
-  /** Get behavior history of selected NPC for TRACKING_REVIEW overlay. */
-  getSelectedBehaviorHistory(): readonly BehaviorHistoryEntry[] {
-    if(!this.selectedCharacterId) return [];
-    const npc=this.manualNpcs().find(n=>n.definition.id===this.selectedCharacterId);
+  /** Get behavior history of a specific NPC. */
+  getBehaviorHistory(id: CharacterId): readonly BehaviorHistoryEntry[] {
+    const npc=this.round1?.npcs.find(n=>n.assignment.characterId===id);
     return npc?.character.world.behaviorHistory??[];
   }
 
@@ -280,15 +281,32 @@ export class PlazaParkScene extends Phaser.Scene {
     this.publishManualState(true);
   }
 
-  /** Set AI label on a comparison target NPC (from ROUND2_COMPARISON_PLAN). */
-  revealAiLabels(){
+  /** Get AI label of a specific NPC. */
+  getAiLabel(id: CharacterId): CharacterLabel | null {
+    const npc=this.round1?.npcs.find(n=>n.assignment.characterId===id);
+    return npc?.character.labels.aiLabel ?? null;
+  }
+
+  /** Reveal AI label for a specific comparison target. */
+  revealAiLabelFor(id: CharacterId){
     if(!this.round1||this.currentRound!==2) return;
-    for(const entry of ROUND2_COMPARISON_PLAN){
-      const npc=this.round1.npcs.find(n=>n.assignment.characterId===entry.characterId);
-      if(npc){
-        npc.character.labels.aiLabel=entry.aiLabel;
-        npc.character.labels.aiConfidence=entry.aiConfidence;
-      }
+    const entry = ROUND2_COMPARISON_PLAN.find(e => e.characterId === id);
+    if(!entry) return;
+    const npc=this.round1.npcs.find(n=>n.assignment.characterId===id);
+    if(npc){
+      npc.character.labels.aiLabel=entry.aiLabel;
+      npc.character.labels.aiConfidence=entry.aiConfidence;
+    }
+    this.publishManualState(true);
+  }
+
+  /** Set deterministic post-retraining AI predictions for ALL NPCs. */
+  revealPostRetrainingLabels(){
+    if(!this.round1||this.currentRound!==2) return;
+    for(const npc of this.round1.npcs){
+       const pred = getPostRetrainingPrediction(npc.assignment.actualLabel);
+       npc.character.labels.aiLabel = pred.aiLabel;
+       npc.character.labels.aiConfidence = pred.aiConfidence;
     }
     this.publishManualState(true);
   }
@@ -303,14 +321,42 @@ export class PlazaParkScene extends Phaser.Scene {
   private publishManualState(force=false){
     const npcs=this.manualNpcs(),visible=this.selectedCctv?visibleCharactersForZone(npcs,this.selectedCctv):[];
     if(this.selectedCharacterId&&!visible.some(npc=>npc.definition.id===this.selectedCharacterId))this.selectedCharacterId=null;
+    const isMonitoring = this.currentRound === 2 && npcs.every(n => n.character.labels.aiLabel !== null);
+    
     for(const [index,npc] of npcs.entries()){
       const container=this.supervisedSprites[index],isVisible=visible.includes(npc);
       container.setVisible(isVisible);
       (container as any).selectionRing?.setVisible(isVisible&&npc.definition.id===this.selectedCharacterId);
       const marker=(container as any).labelMarker as Phaser.GameObjects.Text|undefined;
+      const phaseMarker=(container as any).phaseMarker as Phaser.GameObjects.Text|undefined;
       const label=npc.character.labels.userLabel;
+      const aiLabel=npc.character.labels.aiLabel;
+      
+      // User Label Marker
       marker?.setText(label==='CITIZEN'?'시':label==='VILLAIN'?'악':'').setVisible(isVisible&&label!==null)
         .setBackgroundColor(label==='CITIZEN'?'#177245':'#a52626');
+        
+      // Phase Marker (?, !, AI label)
+      if (isVisible) {
+        if (isMonitoring) {
+          const isTarget = ['NPC15', 'NPC16', 'NPC26'].includes(npc.definition.id);
+          const aiText = aiLabel==='CITIZEN'?'AI 시':'AI 악';
+          const bgColor = aiLabel==='CITIZEN'?'#2e7d32':'#d32f2f';
+          phaseMarker?.setText(isTarget ? `! ${aiText}` : aiText).setVisible(true).setBackgroundColor(bgColor);
+        } else if (this.currentRound === 2) {
+          const isCompareTarget = ROUND2_COMPARISON_PLAN.some(e => e.characterId === npc.definition.id);
+          const isRevealed = label !== null && aiLabel !== null;
+          if (isCompareTarget && !isRevealed) {
+            phaseMarker?.setText('?').setVisible(true).setBackgroundColor('#fbc02d').setColor('#000');
+          } else {
+            phaseMarker?.setVisible(false);
+          }
+        } else {
+          phaseMarker?.setVisible(false);
+        }
+      } else {
+        phaseMarker?.setVisible(false);
+      }
     }
     const selected=visible.find(npc=>npc.definition.id===this.selectedCharacterId);
     const training=this.round1?round1TrainingState(this.round1):{manualLabeledDistinctCount:npcs.filter(npc=>npc.character.labels.userLabel!==null).length,verifiedTrainingSampleCount:0,trainingReady:false};
@@ -354,7 +400,8 @@ export class PlazaParkScene extends Phaser.Scene {
         const count=mode==='supervised'?5:Number(mode.slice('supervised'.length));
         this.goTo('W21'); // Keep the inspection actor outside the measured entry flows.
         this.supervised=count===5?createSupervisedPlazaDemo(this.mapData):createSupervisedPlazaGroup(this.mapData,count);
-        const visualHeight={rabbit:56,cat:56,fox:68,dog:68,tiger:80};
+        const CCTV_CHARACTER_VISUAL_SCALE = 1.20;
+        const visualHeight={rabbit:56 * CCTV_CHARACTER_VISUAL_SCALE,cat:56 * CCTV_CHARACTER_VISUAL_SCALE,fox:68 * CCTV_CHARACTER_VISUAL_SCALE,dog:68 * CCTV_CHARACTER_VISUAL_SCALE,tiger:80 * CCTV_CHARACTER_VISUAL_SCALE};
         for(const npc of this.supervised.npcs){
           const {species,gender,id}=npc.definition;
           const sprite=this.add.image(0,0,characterTexture(species,gender,'down')).setOrigin(.5,1);
@@ -362,10 +409,11 @@ export class PlazaParkScene extends Phaser.Scene {
           const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.intents[npc.intentIndex]}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
           const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
           const labelMarker=this.add.text(0,-visualHeight[species]-12,'',{fontSize:'24px',fontStyle:'bold',color:'#fff',padding:{x:5,y:3}}).setOrigin(.5).setVisible(false);
-          const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker]);
+          const phaseMarker=this.add.text(0,-visualHeight[species]-45,'',{fontSize:'24px',fontStyle:'bold',color:'#fff',padding:{x:4,y:2}}).setOrigin(.5).setVisible(false);
+          const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker,phaseMarker]);
           (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;
           (container as any).facing='down' as Facing;(container as any).debugText=label;
-          (container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;
+          (container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;(container as any).phaseMarker=phaseMarker;
           this.supervisedSprites.push(container);
         }
         this.notice=`Navigation v2 lane validation: ${count} active · cyan/pink=lanes · orange=transition · yellow/green=SP free/owned.`;

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * supervisedGameFlow.ts
  *
  * 8-state Supervised Learning Game State Machine
@@ -44,6 +44,8 @@ export type GameFlowState = {
     correctionData: number;      // from Round 2 AI-wrong corrections
     trainingStage: 'NONE' | 'FIRST' | 'RETRAINED';
   };
+  /** Set of distinct CharacterIds verified during AI_ASSISTED_MONITORING */
+  aiMonitorVerifiedIds: readonly CharacterId[];
   /** FINAL_SCAN animation complete */
   scanComplete: boolean;
 };
@@ -69,6 +71,7 @@ export function createGameFlow(): GameFlowState {
     trackingNpcId: null,
     trackingContext: null,
     aiTraining: { totalVerifiedData: 0, correctionData: 0, trainingStage: 'NONE' },
+    aiMonitorVerifiedIds: [],
     scanComplete: false,
   };
 }
@@ -110,8 +113,16 @@ export function closeTrackingReview(flow: GameFlowState, returnPhase: Supervised
   flow.phase = returnPhase;
 }
 
-export function canStartRetraining(flow: GameFlowState, aiWrongVerified: number): boolean {
-  return flow.phase === 'HUMAN_AI_COMPARE' && aiWrongVerified >= 3;
+export type Round2TrainingStateObj = Readonly<{
+  comparedCount: number;
+  verifiedCount: number;
+  aiWrongVerifiedCount: number;
+  retrainingReady: boolean;
+}>;
+
+export function canStartRetraining(flow: GameFlowState, r2State: Round2TrainingStateObj | null): boolean {
+  if (flow.phase !== 'HUMAN_AI_COMPARE' || !r2State) return false;
+  return r2State.retrainingReady;
 }
 
 export function startRetraining(flow: GameFlowState, correctionCount: number): void {

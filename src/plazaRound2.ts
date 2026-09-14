@@ -1,4 +1,4 @@
-﻿/**
+/**
  * plazaRound2.ts
  *
  * Round 2 Scenario - Supervised Learning Game
@@ -83,36 +83,36 @@ const row = (
 
 export const ROUND2_ROWS: readonly R2Row[] = Object.freeze([
   // PLAZA_CAM_A (R1 CAM_B 출신: NPC08-14) -- 1 VILLAIN = NPC08
-  row('NPC08','VILLAIN','PLAZA_CAM_A','ENTER_AND_STAY', 'N01','A_STAY_01',  'LOOKING_AROUND',null, 'STEALING'),
-  row('NPC09','CITIZEN','PLAZA_CAM_A','STATIC_HOLD',    null, 'A_STATIC_01','RESTING',       null),
-  row('NPC10','CITIZEN','PLAZA_CAM_A','ENTER_HOLD_EXIT','N01','SP1',        'CARRYING_TOOLS','N24'),
-  row('NPC11','CITIZEN','PLAZA_CAM_A','STATIC_HOLD',    null, 'A_STATIC_02','WAITING',        null),
+  row('NPC08','VILLAIN','PLAZA_CAM_A','STATIC_HOLD',    null, 'A_STATIC_01','LOOKING_AROUND',null, 'STEALING'),
+  row('NPC09','CITIZEN','PLAZA_CAM_A','ENTER_AND_STAY', 'N01','A_STAY_01',  'RESTING',       null),
+  row('NPC10','CITIZEN','PLAZA_CAM_A','STATIC_HOLD',    null, 'A_STATIC_02','CARRYING_TOOLS',null),
+  row('NPC11','CITIZEN','PLAZA_CAM_A','ENTER_HOLD_EXIT','N01','SP1',        'WAITING',       'N24'),
   row('NPC12','CITIZEN','PLAZA_CAM_A','ENTER_AND_STAY', 'N03','A_STAY_02',  'EXERCISING',    null),
   row('NPC13','CITIZEN','PLAZA_CAM_A','ENTER_HOLD_EXIT','N03','A_ACTION_01','DELIVERING',    'N24'),
   row('NPC14','CITIZEN','PLAZA_CAM_A','THROUGH_TRAFFIC','N01',null,         'WALKING',       'N24'),
 
   // PLAZA_CAM_B (R1 CAM_C 출신: NPC15-21) -- 2 VILLAIN = NPC15, NPC16
   row('NPC15','VILLAIN','PLAZA_CAM_B','ENTER_HOLD_EXIT','N02','SP5',        'THREATENING',   'N25','STEALING'),
-  row('NPC16','VILLAIN','PLAZA_CAM_B','STATIC_HOLD',    null, 'B_STATIC_01','LOOKING_AROUND',null, 'THREATENING'),
+  row('NPC16','VILLAIN','PLAZA_CAM_B','ENTER_AND_STAY', 'N02','B_STAY_02',  'LOOKING_AROUND',null, 'THREATENING'),
   row('NPC17','CITIZEN','PLAZA_CAM_B','ENTER_AND_STAY', 'N02','B_STAY_01',  'WAITING',       null),
   row('NPC18','CITIZEN','PLAZA_CAM_B','STATIC_HOLD',    null, 'B_STATIC_02','CARRYING_TOOLS',null),
   row('NPC19','CITIZEN','PLAZA_CAM_B','ENTER_HOLD_EXIT','N02','SP6',        'RESTING',       'N25'),
-  row('NPC20','CITIZEN','PLAZA_CAM_B','ENTER_AND_STAY', 'N02','B_STAY_02',  'DELIVERING',    null, 'RUNNING'),
+  row('NPC20','CITIZEN','PLAZA_CAM_B','STATIC_HOLD',    null, 'B_STATIC_01','DELIVERING',    null, 'RUNNING'),
   row('NPC21','CITIZEN','PLAZA_CAM_B','THROUGH_TRAFFIC','N02',null,         'COMMUTING',     'N25'),
 
   // PLAZA_CAM_C (R1 CAM_D 출신: NPC22-28) -- 2 VILLAIN = NPC26, NPC27
-  row('NPC22','CITIZEN','PLAZA_CAM_C','STATIC_HOLD',    null, 'C_STATIC_01','RESTING',        null),
-  row('NPC23','CITIZEN','PLAZA_CAM_C','STATIC_HOLD',    null, 'C_STATIC_02','IDLING',          null),
+  row('NPC22','CITIZEN','PLAZA_CAM_C','ENTER_HOLD_EXIT','N03','SP8',        'RESTING',        'N24'),
+  row('NPC23','CITIZEN','PLAZA_CAM_C','STATIC_HOLD',    null, 'C_STATIC_02','IDLING',         null),
   row('NPC24','CITIZEN','PLAZA_CAM_C','ENTER_AND_STAY', 'N03','C_STAY_01',  'CAFE_SERVICE',   null),
   row('NPC25','CITIZEN','PLAZA_CAM_C','ENTER_AND_STAY', 'N03','C_STAY_02',  'WAITING',        null),
   row('NPC26','VILLAIN','PLAZA_CAM_C','ENTER_HOLD_EXIT','N03','C_ACTION_01','STEALING',       'N24','SNATCHING'),
-  row('NPC27','VILLAIN','PLAZA_CAM_C','ENTER_HOLD_EXIT','N03','SP8',        'LOOKING_AROUND', 'N24','MANHOLE_TAMPER'),
+  row('NPC27','VILLAIN','PLAZA_CAM_C','STATIC_HOLD',    null, 'C_STATIC_01','LOOKING_AROUND', null, 'MANHOLE_TAMPER'),
   row('NPC28','CITIZEN','PLAZA_CAM_C','THROUGH_TRAFFIC','N03',null,         'TRANSITING',     'N24'),
 
   // PLAZA_CAM_D (R1 CAM_E 출신: NPC29-35) -- 1 VILLAIN = NPC31
-  row('NPC29','CITIZEN','PLAZA_CAM_D','STATIC_HOLD',    null, 'D_STATIC_01','TALKING',        null),
+  row('NPC29','CITIZEN','PLAZA_CAM_D','ENTER_AND_STAY', 'N16','D_STAY_01',  'TALKING',        null),
   row('NPC30','CITIZEN','PLAZA_CAM_D','STATIC_HOLD',    null, 'D_STATIC_02','RESTING',        null),
-  row('NPC31','VILLAIN','PLAZA_CAM_D','ENTER_AND_STAY', 'N16','D_STAY_01',  'LOOKING_AROUND', null, 'STEALING'),
+  row('NPC31','VILLAIN','PLAZA_CAM_D','STATIC_HOLD',    null, 'D_STATIC_01','LOOKING_AROUND', null, 'STEALING'),
   row('NPC32','CITIZEN','PLAZA_CAM_D','ENTER_HOLD_EXIT','N16','SP10',       'CARRYING_TOOLS', 'N26'),
   row('NPC33','CITIZEN','PLAZA_CAM_D','ENTER_AND_STAY', 'N16','D_STAY_02',  'REPAIRING',      null),
   row('NPC34','CITIZEN','PLAZA_CAM_D','ENTER_HOLD_EXIT','N16','SP9',        'DELIVERING',     'N26'),
@@ -121,10 +121,10 @@ export const ROUND2_ROWS: readonly R2Row[] = Object.freeze([
   // PLAZA_CAM_E (R1 CAM_A 출신: NPC01-07) -- 1 VILLAIN = NPC06
   row('NPC01','CITIZEN','PLAZA_CAM_E','ENTER_AND_STAY', 'N02','E_STAY_01',  'TALKING',        null),
   row('NPC02','CITIZEN','PLAZA_CAM_E','ENTER_AND_STAY', 'N02','E_STAY_02',  'DELIVERING',     null),
-  row('NPC03','CITIZEN','PLAZA_CAM_E','STATIC_HOLD',    null, 'E_STATIC_01','RESTING',         null),
-  row('NPC04','CITIZEN','PLAZA_CAM_E','STATIC_HOLD',    null, 'E_STATIC_02','IDLING',           null),
+  row('NPC03','CITIZEN','PLAZA_CAM_E','STATIC_HOLD',    null, 'E_STATIC_01','RESTING',        null),
+  row('NPC04','CITIZEN','PLAZA_CAM_E','ENTER_HOLD_EXIT','N02','E_ACTION_01','IDLING',         'N25'),
   row('NPC05','CITIZEN','PLAZA_CAM_E','THROUGH_TRAFFIC','N02',null,         'COMMUTING',      'N25'),
-  row('NPC06','VILLAIN','PLAZA_CAM_E','ENTER_HOLD_EXIT','N02','E_ACTION_01','SNATCHING',      'N25','STEALING'),
+  row('NPC06','VILLAIN','PLAZA_CAM_E','STATIC_HOLD',    null, 'E_STATIC_02','SNATCHING',      null, 'STEALING'),
   row('NPC07','CITIZEN','PLAZA_CAM_E','ENTER_HOLD_EXIT','N02','SP2',        'RESTING',        'N25'),
 ]);
 
@@ -288,17 +288,37 @@ export function applyRound2ToGroup(
 export function round2TrainingState(group: Round1Group) {
   const targetIds = new Set(ROUND2_COMPARISON_PLAN.map(e => e.characterId));
   const targets = group.npcs.filter(npc => targetIds.has(npc.assignment.characterId));
-  const compared = targets.filter(npc => npc.character.labels.aiLabel !== null);
+  // A comparison is only valid if the AI label was explicitly revealed (after user choice)
+  const compared = targets.filter(npc => npc.character.labels.userLabel !== null && npc.character.labels.aiLabel !== null);
   const verified = targets.filter(npc => npc.verifiedLabel !== null);
   const aiWrongVerified = verified.filter(npc => {
     const plan = ROUND2_COMPARISON_PLAN.find(e => e.characterId === npc.assignment.characterId);
     return plan && plan.aiLabel !== npc.assignment.actualLabel;
   });
+  
+  // Specific AI wrong cases we must collect: NPC08, NPC20, NPC27
+  const requiredWrongIds = new Set(['NPC08', 'NPC20', 'NPC27']);
+  const collectedWrongIds = new Set(aiWrongVerified.map(npc => npc.assignment.characterId));
+  const hasAllCorrections = (['NPC08', 'NPC20', 'NPC27'] as CharacterId[]).every(id => collectedWrongIds.has(id));
+
   return Object.freeze({
     comparedCount: compared.length,
     verifiedCount: verified.length,
     aiWrongVerifiedCount: aiWrongVerified.length,
-    retrainingReady: aiWrongVerified.length >= 3,
+    retrainingReady: compared.length === 8 && verified.length === 8 && hasAllCorrections,
   });
+}
+
+/** 
+ * Deterministic AI prediction for non-comparison targets in AI_ASSISTED_MONITORING.
+ * Rule: After retraining, the AI is mostly correct but might be unsure on ambiguous behavior.
+ * This does not use Math.random or real ML, just a direct mapping from actualLabel.
+ */
+export function getPostRetrainingPrediction(actualLabel: CharacterLabel): { aiLabel: CharacterLabel; aiConfidence: AIConfidence } {
+  // Simple deterministic rule for the prototype: it mostly predicts the actual label, with varying confidence
+  return {
+    aiLabel: actualLabel,
+    aiConfidence: actualLabel === 'VILLAIN' ? 'MEDIUM' : 'HIGH'
+  };
 }
 
