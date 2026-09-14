@@ -10,6 +10,7 @@ dist/
 build/
 coverage/
 *.tsbuildinfo
+fonts/
 
 # =========================================================
 # Vite / bundler cache
