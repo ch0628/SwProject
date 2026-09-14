@@ -24,7 +24,7 @@ export class PlazaParkScene extends Phaser.Scene {
   private coverage!: Phaser.GameObjects.Graphics;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private reportAt = 0;
-  private debug = true;
+  private debug = new URLSearchParams(window.location.search).get('debug') === '1' || new URLSearchParams(window.location.search).get('mode') === 'dev';
   private cctv = true;
   private overview = false;
   private zoom = 1;
@@ -165,6 +165,8 @@ export class PlazaParkScene extends Phaser.Scene {
         outlines.lineStyle(1,0xe6dc90,.35).strokeRect(o.x,o.y,o.width,o.height);
       }
     }
+    
+    this.debugObjects.forEach(o => o.setVisible(this.debug));
     this.coverage = this.add.graphics().setDepth(8000);
     for (const [i,o] of mapObjects(this.mapData,'Camera_Zone').entries()) {
       const color=[0x56bfff,0xffb75a,0xd078f0][i];
@@ -196,7 +198,10 @@ export class PlazaParkScene extends Phaser.Scene {
       this.cctvManualMode=true;
       this.startRound1();
       this.selectCctv(this.cameraZones[0].name);
-      this.toggleDebug();
+      if (this.debug) {
+        this.toggleDebug();
+        this.toggleDebug(); // To force update
+      }
       this.cctv=false;this.coverage.setVisible(false);
       this.probe.setVisible(false);this.tiger.setVisible(false);
     }
