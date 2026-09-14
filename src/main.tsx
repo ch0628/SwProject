@@ -28,9 +28,11 @@ type AriGuideStep =
   | 'ROUND1_INTRO'
   | 'FIRST_TRAINING_INTRO'
   | 'ROUND2_INTRO'
-  | 'RETRAINING_READY'
+  | 'RETRAINING_INTRO'
   | 'AI_ASSISTED_INTRO'
   | 'FINAL_SCAN_INTRO'
+  | 'CITY_WIDE_RESULT'
+  | 'FINAL_ARI'
   | 'COMPLETE'
   | null;
 
@@ -241,7 +243,8 @@ function App() {
     setTimeout(() => {
       plazaRef.current?.applyRound2();
       setFlow(f => { completeFirstTraining(f); return { ...f }; });
-    }, 3500);
+      setGuideStep('ROUND2_INTRO');
+    }, 4000);
   }, [manual.verifiedTrainingSampleCount]);
 
   const doStartRetraining = useCallback(() => {
@@ -251,13 +254,15 @@ function App() {
     setTimeout(() => {
       plazaRef.current?.revealPostRetrainingLabels();
       setFlow(f => { completeRetraining(f); return { ...f }; });
-    }, 3000);
+      setGuideStep('AI_ASSISTED_INTRO');
+    }, 4000);
   }, []);
 
   const doStartFinalScan = useCallback(() => {
     setFlow(f => { startFinalScan(f); return { ...f }; });
     setTimeout(() => {
       setFlow(f => { completeFinalScan(f); return { ...f }; });
+      setGuideStep('CITY_WIDE_RESULT');
     }, 4000);
   }, []);
 
@@ -292,18 +297,98 @@ function App() {
           "안녕! 나는 아리야!\n도시 CCTV의 AI가 고장 나서\n시민과 악당을 자꾸 헷갈리고 있어.\n네가 몇 명의 정답을 알려주면\nAI가 다시 배울 수 있대!"
         ]}
         cta="시작하기"
-        onNext={() => setGuideStep(null)}
+        onNext={() => setGuideStep('ROUND1_INTRO')}
       />
     )}
+
+    {/* ── Ari Guides ── */}
+    {plaza && guideStep === 'ROUND1_INTRO' && (
+      <AriGuideOverlay title="마을 CCTV" lines={[
+        "먼저 네가 직접 몇 명을 확인해줘!\n화면 속 친구를 눌러서\n시민인지 악당인지 골라보자.",
+        "초록 체크는 시민,\n빨간 X는 악당으로 고른 표시야!\n\n확인한 정답이 8개 모이면\nAI가 그걸 보고 공부할 수 있어."
+      ]} cta="알겠어!" onNext={() => setGuideStep(null)} />
+    )}
+    {plaza && guideStep === 'FIRST_TRAINING_INTRO' && (
+      <AriGuideOverlay title="AI 첫 학습" lines={[
+        "좋아! 정답이 충분히 모였어!\n이제 네가 확인한 정답을\n중앙 AI에게 알려주자.",
+        "AI가 시민과 악당을\n구분하는 방법을 공부할 거야!"
+      ]} cta="AI 공부시키기" onNext={() => { setGuideStep(null); doStartFirstTraining(); }} />
+    )}
+    {plaza && guideStep === 'ROUND2_INTRO' && (
+      <AriGuideOverlay title="AI와 비교해보기" lines={[
+        "AI가 첫 공부를 끝냈어!\n이제 처음 보는 친구도\nAI가 스스로 판단해볼 거야.",
+        "노란 물음표가 있는 8명을\n너도 먼저 판단해봐!\n\n네 생각과 AI의 생각이 다르면\n추적 기록을 보고 정답을 확인해줘."
+      ]} cta="알겠어!" onNext={() => setGuideStep(null)} />
+    )}
+    {plaza && guideStep === 'RETRAINING_INTRO' && (
+      <AriGuideOverlay title="AI 다시 가르치기" lines={[
+        "AI가 틀렸던 부분도 모두 찾았어!\n이 정답을 다시 알려주면\nAI가 같은 실수를 줄일 수 있을 거야."
+      ]} cta="다시 알려주기" onNext={() => { setGuideStep(null); doStartRetraining(); }} />
+    )}
+    {plaza && guideStep === 'AI_ASSISTED_INTRO' && (
+      <AriGuideOverlay title="AI 보조 모니터링" lines={[
+        "이번에는 AI가 먼저\nCCTV 속 친구들을 살펴봤어!\n이제 네가 모든 친구를\n한 명씩 판단하지 않아도 돼.",
+        "느낌표가 있는 세 친구만\n다시 확인해줘!\n\nAI 표시가 붙어 있으면\nAI가 먼저 판단했다는 뜻이야."
+      ]} cta="확인하러 가기" onNext={() => setGuideStep(null)} />
+    )}
+    {plaza && guideStep === 'FINAL_SCAN_INTRO' && (
+      <AriGuideOverlay title="최종 스캔" lines={[
+        "이제 마지막이야!\nAI가 도시 전체 CCTV를\n한꺼번에 확인해볼 거야.",
+        "많은 친구를 동시에\n판단하는 모습을 지켜보자!"
+      ]} cta="도시 전체 확인하기" onNext={() => { setGuideStep(null); doStartFinalScan(); }} />
+    )}
+    {plaza && guideStep === 'FINAL_ARI' && (
+      <AriGuideOverlay title="지도학습" lines={[
+        "처음에는 네가 직접\n시민과 악당의 정답을 알려줬지?",
+        "AI는 네가 알려준 정답을 보고 배우고,\n처음 보는 친구도 스스로 판단하기 시작했어.\n그리고 이제는 도시 전체 CCTV도\n한꺼번에 살펴볼 수 있게 됐어!",
+        "이렇게 정답이 있는 예시를 알려주며\nAI를 가르치는 방법을\n'지도학습'이라고 해!"
+      ]} cta="완료!" onNext={() => setGuideStep('COMPLETE')} />
+    )}
+
+    {/* ── CITY_WIDE_RESULT ── */}
+    {plaza && guideStep === 'CITY_WIDE_RESULT' && (() => {
+      const npcs = (plazaRef.current as any)?.round1?.npcs ?? [];
+      const aiCit = npcs.filter((n: any) => n.character.labels.aiLabel === 'CITIZEN').length;
+      const aiVil = npcs.filter((n: any) => n.character.labels.aiLabel === 'VILLAIN').length;
+      return (
+        <div className="overlay result-overlay dongle-font" role="dialog" aria-label="도시 전체 판별 결과">
+          <div className="city-result-card">
+            <h2>도시 전체 판별 완료!</h2>
+            <div className="city-result-grid">
+              {manual.cctvs.map((name, i) => (
+                <div key={name} className="city-cctv-card">
+                  <h3>CCTV {i + 1}</h3>
+                  <div className="cctv-result-marks">
+                    <span className="cctv-mark mark-cit">✓</span>
+                    <span className="cctv-mark mark-vil">✕</span>
+                    <span className="cctv-mark mark-cit">✓</span>
+                    <span className="cctv-mark mark-cit">✓</span>
+                    <span className="cctv-mark mark-vil">✕</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="city-result-summary">
+              <span>AI가 시민으로 판단한 친구 <strong>{aiCit}</strong>명</span>
+              <span>AI가 악당으로 판단한 친구 <strong>{aiVil}</strong>명</span>
+            </div>
+            <button className="btn-ari-next noto-font" onClick={() => setGuideStep('FINAL_ARI')} style={{ float: 'none', padding: '0.8cqw 3cqw', fontSize: '1.5cqw', borderRadius: '1cqw', background: '#37474f', border: 'none', color: '#fff' }}>아리 이야기 듣기</button>
+          </div>
+        </div>
+      );
+    })()}
 
     {/* ── FIRST_TRAINING overlay ── */}
     {plaza && flow.phase === 'FIRST_TRAINING' && (
       <div className="overlay training-overlay dongle-font" role="dialog" aria-label="AI 첫 번째 학습">
-        <div className="training-card dongle-font">
-          <img src="/assets/ai/central_ai_core.png" className="ai-core-img training-pulse" alt="AI 코어" />
-          <h2>AI 학습 중...</h2>
-          <p>검증된 데이터 {flow.aiTraining.totalVerifiedData}건을 학습하고 있습니다.</p>
-          <div className="progress-bar"><div className="progress-fill training-fill" /></div>
+        <div className="training-card dongle-font" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '3cqw', marginBottom: '2cqw', color: '#b9f6ca' }}>AI가 네가 알려준 정답을 공부하고 있어!</h2>
+          <div className="cutscene-container">
+            <img src="/assets/ai/central_ai_core.png" className="ai-core-img training-pulse" alt="AI 코어" style={{ width: '15cqw', height: '15cqw', zIndex: 2, margin: 0 }} />
+            <div className="data-packet citizen-packet">✓ 시민</div>
+            <div className="data-packet villain-packet">✕ 악당</div>
+          </div>
+          <div className="progress-bar" style={{ width: '80%', marginTop: '3cqw' }}><div className="progress-fill training-fill" /></div>
         </div>
       </div>
     )}
@@ -311,11 +396,13 @@ function App() {
     {/* ── RETRAINING overlay ── */}
     {plaza && flow.phase === 'RETRAINING' && (
       <div className="overlay training-overlay dongle-font" role="dialog" aria-label="AI 재학습">
-        <div className="training-card dongle-font">
-          <img src="/assets/ai/central_ai_core.png" className="ai-core-img training-pulse-fast" alt="AI 코어" />
-          <h2>AI 업데이트 중...</h2>
-          <p>오류 수정 데이터 {flow.aiTraining.correctionData}건 반영 중</p>
-          <div className="progress-bar"><div className="progress-fill retraining-fill" /></div>
+        <div className="training-card dongle-font" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <h2 style={{ fontSize: '3cqw', marginBottom: '2cqw', color: '#ffd54f' }}>AI가 틀린 부분을 다시 공부하고 있어!</h2>
+          <div className="cutscene-container">
+            <img src="/assets/ai/central_ai_core.png" className="ai-core-img training-pulse-fast" alt="AI 코어" style={{ width: '15cqw', height: '15cqw', zIndex: 2, margin: 0 }} />
+            <div className="data-packet correction-packet">✓ 수정된 정답</div>
+          </div>
+          <div className="progress-bar" style={{ width: '80%', marginTop: '3cqw' }}><div className="progress-fill retraining-fill" /></div>
         </div>
       </div>
     )}
@@ -489,7 +576,7 @@ function App() {
       </div>
 
       {manual.trainingReady && (
-        <button className="btn-train" onClick={doStartFirstTraining} id="start-first-training">
+        <button className="btn-train" onClick={() => setGuideStep('FIRST_TRAINING_INTRO')} id="start-first-training">
           🧠 AI 학습 시작
         </button>
       )}
@@ -505,7 +592,7 @@ function App() {
               : '비교와 추적 확인이 모두 끝났어!'}</p>
               
         {canStartRetraining(flow, r2State || null) && (
-          <button className="btn-train" onClick={doStartRetraining} id="start-retraining" style={{ marginTop: '0.5cqw', marginBottom: '1cqw' }}>AI 다시 가르치기</button>
+          <button className="btn-train" onClick={() => setGuideStep('RETRAINING_INTRO')} id="start-retraining" style={{ marginTop: '0.5cqw', marginBottom: '1cqw' }}>AI 다시 가르치기</button>
         )}
 
         <div className="target-list" style={{ marginTop: '1.5cqw' }}>
@@ -574,7 +661,7 @@ function App() {
         </>;
       })() : <p>위 대상의 확인하기를 누르세요.</p>}
       {canStartFinalScan(flow) && (
-        <button className="btn-train" onClick={doStartFinalScan} id="start-final-scan">🔍 최종 스캔</button>
+        <button className="btn-train" onClick={() => setGuideStep('FINAL_SCAN_INTRO')} id="start-final-scan">🔍 최종 스캔</button>
       )}
     </aside> : plaza ? <aside className="manual-panel noto-font" data-testid="manual-labeling">
       <h1>{manual.selectedCctv ?? 'CCTV'}</h1>

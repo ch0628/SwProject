@@ -903,3 +903,128 @@ button:disabled {
   border: none;
   border-radius: 1cqw;
 }
+
+/* AI Cutscenes & City-Wide Result */
+.cutscene-container {
+  position: relative;
+  width: 30cqw;
+  height: 30cqw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.data-packet {
+  position: absolute;
+  font-size: 1.8cqw;
+  color: #fff;
+  padding: 0.5cqw 1cqw;
+  border-radius: 1cqw;
+  z-index: 1;
+}
+
+.citizen-packet {
+  background: #2e7d32;
+  left: 0;
+  top: 20%;
+  animation: packet-enter-left 1.2s infinite;
+}
+
+.villain-packet {
+  background: #c62828;
+  right: 0;
+  bottom: 20%;
+  animation: packet-enter-right 1.2s infinite;
+  animation-delay: 0.6s;
+}
+
+.correction-packet {
+  background: #ef6c00;
+  left: 0;
+  top: 50%;
+  animation: packet-enter-left 1.2s infinite;
+}
+
+@keyframes packet-enter-left {
+  0% { transform: translate(-5cqw, 0) scale(0.5); opacity: 0; }
+  20% { transform: translate(2cqw, 0) scale(1); opacity: 1; }
+  80% { transform: translate(8cqw, 0) scale(1); opacity: 1; }
+  100% { transform: translate(12cqw, 0) scale(0.5); opacity: 0; }
+}
+
+@keyframes packet-enter-right {
+  0% { transform: translate(5cqw, 0) scale(0.5); opacity: 0; }
+  20% { transform: translate(-2cqw, 0) scale(1); opacity: 1; }
+  80% { transform: translate(-8cqw, 0) scale(1); opacity: 1; }
+  100% { transform: translate(-12cqw, 0) scale(0.5); opacity: 0; }
+}
+
+.city-result-card {
+  background: #0f1821;
+  border: 3px solid #64ffda;
+  border-radius: 1.5cqw;
+  padding: 3cqw;
+  width: 60%;
+  text-align: center;
+  box-shadow: 0 0 5cqw #64ffda40;
+}
+
+.city-result-card h2 {
+  font-size: 2.8cqw;
+  color: #a7ffeb;
+  margin: 0 0 2cqw;
+}
+
+.city-result-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1cqw;
+  margin-bottom: 2cqw;
+}
+
+.city-cctv-card {
+  background: #1c2a36;
+  border: 1.5px solid #4db6ac;
+  border-radius: 0.8cqw;
+  padding: 1cqw;
+}
+
+.city-cctv-card h3 {
+  font-size: 1.3cqw;
+  color: #80cbc4;
+  margin: 0 0 0.8cqw;
+}
+
+.cctv-result-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4cqw;
+  justify-content: center;
+}
+
+.cctv-mark {
+  width: 1.5cqw;
+  height: 1.5cqw;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1cqw;
+  font-weight: bold;
+}
+
+.mark-cit { background: #00838f; color: #fff; }
+.mark-vil { background: #c2185b; color: #fff; }
+
+.city-result-summary {
+  display: flex;
+  justify-content: center;
+  gap: 4cqw;
+  margin-bottom: 2cqw;
+  font-size: 1.8cqw;
+  color: #e0f2f1;
+}
+
+.city-result-summary strong {
+  font-size: 2.5cqw;
+}
