@@ -867,6 +867,7 @@ button:disabled {
   padding: 5cqw 10cqw;
   justify-content: center;
   gap: 4cqw;
+  z-index: 20;
 }
 
 .ari-speech-panel {
@@ -874,7 +875,7 @@ button:disabled {
   border: 2px solid #78909c;
   border-radius: 2cqw;
   padding: 3cqw 4cqw;
-  width: 45%;
+  width: 60%;
   position: relative;
 }
 
@@ -893,6 +894,8 @@ button:disabled {
   font-size: 4cqw;
   color: #eceff1;
   margin: 0 0 2cqw;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .btn-ari-next {

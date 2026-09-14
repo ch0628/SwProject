@@ -34,6 +34,7 @@ type AriGuideStep =
   | 'CITY_WIDE_RESULT'
   | 'FINAL_ARI'
   | 'COMPLETE'
+  | 'COMPLETE_CLOSED'
   | null;
 
 const AriGuideOverlay = ({ title, lines, cta, onNext }: { title?: string, lines: string[], cta: string, onNext: () => void }) => {
@@ -346,7 +347,7 @@ function App() {
     )}
 
     {/* ── CITY_WIDE_RESULT ── */}
-    {plaza && guideStep === 'CITY_WIDE_RESULT' && (() => {
+    {plaza && (guideStep === 'CITY_WIDE_RESULT' || guideStep === 'FINAL_ARI' || guideStep === 'COMPLETE' || guideStep === 'COMPLETE_CLOSED') && (() => {
       const npcs = (plazaRef.current as any)?.round1?.npcs ?? [];
       const aiCit = npcs.filter((n: any) => n.character.labels.aiLabel === 'CITIZEN').length;
       const aiVil = npcs.filter((n: any) => n.character.labels.aiLabel === 'VILLAIN').length;
@@ -372,7 +373,9 @@ function App() {
               <span>AI가 시민으로 판단한 친구 <strong>{aiCit}</strong>명</span>
               <span>AI가 악당으로 판단한 친구 <strong>{aiVil}</strong>명</span>
             </div>
-            <button className="btn-ari-next noto-font" onClick={() => setGuideStep('FINAL_ARI')} style={{ float: 'none', padding: '0.8cqw 3cqw', fontSize: '1.5cqw', borderRadius: '1cqw', background: '#37474f', border: 'none', color: '#fff' }}>아리 이야기 듣기</button>
+            {guideStep === 'CITY_WIDE_RESULT' && (
+              <button className="btn-ari-next noto-font" onClick={() => setGuideStep('FINAL_ARI')} style={{ float: 'none', padding: '0.8cqw 3cqw', fontSize: '1.5cqw', borderRadius: '1cqw', background: '#37474f', border: 'none', color: '#fff' }}>다음</button>
+            )}
           </div>
         </div>
       );
@@ -478,9 +481,16 @@ function App() {
     )}
 
     {/* ── COMPLETE screen ── */}
-    {plaza && flow.phase === 'COMPLETE' && (
-      <div className="overlay complete-overlay dongle-font" role="dialog" aria-label="학습 완료">
-        <div className="complete-card dongle-font">
+    {plaza && flow.phase === 'COMPLETE' && guideStep === 'COMPLETE' && (
+      <div className="overlay complete-overlay dongle-font" style={{ zIndex: 30 }} role="dialog" aria-label="학습 완료">
+        <div className="complete-card dongle-font" style={{ position: 'relative' }}>
+          <button 
+            onClick={() => setGuideStep('COMPLETE_CLOSED')}
+            style={{ position: 'absolute', top: '1cqw', right: '1.5cqw', background: 'transparent', border: 'none', color: '#b0bec5', fontSize: '2.5cqw', cursor: 'pointer', padding: 0 }}
+            aria-label="닫기"
+          >
+            ✕
+          </button>
           <h2>🎉 지도학습 완료!</h2>
           <p>AI는 두 번의 학습을 통해 더 정확해졌습니다.</p>
           <ul className="complete-summary">
