@@ -17,7 +17,8 @@ import {
   type GameFlowState, type SupervisedGameState, type TrackingReviewContext,
 } from './supervisedGameFlow';
 import { MONITORING_TARGET_IDS, round2ComparisonFor, type Round2TargetStatus } from './plazaRound2';
-
+import fairyImg from '../assets/ai/fairy.png';
+import centralAiCoreImg from '../assets/ai/central_ai_core.png';
 const EMPTY_MANUAL_STATE: ManualLabelingState = { cctvs: [], selectedCctv: null, visibleCharacterIds: [], selectedCharacter: null, manualLabeledDistinctCount: 0, verifiedTrainingSampleCount: 0, trainingReady: false };
 const TARGET_STATUS_LABEL: Record<Round2TargetStatus, string> = {
   WAITING: '판단해보기', COMPARISON_COMPLETE: '비교 완료', TRACKING_REQUIRED: '다시 확인하기', VERIFIED: '확인 완료',
@@ -43,7 +44,7 @@ const AriGuideOverlay = ({ title, lines, cta, onNext }: { title?: string, lines:
   return (
     <div className="overlay ari-guide-overlay" role="dialog">
       <div className="ari-container">
-        <img src="/assets/ai/fairy.png" className="ari-img" alt="Ari 가이드" />
+        <img src={fairyImg} className="ari-img" alt="Ari 가이드" />
       </div>
       <div className="ari-speech-panel">
         {title && <h1 className="noto-font" style={{ fontSize: '2.5cqw', margin: '0 0 1.5cqw', color: '#e0f7fa' }}>{title}</h1>}
@@ -387,7 +388,7 @@ function App() {
         <div className="training-card dongle-font" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <h2 style={{ fontSize: '3cqw', marginBottom: '2cqw', color: '#b9f6ca' }}>AI가 네가 알려준 정답을 공부하고 있어!</h2>
           <div className="cutscene-container">
-            <img src="/assets/ai/central_ai_core.png" className="ai-core-img training-pulse" alt="AI 코어" style={{ width: '15cqw', height: '15cqw', zIndex: 2, margin: 0 }} />
+            <img src={centralAiCoreImg} className="ai-core-img training-pulse" alt="AI 코어" style={{ width: '15cqw', height: '15cqw', zIndex: 2, margin: 0 }} />
             <div className="data-packet citizen-packet">✓ 시민</div>
             <div className="data-packet villain-packet">✕ 악당</div>
           </div>
@@ -402,7 +403,7 @@ function App() {
         <div className="training-card dongle-font" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <h2 style={{ fontSize: '3cqw', marginBottom: '2cqw', color: '#ffd54f' }}>AI가 틀린 부분을 다시 공부하고 있어!</h2>
           <div className="cutscene-container">
-            <img src="/assets/ai/central_ai_core.png" className="ai-core-img training-pulse-fast" alt="AI 코어" style={{ width: '15cqw', height: '15cqw', zIndex: 2, margin: 0 }} />
+            <img src={centralAiCoreImg} className="ai-core-img training-pulse-fast" alt="AI 코어" style={{ width: '15cqw', height: '15cqw', zIndex: 2, margin: 0 }} />
             <div className="data-packet correction-packet">✓ 수정된 정답</div>
           </div>
           <div className="progress-bar" style={{ width: '80%', marginTop: '3cqw' }}><div className="progress-fill retraining-fill" /></div>
