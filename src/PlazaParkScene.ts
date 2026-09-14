@@ -221,9 +221,9 @@ export class PlazaParkScene extends Phaser.Scene {
       sprite.setScale(visualHeight[species]/sprite.height);
       const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.phase}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
       const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
-      const badgeStyle={fontFamily:'monospace',fontSize:'13px',fontStyle:'bold',color:'#fff',stroke:'#142027',strokeThickness:2,padding:{x:3,y:2}};
-      const labelMarker=this.add.text(0,-visualHeight[species]-8,'',badgeStyle).setOrigin(.5,1).setVisible(false);
-      const phaseMarker=this.add.text(0,-visualHeight[species]-8,'',badgeStyle).setOrigin(.5,1).setVisible(false);
+      const badgeStyle={fontFamily:'system-ui, sans-serif',fontSize:'20px',fontStyle:'bold',color:'#fff',stroke:'#142027',strokeThickness:3,padding:{x:6,y:4}};
+      const labelMarker=this.add.text(0,-visualHeight[species]-16,'',badgeStyle).setOrigin(.5,1).setVisible(false);
+      const phaseMarker=this.add.text(0,-visualHeight[species]-16,'',{...badgeStyle, fontSize:'22px'}).setOrigin(.5,1).setVisible(false);
       const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker,phaseMarker]);
       (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;(container as any).facing='down' as Facing;
       (container as any).debugText=label;(container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;(container as any).phaseMarker=phaseMarker;
@@ -376,24 +376,24 @@ export class PlazaParkScene extends Phaser.Scene {
       const aiLabel=npc.character.labels.aiLabel;
       
       // Round 1 uses one compact user badge. Round 2 reserves this slot for AI/target state.
-      marker?.setText(label==='CITIZEN'?'✓':label==='VILLAIN'?'!':'').setVisible(isVisible&&this.currentRound===1&&label!==null)
-        .setColor('#fff').setStroke('#142027',2).setBackgroundColor(label==='CITIZEN'?'#13796b':'#bd4b32');
+      marker?.setText(label==='CITIZEN'?'✓':label==='VILLAIN'?'✕':'').setVisible(isVisible&&this.currentRound===1&&label!==null)
+        .setColor('#fff').setStroke('#142027',3).setBackgroundColor(label==='CITIZEN'?'#2e7d32':'#c62828');
         
       // Phase Marker (?, !, AI label)
       if (isVisible) {
         if (isMonitoring) {
           const isTarget = MONITORING_TARGET_IDS.includes(npc.definition.id as typeof MONITORING_TARGET_IDS[number]);
-          const aiText = aiLabel==='CITIZEN'?'AI✓':'AI!';
-          const bgColor = aiLabel==='CITIZEN'?'#087c91':'#9c2a72';
-          phaseMarker?.setText(isTarget ? `${aiText}!` : aiText).setVisible(true).setColor('#fff')
-            .setStroke(isTarget?'#f5a623':'#142027',isTarget?3:2).setBackgroundColor(bgColor);
+          const aiText = aiLabel==='CITIZEN'?'AI✓':'AI✕';
+          const bgColor = aiLabel==='CITIZEN'?'#00838f':'#c2185b';
+          phaseMarker?.setText(isTarget ? `!` : aiText).setVisible(true).setColor('#fff')
+            .setStroke(isTarget?'#4a148c':'#142027',isTarget?3:3).setBackgroundColor(isTarget ? '#aa00ff' : bgColor);
         } else if (this.currentRound === 2) {
           const isCompareTarget = ROUND2_COMPARISON_PLAN.some(e => e.characterId === npc.definition.id);
           if (isCompareTarget && aiLabel === null) {
-            phaseMarker?.setText('?').setVisible(true).setColor('#1c2428').setStroke('#fff3b0',2).setBackgroundColor('#f2c94c');
+            phaseMarker?.setText('?').setVisible(true).setColor('#000').setStroke('#fff',2).setBackgroundColor('#ffd600');
           } else if(isCompareTarget&&aiLabel!==null){
-            phaseMarker?.setText(aiLabel==='CITIZEN'?'AI✓':'AI!').setVisible(true).setColor('#fff').setStroke('#142027',2)
-              .setBackgroundColor(aiLabel==='CITIZEN'?'#087c91':'#9c2a72');
+            phaseMarker?.setText(aiLabel==='CITIZEN'?'AI✓':'AI✕').setVisible(true).setColor('#fff').setStroke('#142027',3)
+              .setBackgroundColor(aiLabel==='CITIZEN'?'#00838f':'#c2185b');
           } else {
             phaseMarker?.setVisible(false);
           }

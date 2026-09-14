@@ -55,26 +55,59 @@ const AriGuideOverlay = ({ title, lines, cta, onNext }: { title?: string, lines:
   );
 };
 
-const BEHAVIOR_MAPPING: Record<string, string> = {
-  'ENTER_AND_STAY': 'CCTV 구역에 들어왔어요',
-  'ENTER_HOLD_EXIT': 'CCTV 구역에 들어왔어요',
-  'THROUGH_TRAFFIC': 'CCTV 구역을 지나가요',
-  'STATIC_HOLD': '이 구역에 있었어요',
-  'WALKING': '길을 걸어갔어요',
-  'RUNNING': '빠르게 뛰어갔어요',
-  'RESTING': '잠시 쉬었어요',
+const ZONE_MAPPING: Record<string, string> = {
+  'PLAZA': '광장',
+  'SHOPPING': '상가',
+  'RESIDENTIAL': '거주지',
+  'OFFSCREEN': 'CCTV 밖'
+};
+
+const SEMANTIC_MAPPING: Record<string, string> = {
+  'ENTERING': '화면에 들어왔어요',
+  'WALKING': '길을 걷고 있었어요',
+  'RESTING': '쉬고 있었어요',
+  'VISITING_FACILITY': '시설에 방문했어요',
+  'RETURNING_HOME': '집으로 돌아갔어요',
+  'VANDALIZING': '시설물을 훼손했어요',
+  'ESCAPING': '도망가고 있었어요',
+  'VISITING_CAFE': '카페에 방문했어요',
+  'THREATENING': '다른 친구를 위협했어요',
+  'JOGGING': '조깅을 하고 있었어요',
+  'TRANSITING': '길을 이동하고 있었어요',
   'TALKING': '다른 친구와 이야기했어요',
-  'CAFE_SERVICE': '물건을 샀어요',
-  'WAITING': '가만히 기다렸어요',
-  'DELIVERING': '물건을 배달했어요',
-  'CARRYING_TOOLS': '도구를 들고 다녀요',
-  'EXERCISING': '운동을 했어요',
-  'IDLING': '주변을 서성거려요',
-  'REPAIRING': '수리를 하고 있어요',
-  'TRANSITING': '구역을 이동하고 있어요',
-  'COMMUTING': '출퇴근 중이에요',
+  'SNATCHING': '물건을 낚아챘어요',
+  'CAFE_SERVICE': '카페 일을 하고 있었어요',
+  'REPAIRING': '시설을 고치고 있었어요',
+  'MANHOLE_TAMPER': '맨홀을 함부로 건드렸어요',
+  'STEALING': '물건을 훔치려 했어요',
+  'EXERCISING': '운동하고 있었어요',
+  'RUNNING': '빠르게 뛰어갔어요',
+  'IDLING': '주변에 머물러 있었어요',
+  'CARRYING_TOOLS': '도구를 들고 있었어요',
+  'WAITING': '기다리고 있었어요',
+  'LOOKING_AROUND': '주변을 두리번거렸어요',
+  'DELIVERING': '물건을 전달하고 있었어요',
+  'COMMUTING': '길을 이동하고 있었어요'
+};
+
+const PRIMITIVE_MAPPING: Record<string, string> = {
+  'ENTER': 'CCTV 화면에 들어왔어요',
+  'EXIT': 'CCTV 화면 밖으로 나갔어요',
+  'WALK': '길을 걸어갔어요',
+  'RUN': '빠르게 뛰어갔어요',
+  'TALK': '다른 친구와 이야기했어요',
+  'REST': '잠시 쉬었어요',
+  'IDLE': '주변에 머물러 있었어요',
+  'INTERACT': '주변 사물을 만졌어요',
   'SUSPICIOUS_ACTION': '수상한 행동을 했어요'
 };
+
+function formatBehavior(entry: BehaviorHistoryEntry): string {
+  if (entry.behavior.semantic && SEMANTIC_MAPPING[entry.behavior.semantic]) {
+    return SEMANTIC_MAPPING[entry.behavior.semantic];
+  }
+  return PRIMITIVE_MAPPING[entry.behavior.primitive] || entry.behavior.primitive;
+}
 
 
 function App() {
@@ -292,13 +325,22 @@ function App() {
       <div className="overlay tracking-overlay dongle-font" role="dialog" aria-label="추적 기록">
         <div className="tracking-card dongle-font">
           <h2>📋 추적 기록 — {manual.selectedCharacter?.id ?? flow.trackingNpcId}</h2>
+          
+          {flow.trackingContext === 'COMPARE' && !trackingVerified && (
+            <div className="tracking-explanation" style={{ background: '#3a1a1a', border: '1px solid #ef5350', padding: '1cqw', borderRadius: '0.8cqw', marginBottom: '1cqw' }}>
+              <p style={{ margin: '0 0 0.5cqw', color: '#ffcdd2', fontSize: '1.4cqw', fontWeight: 'bold' }}>너와 AI의 생각이 달라!</p>
+              <p style={{ margin: '0 0 0.5cqw', color: '#eceff1', fontSize: '1.2cqw' }}>추적 기록을 보고 실제로 어떤 행동을 했는지 확인해보자.</p>
+              <p style={{ margin: 0, color: '#b0bec5', fontSize: '1.1cqw' }}>기록을 살펴봤다면 <strong>[정답 확인]</strong>을 눌러 이 친구의 정답을 확정해줘.</p>
+            </div>
+          )}
+
           <ul className="history-list">
             {trackingHistory.length === 0 && <li className="history-empty">기록 없음</li>}
             {trackingHistory.map((entry, i) => (
               <li key={i} className={`history-entry prim-${entry.behavior.primitive.toLowerCase()}`}>
-                <span className="history-time">{entry.simulationTime.toFixed(1)}s</span>
-                <span className="history-zone">{entry.zone}</span>
-                <span className="history-behavior">{BEHAVIOR_MAPPING[entry.behavior.primitive] ?? entry.behavior.primitive}</span>
+                <span className="history-time">{entry.simulationTime.toFixed(1)}초</span>
+                <span className="history-zone">{ZONE_MAPPING[entry.zone] ?? entry.zone}</span>
+                <span className="history-behavior">{formatBehavior(entry)}</span>
               </li>
             ))}
           </ul>
@@ -406,46 +448,74 @@ function App() {
         </>}
       </header>
     )}
-    {isPlazaManual ? <aside className="manual-panel noto-font" data-testid="manual-labeling">
-      <h1>{manual.selectedCctv ?? 'CCTV'}</h1>
-      <p>화면 안 NPC {manual.visibleCharacterIds.length}명</p>
-      <p>수동 라벨 {manual.manualLabeledDistinctCount}/8<br />검증 표본 {manual.verifiedTrainingSampleCount}/8<br />학습 준비 {manual.trainingReady ? 'READY' : '대기'}</p>
-      {manual.selectedCharacter ? <>
-        <h2>{manual.selectedCharacter.id}</h2>
-        <p>현재 분류: {manual.selectedCharacter.userLabel === 'CITIZEN' ? '시민' : manual.selectedCharacter.userLabel === 'VILLAIN' ? '악당' : '미분류'}</p>
-        <div className="label-buttons">
-          <button aria-pressed={manual.selectedCharacter.userLabel === 'CITIZEN'} onClick={() => labelSelected('CITIZEN')}>시민</button>
-          <button aria-pressed={manual.selectedCharacter.userLabel === 'VILLAIN'} onClick={() => labelSelected('VILLAIN')}>악당</button>
-        </div>
-        <div className="verify-actions">
-          <button className="btn-tracking" onClick={() => doOpenTracking('VERIFICATION')}>
-            📋 추적 기록
-          </button>
-        </div>
-        {plazaRef.current?.getVerifiedLabel(manual.selectedCharacter.id) && <div className="verified-reveal">
-          검증 완료 · 실제 <strong>{plazaRef.current.getVerifiedLabel(manual.selectedCharacter.id) === 'VILLAIN' ? '악당' : '시민'}</strong>
-        </div>}
-      </> : <p>선택된 캐릭터 없음</p>}
+    {isPlazaManual ? <aside className="manual-panel noto-font" style={{ display: 'flex', flexDirection: 'column' }} data-testid="manual-labeling">
+      <h1>{manual.selectedCctv?.replace('PLAZA_CAM_', '') ?? 'CCTV'} 구역 CCTV</h1>
+      
+      {!manual.selectedCharacter ? (
+        <>
+          <p className="phase-guidance">친구들을 눌러서<br/>시민인지 악당인지 확인해보자!</p>
+          <p>화면 속 친구 {manual.visibleCharacterIds.length}명</p>
+        </>
+      ) : (
+        <>
+          <h2>{manual.selectedCharacter.id}</h2>
+          
+          <div className="action-card">
+            <p>이 친구는 누구일까?</p>
+            <div className="label-buttons">
+              <button aria-pressed={manual.selectedCharacter.userLabel === 'CITIZEN'} onClick={() => labelSelected('CITIZEN')}>시민</button>
+              <button aria-pressed={manual.selectedCharacter.userLabel === 'VILLAIN'} onClick={() => labelSelected('VILLAIN')}>악당</button>
+            </div>
+            
+            {manual.selectedCharacter.userLabel ? (
+              <div className="verified-reveal">
+                확인 완료!<br/>이 친구는 {manual.selectedCharacter.userLabel === 'VILLAIN' ? '악당' : '시민'}이야.
+              </div>
+            ) : (
+              <div className="tracking-hint" style={{ marginTop: '1.5cqw' }}>
+                <p style={{ color: '#78909c', fontSize: '1.2cqw', marginBottom: '0.5cqw' }}>잘 모르겠다면<br/>추적 기록을 살펴봐도 좋아!</p>
+                <button className="btn-tracking" onClick={() => doOpenTracking('VERIFICATION')}>
+                  📋 추적 기록 보기
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      <div className="progress-card" style={{ marginTop: 'auto', paddingTop: '2cqw', borderTop: '1px solid #374850' }}>
+        <h3 style={{ fontSize: '1.5cqw', color: '#b9f6ca', margin: '0 0 0.5cqw' }}>확인한 정답 {manual.verifiedTrainingSampleCount} / 8</h3>
+        {!manual.trainingReady && <p style={{ color: '#90a4ae', fontSize: '1.2cqw', margin: 0 }}>정답 8개가 모이면<br/>AI가 공부할 수 있어!</p>}
+      </div>
+
       {manual.trainingReady && (
         <button className="btn-train" onClick={doStartFirstTraining} id="start-first-training">
           🧠 AI 학습 시작
         </button>
       )}
-    </aside> : isPlazaCompare ? <aside className="manual-panel compare-panel noto-font" data-testid="human-ai-compare">
-      <h1>Round 2 — AI 비교</h1>
-      <p className="phase-guidance">{(r2State?.comparedCount ?? 0) === 0
-        ? '노란 ? 표시가 있는 8명을 AI와 함께 판단하세요.'
-        : (r2State?.comparedCount ?? 0) < 8
-          ? `비교 대상 8명 중 ${r2State?.comparedCount ?? 0}명 완료`
-          : (r2State?.verifiedCount ?? 0) < 8
-            ? <>비교는 끝났어요.<br />추적 확인이 필요한 {8 - (r2State?.verifiedCount ?? 0)}명이 남았습니다.</>
-            : '비교와 추적 확인이 모두 끝났습니다.'}</p>
-      <h2 className="target-heading">비교 대상</h2>
-      <div className="target-list">
-        {r2Targets.map(target => <button key={target.characterId} className={`target-row status-${target.status.toLowerCase()}`} onClick={() => focusCharacter(target.characterId)}>
-          <span>{target.characterId}</span><strong>{TARGET_STATUS_LABEL[target.status]}</strong>
-        </button>)}
+    </aside> : isPlazaCompare ? <aside className="manual-panel compare-panel noto-font" style={{ display: 'flex', flexDirection: 'column', padding: 0 }} data-testid="human-ai-compare">
+      <div className="compare-scroll-area" style={{ padding: '9cqw 1.6cqw 1cqw', flex: 1, overflowY: 'auto' }}>
+        <h1>AI와 같이 판단해보자!</h1>
+        <p className="phase-guidance" style={{ whiteSpace: 'pre-wrap' }}>{(r2State?.comparedCount ?? 0) === 0
+          ? '물음표 친구들을 눌러\n너와 AI의 생각을 비교해봐!'
+          : (r2State?.comparedCount ?? 0) < 8
+            ? `비교한 친구 ${r2State?.comparedCount ?? 0} / 8`
+            : (r2State?.verifiedCount ?? 0) < 8
+              ? `판단은 모두 끝났어!\n생각이 달랐던 친구 ${8 - (r2State?.verifiedCount ?? 0)}명을 더 확인해보자.`
+              : '비교와 추적 확인이 모두 끝났어!'}</p>
+              
+        {canStartRetraining(flow, r2State || null) && (
+          <button className="btn-train" onClick={doStartRetraining} id="start-retraining" style={{ marginTop: '0.5cqw', marginBottom: '1cqw' }}>AI 다시 가르치기</button>
+        )}
+
+        <div className="target-list" style={{ marginTop: '1.5cqw' }}>
+          {r2Targets.map(target => <button key={target.characterId} className={`target-row status-${target.status.toLowerCase()}`} onClick={() => focusCharacter(target.characterId)}>
+            <span>{target.characterId}</span><strong>{TARGET_STATUS_LABEL[target.status]}</strong>
+          </button>)}
+        </div>
       </div>
+      
+      <div className="sticky-interaction" style={{ position: 'sticky', bottom: 0, background: '#263640', padding: '1.5cqw 1.6cqw 2cqw', borderTop: '2px solid #374850', marginTop: 'auto', zIndex: 10 }}>
       {manual.selectedCharacter ? (() => {
         const comp = round2ComparisonFor(manual.selectedCharacter.id);
         const userLabel = manual.selectedCharacter.userLabel;
@@ -453,32 +523,36 @@ function App() {
         const actualLabel = plazaRef.current?.getVerifiedLabel(manual.selectedCharacter.id) ?? null;
         const showed = userLabel !== null && aiLabel !== null;
         return <>
-          <h2 className="selected-target">{manual.selectedCharacter.id}</h2>
-          {comp && <div className="label-buttons">
+          <h2 className="selected-target" style={{ margin: '0 0 1cqw' }}>{manual.selectedCharacter.id}</h2>
+          {comp && <div className="label-buttons" style={{ marginTop: 0 }}>
             <button aria-pressed={userLabel === 'CITIZEN'} disabled={showed} onClick={() => doCompare('CITIZEN')}>시민</button>
             <button aria-pressed={userLabel === 'VILLAIN'} disabled={showed} onClick={() => doCompare('VILLAIN')}>악당</button>
           </div>}
           {showed && comp && (
             <div className={`ai-result ${aiLabel === userLabel ? 'ai-agree' : 'ai-disagree'}`}>
-              <span>내 판단: <strong>{userLabel === 'VILLAIN' ? '악당' : '시민'}</strong></span>
-              <span>AI 판단: <strong>{aiLabel === 'VILLAIN' ? '악당' : '시민'}</strong></span>
-              <span className="ai-conf">신뢰도: {comp.aiConfidence}</span>
+              <span>내 생각: <strong>{userLabel === 'VILLAIN' ? '악당' : '시민'}</strong></span>
+              <span>AI 생각: <strong>{aiLabel === 'VILLAIN' ? '악당' : '시민'}</strong></span>
+              
               {aiLabel !== userLabel && !actualLabel && (
-                <button className="btn-tracking" onClick={() => doOpenTracking('COMPARE')}>📋 추적 검증</button>
+                <div style={{ marginTop: '0.8cqw' }}>
+                  <p style={{ color: '#ffcdd2', fontWeight: 'bold', margin: '0 0 0.5cqw' }}>너와 AI의 생각이 달라!</p>
+                  <button className="btn-tracking" onClick={() => doOpenTracking('COMPARE')} style={{ width: '100%' }}>📋 추적 기록 보기</button>
+                </div>
               )}
-              {actualLabel && <span>실제 결과: <strong>{actualLabel === 'VILLAIN' ? '악당' : '시민'}</strong></span>}
+              {aiLabel === userLabel && !actualLabel && (
+                <p style={{ color: '#a5d6a7', fontWeight: 'bold', margin: '0.8cqw 0 0' }}>너와 AI의 생각이 같아!</p>
+              )}
+              {actualLabel && <span style={{ marginTop: '0.5cqw' }}>실제 정답: <strong>{actualLabel === 'VILLAIN' ? '악당' : '시민'}</strong></span>}
             </div>
           )}
-          {comp && !showed && <p className="compare-hint">시민 또는 악당을 판단하세요.</p>}
-          {!comp && <p className="compare-hint">위 비교 대상 목록에서 선택하세요.</p>}
+          {comp && !showed && <p className="compare-hint">이 친구는 누구일까?</p>}
+          {!comp && <p className="compare-hint">위 목록에서 친구를 골라봐!</p>}
         </>;
-      })() : <p>NPC를 선택하세요</p>}
-      {canStartRetraining(flow, r2State || null) && (
-        <button className="btn-train" onClick={doStartRetraining} id="start-retraining">AI 재학습 시작</button>
-      )}
+      })() : <p style={{ margin: 0 }}>목록에서 친구를 선택해봐!</p>}
+      </div>
     </aside> : isPlazaMonitor ? <aside className="manual-panel monitor-panel noto-font" data-testid="ai-assisted-monitoring">
-      <h1>AI 보조 모니터링</h1>
-      <p className="phase-guidance">AI가 새로 찾아낸 위험 대상을 확인하세요.</p>
+      <h1>이번엔 AI가 먼저 찾아봤어!</h1>
+      <p className="phase-guidance">AI가 다시 확인해야 한다고 표시한<br/>세 친구만 살펴보자.<br/><br/><strong style={{ color: '#ffb74d' }}>느낌표 친구 3명만 확인하면 돼!</strong></p>
       <div className="target-list monitor-target-list">
         {MONITORING_TARGET_IDS.map(id => {
           const done = flow.aiMonitorVerifiedIds.includes(id);
@@ -487,16 +561,16 @@ function App() {
           </button>;
         })}
       </div>
-      <p className="monitor-progress">확인 완료: {flow.aiMonitorVerifiedIds.length} / 3</p>
+      <p className="monitor-progress">확인한 친구 {flow.aiMonitorVerifiedIds.length} / 3</p>
       {manual.selectedCharacter ? (() => {
         const id = manual.selectedCharacter.id;
         const aiLabel = plazaRef.current?.getAiLabel(id);
         const isTarget = MONITORING_TARGET_IDS.includes(id as typeof MONITORING_TARGET_IDS[number]);
         return <>
           <h2>{id}</h2>
-          {aiLabel && <p>AI 판단: <strong>{aiLabel === 'VILLAIN' ? '악당' : '시민'}</strong></p>}
-          {isTarget ? <button className="btn-tracking" onClick={() => doOpenTracking('MONITORING')}>📋 추적 확인</button>
-            : <p className="compare-hint">모니터링 대상이 아닙니다.</p>}
+          {aiLabel && <p>AI 생각: <strong>{aiLabel === 'VILLAIN' ? '악당' : '시민'}</strong></p>}
+          {isTarget ? <button className="btn-tracking" onClick={() => doOpenTracking('MONITORING')}>📋 추적 기록 보기</button>
+            : <p className="compare-hint">목록에 있는 친구가 아니야.</p>}
         </>;
       })() : <p>위 대상의 확인하기를 누르세요.</p>}
       {canStartFinalScan(flow) && (
