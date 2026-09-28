@@ -1,27 +1,26 @@
-# Antigravity Task — Character Visual Integration (40 Directional PNGs)
+# Antigravity Task ??Character Visual Integration (40 Directional PNGs)
 
 ## 목적
 
-현재 Plaza/Park Prototype의 임시 도형 NPC를
-사용자가 직접 제작한 5 Species × Male/Female × 4 Direction
-정적 캐릭터 PNG로 교체한다.
+?�재 Plaza/Park Prototype???�시 ?�형 NPC�??�용?��? 직접 ?�작??5 Species × Male/Female × 4 Direction
+?�적 캐릭??PNG�?교체?�다.
 
-이번 작업은 **Character Visual Integration**만 수행한다.
+?�번 ?�업?� **Character Visual Integration**�??�행?�다.
 
-현재 Traffic v1 / Map / Collision / Route / Waypoint / CCTV Gameplay를 수정하지 않는다.
+?�재 Traffic v1 / Map / Collision / Route / Waypoint / CCTV Gameplay�??�정?��? ?�는??
 
 ---
 
-# 1. 먼저 확인할 파일
+# 1. 먼�? ?�인???�일
 
-아래를 먼저 읽고 현재 최신 repository 상태를 확인한다.
+?�래�?먼�? ?�고 ?�재 최신 repository ?�태�??�인?�다.
 
 ```text
 ai/RULES.md
 ai/WORKFLOW.md
 ai/CONTEXT_MAP.md
 
-docs/session_handoff_current.md
+docs/archive/session_handoff_plaza_park_2026-09-14.md
 docs/archive/plaza_park_npc_traffic_known_issue.md
 docs/validation/plaza_park_v1/plaza_park_graphics_integration_report.md
 docs/graphics_character_asset_spec.md
@@ -32,13 +31,13 @@ src/plazaTraffic.ts
 src/config.ts
 ```
 
-추가 파일은 Character loading/rendering 구조 확인에 필요한 최소 범위만 읽는다.
+추�? ?�일?� Character loading/rendering 구조 ?�인???�요??최소 범위�??�는??
 
 ---
 
 # 2. Character Asset Source
 
-원본:
+?�본:
 
 ```text
 assets/characters/
@@ -54,10 +53,10 @@ dog
 tiger
 ```
 
-각 Species는 Male / Female이 있고,
-실제 runtime에 사용할 이미지는 **4방향 개별 PNG**다.
+�?Species??Male / Female???�고,
+?�제 runtime???�용???��?지??**4방향 개별 PNG**??
 
-현재 repository tree 기준 개별 PNG 위치는:
+?�재 repository tree 기�? 개별 PNG ?�치??
 
 ```text
 assets/characters/<species>/base/<gender>/<species>_<gender>_down.png
@@ -66,13 +65,13 @@ assets/characters/<species>/base/<gender>/<species>_<gender>_right.png
 assets/characters/<species>/base/<gender>/<species>_<gender>_up.png
 ```
 
-총:
+�?
 
 ```text
 5 species × 2 gender × 4 direction = 40 PNG
 ```
 
-예:
+??
 
 ```text
 assets/characters/rabbit/base/male/rabbit_male_down.png
@@ -83,9 +82,9 @@ assets/characters/tiger/base/female/tiger_female_up.png
 
 ---
 
-# 3. 절대 사용하지 않을 파일
+# 3. ?��? ?�용?��? ?�을 ?�일
 
-다음 종류의 Sheet는 runtime character texture로 사용하지 않는다.
+?�음 종류??Sheet??runtime character texture�??�용?��? ?�는??
 
 ```text
 game_ready_sheet_*.png
@@ -93,64 +92,59 @@ game_sheet_*.png
 game_sheets_*.png
 ```
 
-현재 tree에서:
+?�재 tree?�서:
 
 ```text
 assets/characters/<species>/reference/game_ready_sheet_male.png
 assets/characters/<species>/reference/game_ready_sheet_female.png
 ```
 
-는 4방향이 한 장에 들어 있는 reference / sheet 이미지이므로
-이번 Runtime Integration에서 사용하지 않는다.
+??4방향?????�에 ?�어 ?�는 reference / sheet ?��?지?��?�??�번 Runtime Integration?�서 ?�용?��? ?�는??
 
-Sheet crop / frame slicing도 하지 않는다.
+Sheet crop / frame slicing???��? ?�는??
 
-반드시 **개별 directional PNG 40개**를 사용한다.
+반드??**개별 directional PNG 40�?*�??�용?�다.
 
 주의:
-현재 실제 tree와 위 경로가 다르다면 임의 추정하지 말고
-개별 directional PNG가 실제 어디 있는지 확인한 뒤 보고한다.
+?�재 ?�제 tree?� ??경로가 ?�르?�면 ?�의 추정?��? 말고
+개별 directional PNG가 ?�제 ?�디 ?�는지 ?�인????보고?�다.
 
 ---
 
-# 4. 원본 Asset 보존
+# 4. ?�본 Asset 보존
 
-금지:
+금�?:
 
 ```text
-원본 PNG 삭제
-원본 PNG resize
-원본 PNG trim
-원본 PNG crop
-원본 PNG padding 변경
-원본 PNG alpha 변경
-sheet에서 sprite 재추출
-이미지 재생성
-```
+?�본 PNG ??��
+?�본 PNG resize
+?�본 PNG trim
+?�본 PNG crop
+?�본 PNG padding 변�??�본 PNG alpha 변�?sheet?�서 sprite ?�추�??��?지 ?�생??```
 
-browser runtime용 복사가 필요하면:
+browser runtime??복사가 ?�요?�면:
 
 ```text
 public/assets/characters/
 ```
 
-아래에 구조를 보존해서 복사한다.
+?�래??구조�?보존?�서 복사?�다.
 
-예:
+??
 
 ```text
 public/assets/characters/rabbit/base/male/rabbit_male_down.png
 ```
 
-원본 `assets/characters/`는 그대로 보존한다.
+?�본 `assets/characters/`??그�?�?보존?�다.
 
 ---
 
 # 5. Runtime Manifest
 
-파일 경로를 `PlazaParkScene.ts` 여러 곳에 직접 하드코딩하지 않는다.
+?�일 경로�?`PlazaParkScene.ts` ?�러 곳에 직접 ?�드코딩?��? ?�는??
 
-Character visual lookup을 위한 단일 manifest/helper를 만든다.
+Character visual lookup???�한 ?�일 manifest/helper�?만든??
 
 권장 개념:
 
@@ -162,55 +156,52 @@ type Facing = 'down' | 'left' | 'right' | 'up'
 characterTexture(species, gender, facing)
 ```
 
-또는 동등한 최소 구조.
+?�는 ?�등??최소 구조.
 
 목표:
 
 ```text
 NPC visual identity
-↓
-manifest
-↓
-texture key / runtime PNG
+??manifest
+??texture key / runtime PNG
 ```
 
-향후 PNG 교체 시 Traffic 코드나 Gameplay 코드를 수정하지 않아도 되게 한다.
+?�후 PNG 교체 ??Traffic 코드??Gameplay 코드�??�정?��? ?�아???�게 ?�다.
 
 ---
 
-# 6. 현재 10 NPC Visual Assignment
+# 6. ?�재 10 NPC Visual Assignment
 
-현재 Limited Prototype에는 10 active movers가 존재하지만
-`SmokeNpc` 자체는 현재 species / gender gameplay data를 갖고 있지 않을 수 있다.
+?�재 Limited Prototype?�는 10 active movers가 존재?��?�?`SmokeNpc` ?�체???�재 species / gender gameplay data�?갖고 ?��? ?�을 ???�다.
 
-이번 작업에서는 Traffic data model을 바꾸지 않는다.
+?�번 ?�업?�서??Traffic data model??바꾸지 ?�는??
 
-필요하다면 **renderer-only temporary visual assignment**를 별도 helper로 둔다.
+?�요?�다�?**renderer-only temporary visual assignment**�?별도 helper�??�다.
 
-10개 visual을 한 번씩 사용하는 deterministic assignment:
+10�?visual????번씩 ?�용?�는 deterministic assignment:
 
 ```text
-NPC 1  → rabbit male
-NPC 2  → rabbit female
-NPC 3  → cat male
-NPC 4  → cat female
-NPC 5  → fox male
-NPC 6  → fox female
-NPC 7  → dog male
-NPC 8  → dog female
-NPC 9  → tiger male
-NPC 10 → tiger female
+NPC 1  ??rabbit male
+NPC 2  ??rabbit female
+NPC 3  ??cat male
+NPC 4  ??cat female
+NPC 5  ??fox male
+NPC 6  ??fox female
+NPC 7  ??dog male
+NPC 8  ??dog female
+NPC 9  ??tiger male
+NPC 10 ??tiger female
 ```
 
-이 assignment는:
+??assignment??
 
 ```text
 temporary visual mapping
 ```
 
-일 뿐이며 시민/악당/정답 label 의미를 부여하지 않는다.
+??뿐이�??��?/?�당/?�답 label ?��?�?부?�하지 ?�는??
 
-금지:
+금�?:
 
 ```text
 userLabel
@@ -220,40 +211,38 @@ citizen/villain truth
 behaviorHistory
 ```
 
-등 Gameplay 의미를 이번 task에서 추가하지 않는다.
+??Gameplay ?��?�??�번 task?�서 추�??��? ?�는??
 
-향후 Supervised Learning NPC model이 생기면
-이 renderer-only mapping은 그 데이터로 교체 가능해야 한다.
+?�후 Supervised Learning NPC model???�기�???renderer-only mapping?� �??�이?�로 교체 가?�해???�다.
 
 ---
 
-# 7. Direction 변경
-
-각 NPC는 실제 이동 방향에 따라 다음 texture를 사용한다.
+# 7. Direction 변�?
+�?NPC???�제 ?�동 방향???�라 ?�음 texture�??�용?�다.
 
 ```text
-dx > 0 → right
-dx < 0 → left
-dy > 0 → down
-dy < 0 → up
+dx > 0 ??right
+dx < 0 ??left
+dy > 0 ??down
+dy < 0 ??up
 ```
 
 중요:
 
-- Route target만 보고 방향을 추정하지 않는다.
-- 가능하면 **직전 frame position → 현재 frame position의 실제 delta**를 사용한다.
-- diagonal 이동이 존재하면 absolute delta가 큰 축을 기준으로 facing을 결정한다.
-- 실제 이동량이 거의 0이면 마지막 facing을 유지한다.
-- 초기 facing은 `down`으로 해도 된다.
+- Route target�?보고 방향??추정?��? ?�는??
+- 가?�하�?**직전 frame position ???�재 frame position???�제 delta**�??�용?�다.
+- diagonal ?�동??존재?�면 absolute delta가 ??축을 기�??�로 facing??결정?�다.
+- ?�제 ?�동?�이 거의 0?�면 마�?�?facing???��??�다.
+- 초기 facing?� `down`?�로 ?�도 ?�다.
 
-Traffic movement 자체는 변경하지 않는다.
+Traffic movement ?�체??변경하지 ?�는??
 
 ---
 
 # 8. Rendering
 
-현재 임시 rectangle / circle NPC visual은
-실제 Character Sprite로 교체한다.
+?�재 ?�시 rectangle / circle NPC visual?�
+?�제 Character Sprite�?교체?�다.
 
 Character:
 
@@ -262,61 +251,57 @@ origin = bottom-center
 depth = feetY
 ```
 
-즉:
+�?
 
 ```ts
 sprite.setOrigin(0.5, 1)
 sprite.setDepth(npc.y)
 ```
 
-와 동등한 semantics를 유지한다.
+?� ?�등??semantics�??��??�다.
 
-NPC physical footprint는 sprite 크기와 분리한다.
+NPC physical footprint??sprite ?�기?� 분리?�다.
 
-절대:
+?��?:
 
 ```text
-sprite pixel size를 collision box로 사용
+sprite pixel size�?collision box�??�용
 ```
 
-하지 않는다.
+?��? ?�는??
 
 ---
 
 # 9. Visual Scale
 
-현재 collision / Traffic size는 변경하지 않는다.
+?�재 collision / Traffic size??변경하지 ?�는??
 
-기존 `SMOKE_SIZES[n.size].visual` 등
-현재 Prototype이 사용하던 visual-height 기준이 있다면
-그 기준을 렌더링 scale에만 재사용한다.
+기존 `SMOKE_SIZES[n.size].visual` ???�재 Prototype???�용?�던 visual-height 기�????�다�?�?기�????�더�?scale?�만 ?�사?�한??
 
-원칙:
+?�칙:
 
 ```text
-원본 PNG는 수정하지 않음
-runtime display scale만 사용 가능
-collision footprint는 기존 값 유지
+?�본 PNG???�정?��? ?�음
+runtime display scale�??�용 가??collision footprint??기존 �??��?
 ```
 
-Species별 최종 visual scale이 아직 확정되지 않은 항목은
-새 상수를 임의로 확정하지 않는다.
+Species�?최종 visual scale???�직 ?�정?��? ?��? ??��?�
+???�수�??�의�??�정?��? ?�는??
 
-현재 renderer가 사용하던 visual proxy에 맞추는 최소 변경을 우선한다.
+?�재 renderer가 ?�용?�던 visual proxy??맞추??최소 변경을 ?�선?�다.
 
-Tiger의 기존 검증된 visual height / footprint semantics는 깨지지 않게 한다.
+Tiger??기존 검증된 visual height / footprint semantics??깨�?지 ?�게 ?�다.
 
 ---
 
 # 10. Player / Tiger Probe
 
-현재 Player / Tiger Probe가 별도로 존재하면
-기존 기능을 유지한다.
+?�재 Player / Tiger Probe가 별도�?존재?�면
+기존 기능???��??�다.
 
-이미 실제 Tiger directional texture를 사용하고 있다면
-새 manifest와 중복 loader가 생기지 않게 정리할 수 있다.
+?��? ?�제 Tiger directional texture�??�용?�고 ?�다�???manifest?� 중복 loader가 ?�기지 ?�게 ?�리?????�다.
 
-단:
+??
 
 ```text
 movement
@@ -326,17 +311,17 @@ camera follow
 debug probe
 ```
 
-동작을 변경하지 않는다.
+?�작??변경하지 ?�는??
 
 ---
 
 # 11. Traffic Known Issue 보호
 
-현재 Traffic v1에는 장기 군집 / progress detection Known Issue가 있다.
+?�재 Traffic v1?�는 ?�기 군집 / progress detection Known Issue가 ?�다.
 
-이번 task에서 해결하지 않는다.
+?�번 task?�서 ?�결?��? ?�는??
 
-절대 수정하지 않을 것:
+?��? ?�정?��? ?�을 �?
 
 ```text
 src/plazaTraffic.ts movement semantics
@@ -350,24 +335,24 @@ density
 spawn
 ```
 
-Character Integration 전후
-Traffic 결과 차이를 만들지 않는 것이 목표다.
+Character Integration ?�후
+Traffic 결과 차이�?만들지 ?�는 것이 목표??
 
 ---
 
 # 12. Map 보호
 
-이번 task에서:
+?�번 task?�서:
 
 ```text
 public/maps/plaza-park.tmj
 ```
 
-를 수정하지 않는다.
+�??�정?��? ?�는??
 
-사용자가 별도 단계에서 직접 Map을 재설계할 예정이다.
+?�용?��? 별도 ?�계?�서 직접 Map???�설계할 ?�정?�다.
 
-Character Visual Integration과 Map redesign을 섞지 않는다.
+Character Visual Integration�?Map redesign???��? ?�는??
 
 ---
 
@@ -381,24 +366,22 @@ npm test
 npm run build
 ```
 
-기존 expectation을 변경해서 테스트를 억지로 PASS시키지 않는다.
+기존 expectation??변경해???�스?��? ?��?�?PASS?�키지 ?�는??
 
-가능하면 실제 Plaza/Park를 실행해 다음을 확인한다.
+가?�하�??�제 Plaza/Park�??�행???�음???�인?�다.
 
 ```text
-5 Species 모두 화면에 표시
-Male / Female 각각 표시
-4방향 texture 전환
+5 Species 모두 ?�면???�시
+Male / Female 각각 ?�시
+4방향 texture ?�환
 bottom-center anchor
 feetY Y-sort
-건물/나무/벤치/램프와 depth 관계
-door enter/exit 유지
+건물/?�무/벤치/?�프?� depth 관�?door enter/exit ?��?
 10 NPC rendering
-FPS에 큰 회귀 없음
+FPS?????��? ?�음
 ```
 
-Visual check가 자동화 환경에서 불가능하면
-그 사실을 명확히 보고하고 사용자의 수동 검증 항목을 제시한다.
+Visual check가 ?�동???�경?�서 불�??�하�?�??�실??명확??보고?�고 ?�용?�의 ?�동 검�???��???�시?�다.
 
 ---
 
@@ -407,10 +390,9 @@ Visual check가 자동화 환경에서 불가능하면
 PASS:
 
 ```text
-40 individual directional PNG preload 가능
-10 NPC가 actual character sprite로 표시
-direction 전환 정상
-collision / traffic / door 동작 변경 없음
+40 individual directional PNG preload 가??10 NPC가 actual character sprite�??�시
+direction ?�환 ?�상
+collision / traffic / door ?�작 변�??�음
 typecheck PASS
 tests PASS
 build PASS
@@ -420,19 +402,16 @@ WARN:
 
 ```text
 minor visual scale 차이
-species별 최종 scale 미확정
-minor pixel alignment
+species�?최종 scale 미확??minor pixel alignment
 ```
 
 FAIL:
 
 ```text
-sheet image를 runtime sprite로 사용
-direction texture 잘못 연결
+sheet image�?runtime sprite�??�용
+direction texture ?�못 ?�결
 alpha/background 문제
-collision semantics 변경
-traffic semantics 변경
-map 수정
+collision semantics 변�?traffic semantics 변�?map ?�정
 door regression
 build/test failure
 ```
@@ -441,20 +420,19 @@ build/test failure
 
 # 15. 최종 보고
 
-다음 형식으로 보고한다.
+?�음 ?�식?�로 보고?�다.
 
-## 1. 변경 파일
+## 1. 변�??�일
 
 ## 2. Runtime Asset 경로
 - source
 - public/runtime copy
-- copy된 PNG 수
-
-## 3. Sheet 미사용 확인
+- copy??PNG ??
+## 3. Sheet 미사???�인
 
 ```text
 game_ready_sheet / game_sheet / game_sheets
-runtime 사용 여부 = NO
+runtime ?�용 ?��? = NO
 ```
 
 ## 4. Manifest 구조
@@ -488,7 +466,7 @@ build
 
 ## 11. WARN
 
-## 12. 최종 판정
+## 12. 최종 ?�정
 
 ```text
 PASS
@@ -496,6 +474,6 @@ PASS with WARN
 FAIL
 ```
 
-보고 후 중단한다.
+보고 ??중단?�다.
 
-CCTV1 / CCTV2 또는 Map redesign으로 자동 진행하지 않는다.
+CCTV1 / CCTV2 ?�는 Map redesign?�로 ?�동 진행?��? ?�는??

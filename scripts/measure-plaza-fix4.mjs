@@ -4,7 +4,7 @@ import {mapObjects,mapWorld} from '../src/plazaPark.ts';
 import {canOccupy,footprint,overlaps} from '../src/collision.ts';
 const policy=process.argv[2]??'v2';
 if(!['v2','fallback'].includes(policy))throw Error('Use v2 or fallback');
-const output = 'docs/plaza_park_deadlock_fix4_120s.json';
+const output = 'docs/validation/raw/plaza_park_deadlock_fix4_120s.json';
 if(existsSync(output))throw Error('Measurement already exists; do not overwrite prior observations');
 const map=JSON.parse(readFileSync('public/maps/plaza-park.tmj','utf8')),run=createSmoke(map);
 run.policy=policy;

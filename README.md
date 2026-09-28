@@ -98,17 +98,9 @@ assets/
 
 docs/
 ├─ README.md
-├─ ml_prototype_technical_requirements.md
-├─ graphics_character_asset_spec.md
-├─ supervised_learning_rules.md
-├─ unsupervised_learning_rules.md
-├─ reinforcement_learning_rules.md
-├─ map_scale_validation_spec.md
-├─ map_plaza_park_spec.md
-├─ map_shopping_district_spec.md
-├─ map_residential_spec.md
-├─ plaza_park_navigation_v2_spec.md
-├─ session_handoff_current.md
+├─ project/
+├─ modules/
+├─ shared/
 ├─ reference/
 ├─ validation/
 └─ archive/
@@ -162,12 +154,12 @@ Residential Area
 ```
 
 상세 규칙:
-- `docs/supervised_learning_rules.md`
+- `docs/modules/machine_learning/supervised/supervised_learning_rules.md`
 
 Map:
-- `docs/map_plaza_park_spec.md`
-- `docs/map_shopping_district_spec.md`
-- `docs/map_residential_spec.md`
+- `docs/shared/maps/map_plaza_park_spec.md`
+- `docs/shared/maps/map_shopping_district_spec.md`
+- `docs/shared/maps/map_residential_spec.md`
 
 ### 비지도학습
 
@@ -175,7 +167,7 @@ CCTV Snapshot의 캐릭터를 홀로그램으로 분석하고,
 Feature Dial 설정에 따라 Cluster가 merge / split되는 경험을 제공한다.
 
 상세:
-- `docs/unsupervised_learning_rules.md`
+- `docs/modules/machine_learning/unsupervised/concept_rules.md`
 
 ### 강화학습
 
@@ -184,7 +176,7 @@ Feature Dial 설정에 따라 Cluster가 merge / split되는 경험을 제공한
 행동 결과가 중앙 AI의 경향에 반영되는 구조다.
 
 상세:
-- `docs/reinforcement_learning_rules.md`
+- `docs/modules/machine_learning/reinforcement/concept_rules.md`
 
 ---
 
@@ -369,7 +361,7 @@ AI / Codex 작업 시:
 순서를 따른다.
 
 현재 상태 복구:
-- `docs/session_handoff_current.md`
+- `docs/archive/session_handoff_plaza_park_2026-09-14.md`
 
 전체 문서 인덱스:
 - `docs/README.md`

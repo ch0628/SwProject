@@ -1,47 +1,47 @@
-# Antigravity Task — Plaza/Park Environment Graphics Integration
+# Antigravity Task ??Plaza/Park Environment Graphics Integration
 
 ## 목적
 
-현재 검증 완료된 Plaza/Park Graybox 구조 위에
-`assets/environment/`의 Environment Graphics를 실제 게임 화면에 통합한다.
+?�재 검�??�료??Plaza/Park Graybox 구조 ?�에
+`assets/environment/`??Environment Graphics�??�제 게임 ?�면???�합?�다.
 
-이번 작업은 **Graphics Integration**이다.
+?�번 ?�업?� **Graphics Integration**?�다.
 
-다음은 하지 않는다.
+?�음?� ?��? ?�는??
 
 ```text
 Traffic tuning
 Fix5
-Route 수정
-Waypoint 수정
-Collision 수정
-Door Trigger 수정
-Map Geometry 수정
+Route ?�정
+Waypoint ?�정
+Collision ?�정
+Door Trigger ?�정
+Map Geometry ?�정
 CCTV Gameplay 구현
-Shopping / Residential 확장
+Shopping / Residential ?�장
 ```
 
-현재 Prototype Operating Density는:
+?�재 Prototype Operating Density??
 
 ```text
 10 active movers
 ```
 
-이며 이번 작업에서 변경하지 않는다.
+?�며 ?�번 ?�업?�서 변경하지 ?�는??
 
 ---
 
-# 1. 먼저 읽을 파일
+# 1. 먼�? ?�을 ?�일
 
-반드시 아래 순서로 읽는다.
+반드???�래 ?�서�??�는??
 
 ```text
 ai/RULES.md
 ai/WORKFLOW.md
 ai/CONTEXT_MAP.md
 
-docs/session_handoff_current.md
-docs/map_plaza_park_spec.md
+docs/archive/session_handoff_plaza_park_2026-09-14.md
+docs/shared/maps/map_plaza_park_spec.md
 docs/archive/plaza_park_environment_graphics_start.md
 docs/reference/plaza_park_environment_graphics_integration_spec.md
 
@@ -52,15 +52,15 @@ src/plazaPark.ts
 src/plazaTraffic.ts
 ```
 
-그 다음 현재 project의 asset loading / rendering 구조를 확인하는 데 필요한 파일만 최소한으로 추가로 읽는다.
+�??�음 ?�재 project??asset loading / rendering 구조�??�인?�는 ???�요???�일�?최소?�으�?추�?�??�는??
 
-대규모 repository 탐색은 하지 않는다.
+?�규모 repository ?�색?� ?��? ?�는??
 
 ---
 
 # 2. Environment Asset Source
 
-현재 Environment Asset Source:
+?�재 Environment Asset Source:
 
 ```text
 assets/environment/
@@ -76,35 +76,34 @@ street/
 terrain/
 ```
 
-총 PNG:
+�?PNG:
 
 ```text
 58
 ```
 
-`terrain/plaza.zip`은 사용하지 않는다.
+`terrain/plaza.zip`?� ?�용?��? ?�는??
 
-Vite/Phaser에서 현재 경로를 직접 사용할 수 없다면,
-**기존 repository asset convention을 먼저 확인**한 뒤
-가장 작은 방식으로 browser-loadable 위치에 연결한다.
+Vite/Phaser?�서 ?�재 경로�?직접 ?�용?????�다�?
+**기존 repository asset convention??먼�? ?�인**????가???��? 방식?�로 browser-loadable ?�치???�결?�다.
 
 규칙:
 
 ```text
-원본 asset 삭제 금지
-원본 이미지 resize 금지
-이미지 재생성 금지
-임의 pixel 수정 금지
+?�본 asset ??�� 금�?
+?�본 ?��?지 resize 금�?
+?��?지 ?�생??금�?
+?�의 pixel ?�정 금�?
 ```
 
-asset copy가 필요하면 원본은 그대로 두고,
-복사된 경로와 이유를 최종 보고에 명시한다.
+asset copy가 ?�요?�면 ?�본?� 그�?�??�고,
+복사??경로?� ?�유�?최종 보고??명시?�다.
 
 ---
 
-# 3. 절대 유지할 Source of Truth
+# 3. ?��? ?��???Source of Truth
 
-Graphics Integration 전후 다음은 동일해야 한다.
+Graphics Integration ?�후 ?�음?� ?�일?�야 ?�다.
 
 ```text
 Map Size = 96 × 56 tiles
@@ -125,58 +124,54 @@ CCTV Coverage Geometry
 10 active movers policy
 ```
 
-특히 다음 파일의 Movement semantics를 변경하지 않는다.
+?�히 ?�음 ?�일??Movement semantics�?변경하지 ?�는??
 
 ```text
 src/plazaTraffic.ts
 ```
 
-가능하면 해당 파일은 수정하지 않는다.
+가?�하�??�당 ?�일?� ?�정?��? ?�는??
 
 ---
 
-# 4. 구현 방식 원칙
+# 4. 구현 방식 ?�칙
 
-기존 map / renderer 구조를 확인한 후
-**가장 작은 변경으로 Graphics를 얹는다.**
+기존 map / renderer 구조�??�인????**가???��? 변경으�?Graphics�??�는??**
 
-우선순위:
-
-```text
-기존 TMJ layer/object 활용
-→ 기존 Phaser map loader 활용
-→ 필요한 최소 renderer 추가
-```
-
-금지:
+?�선?�위:
 
 ```text
-새 Graybox 작성
-새 waypoint 작성
-기존 object 좌표 재배치
-collision box 재설계
-기존 map region resize
+기존 TMJ layer/object ?�용
+??기존 Phaser map loader ?�용
+???�요??최소 renderer 추�?
 ```
 
-Object 위치가 이미 TMJ에 존재한다면
-반드시 그 위치를 사용한다.
-
-정확한 위치 marker가 없는 decorative asset은
-이번 1차 Integration에서 **임의 좌표를 만들어 배치하지 않는다.**
-
-그 경우:
+금�?:
 
 ```text
-SKIPPED — no approved placement marker
+??Graybox ?�성
+??waypoint ?�성
+기존 object 좌표 ?�배�?collision box ?�설�?기존 map region resize
 ```
 
-로 보고한다.
+Object ?�치가 ?��? TMJ??존재?�다�?반드??�??�치�??�용?�다.
+
+?�확???�치 marker가 ?�는 decorative asset?�
+?�번 1�?Integration?�서 **?�의 좌표�?만들??배치?��? ?�는??**
+
+�?경우:
+
+```text
+SKIPPED ??no approved placement marker
+```
+
+�?보고?�다.
 
 ---
 
-# 5. Layer 정책
+# 5. Layer ?�책
 
-다음 의미를 유지한다.
+?�음 ?��?�??��??�다.
 
 ```text
 Ground
@@ -188,8 +183,8 @@ Roof
 Effects
 ```
 
-repository에 이미 동일 의미의 layer가 존재하면
-새 이름을 만들지 말고 기존 것을 재사용한다.
+repository???��? ?�일 ?��???layer가 존재?�면
+???�름??만들지 말고 기존 것을 ?�사?�한??
 
 ## Ground
 
@@ -209,7 +204,7 @@ flower_patch_*
 manhole_closed
 ```
 
-Ground detail은 non-blocking이다.
+Ground detail?� non-blocking?�다.
 
 ## Y-sort Object
 
@@ -220,13 +215,13 @@ bench
 lamp_base
 ```
 
-NPC와 같은 ground-contact / feetY 기준으로 depth를 결정한다.
+NPC?� 같�? ground-contact / feetY 기�??�로 depth�?결정?�다.
 
 ```text
 depth = groundContactY
 ```
 
-sprite top-left Y를 depth로 사용하지 않는다.
+sprite top-left Y�?depth�??�용?��? ?�는??
 
 ## Foreground
 
@@ -235,7 +230,7 @@ cafe_foreground
 public_facility_foreground
 ```
 
-Characters보다 위에 렌더링한다.
+Characters보다 ?�에 ?�더링한??
 
 ## Effects
 
@@ -274,13 +269,12 @@ Y37~44
 
 ```text
 scale = 1.0
-resize 금지
-base / foreground 동일 기준 위치
-base → Characters 아래
-foreground → Characters 위
-```
+resize 금�?
+base / foreground ?�일 기�? ?�치
+base ??Characters ?�래
+foreground ??Characters ??```
 
-Door / Trigger / Approach geometry는 변경하지 않는다.
+Door / Trigger / Approach geometry??변경하지 ?�는??
 
 ## Public Facility
 
@@ -305,7 +299,7 @@ X79~91
 Y8~16
 ```
 
-Cafe와 동일 원칙.
+Cafe?� ?�일 ?�칙.
 
 ---
 
@@ -313,7 +307,7 @@ Cafe와 동일 원칙.
 
 ## 기본 World
 
-비도로 / 비광장 기본:
+비도�?/ 비광??기본:
 
 ```text
 grass_base
@@ -321,7 +315,7 @@ grass_base
 
 ## Park Path
 
-기존 approved geometry에만 적용:
+기존 approved geometry?�만 ?�용:
 
 ```text
 Main Walkway
@@ -329,10 +323,10 @@ Upper Narrow
 Lower Narrow
 North Entry Connector
 Park connectors
-Park → Plaza Transition
+Park ??Plaza Transition
 ```
 
-사용 가능:
+?�용 가??
 
 ```text
 park_path_center
@@ -341,7 +335,7 @@ park_path_corner_*
 park_path_inner_*
 ```
 
-path geometry를 Graphics 때문에 변경하지 않는다.
+path geometry�?Graphics ?�문??변경하지 ?�는??
 
 ## Central Plaza
 
@@ -351,14 +345,14 @@ path geometry를 Graphics 때문에 변경하지 않는다.
 plaza_paving_base
 ```
 
-외곽:
+?�곽:
 
 ```text
 plaza_border_*
 plaza_corner_*
 ```
 
-Open Core는 시각적으로도 읽혀야 한다.
+Open Core???�각?�으로도 ?��????�다.
 
 ## Main Route
 
@@ -368,92 +362,92 @@ Open Core는 시각적으로도 읽혀야 한다.
 main_route_base
 ```
 
-외곽:
+?�곽:
 
 ```text
 main_route_edge_top
 main_route_edge_bottom
 ```
 
-West / East Exit가 명확히 연결되어 보여야 한다.
+West / East Exit가 명확???�결?�어 보여???�다.
 
 ---
 
 # 8. Variant 규칙
 
-Variant는 geometry 변경이 아니라 반복감 완화용이다.
+Variant??geometry 변경이 ?�니??반복�??�화?�이??
 
-runtime random 사용 금지.
+runtime random ?�용 금�?.
 
-deterministic placement만 허용한다.
+deterministic placement�??�용?�다.
 
 ## Plaza
 
 목표 비율:
 
 ```text
-base ≈ 70%
-variant_a ≈ 15%
-variant_b ≈ 15%
+base ??70%
+variant_a ??15%
+variant_b ??15%
 ```
 
-단:
+??
 
-- exact grid position이 기존 TMJ / approved tile data에서 결정되지 않았다면
-  1차 structural integration에서는 `plaza_paving_base`만 사용해도 된다.
-- variant를 넣기 위해 임의 좌표 목록을 새로 만들지 않는다.
+- exact grid position??기존 TMJ / approved tile data?�서 결정?��? ?�았?�면
+  1�?structural integration?�서??`plaza_paving_base`�??�용?�도 ?�다.
+- variant�??�기 ?�해 ?�의 좌표 목록???�로 만들지 ?�는??
 
 ## Main Route
 
-동일:
+?�일:
 
 ```text
-base ≈ 70%
-variant_a ≈ 15%
-variant_b ≈ 15%
+base ??70%
+variant_a ??15%
+variant_b ??15%
 ```
 
-exact approved placement가 없으면 base-only 허용.
+exact approved placement가 ?�으�?base-only ?�용.
 
 ## Grass Detail
 
-전체 grass 중 10~20% 수준이 목표지만,
-approved placement marker가 없으면 이번 1차 pass에서는 생략한다.
+?�체 grass �?10~20% ?��???목표지�?
+approved placement marker가 ?�으�??�번 1�?pass?�서???�략?�다.
 
 ---
 
 # 9. Nature Variant Assignment
 
-실제 이미지 성격은 다음과 같이 확정한다.
+?�제 ?��?지 ?�격?� ?�음�?같이 ?�정?�다.
 
 ## Tree
 
 ```text
 tree_a
-→ 대칭적 / 정돈된 느낌
-→ Plaza 경계 / Entry / 정돈된 구역 우선
+???��?�� / ?�돈???�낌
+??Plaza 경계 / Entry / ?�돈??구역 ?�선
 
 tree_b
-→ 비대칭적 / 자연스러운 느낌
-→ Park 내부 우선
+??비�?�?�� / ?�연?�러???�낌
+??Park ?��? ?�선
 ```
 
 목표 비율:
 
 ```text
-A ≈ 40%
-B ≈ 60%
+A ??40%
+B ??60%
 ```
 
-하지만 가장 중요한 원칙:
+?��?�?가??중요???�칙:
 
-> 기존 Tree object 좌표만 사용한다.
+> 기존 Tree object 좌표�??�용?�다.
 
 Tree anchor:
 
 ```text
 bottom-center
-origin ≈ (0.5, 1.0)
+origin ??(0.5, 1.0)
 depth = groundContactY
 ```
 
@@ -461,10 +455,10 @@ depth = groundContactY
 
 ```text
 bush_a
-→ 단순 / 가장자리 / fence 주변
+???�순 / 가?�자�?/ fence 주�?
 
 bush_b
-→ 볼륨 / 코너 / tree 주변
+??볼륨 / 코너 / tree 주�?
 ```
 
 목표:
@@ -473,14 +467,14 @@ bush_b
 50 / 50
 ```
 
-기존 Bush marker만 사용한다.
+기존 Bush marker�??�용?�다.
 
 ## Flower
 
 ```text
-flower_patch_b → 기본
-flower_patch_a → 보조
-flower_patch_c → 강조
+flower_patch_b ??기본
+flower_patch_a ??보조
+flower_patch_c ??강조
 ```
 
 목표:
@@ -491,16 +485,16 @@ B 50%
 C 25%
 ```
 
-단:
+??
 
 ```text
-grass 위만
-path 중앙 금지
-plaza 금지
-main route 금지
+grass ?�만
+path 중앙 금�?
+plaza 금�?
+main route 금�?
 ```
 
-기존 marker가 없으면 생략한다.
+기존 marker가 ?�으�??�략?�다.
 
 ---
 
@@ -510,11 +504,11 @@ main route 금지
 
 ```text
 96 × 48
-ground-contact 기준
+ground-contact 기�?
 Y-sort
 ```
 
-기존 Bench 위치 사용.
+기존 Bench ?�치 ?�용.
 
 ## Lamp
 
@@ -523,18 +517,18 @@ lamp_base = 32 × 80
 lamp_glow = 32 × 80
 ```
 
-같은 기준 좌표 사용.
+같�? 기�? 좌표 ?�용.
 
 ```text
-base → Y-sort
-glow → Effects
+base ??Y-sort
+glow ??Effects
 ```
 
 ## Fence
 
-기존 Fence geometry만 시각화한다.
+기존 Fence geometry�??�각?�한??
 
-필요 asset:
+?�요 asset:
 
 ```text
 fence_horizontal
@@ -543,7 +537,7 @@ fence_corner_*
 fence_end_*
 ```
 
-Graphics를 맞추기 위해 Collision geometry를 변경하지 않는다.
+Graphics�?맞추�??�해 Collision geometry�?변경하지 ?�는??
 
 ## Manhole
 
@@ -553,7 +547,7 @@ Ground_Detail
 non-blocking
 ```
 
-기존 marker가 있을 때만 배치한다.
+기존 marker가 ?�을 ?�만 배치?�다.
 
 ---
 
@@ -561,7 +555,7 @@ non-blocking
 
 ## Park
 
-자연스럽고 풍부하게 보이되:
+?�연?�럽�??��??�게 보이??
 
 ```text
 Main Walkway
@@ -570,54 +564,53 @@ Lower Narrow
 Connector
 ```
 
-가 시각적으로 좁아 보이면 안 된다.
+가 ?�각?�으�?좁아 보이�????�다.
 
 ## Central Plaza
 
-우선순위:
+?�선?�위:
 
 ```text
-정돈됨
-이동 경로 가독성
-CCTV 가독성
+?�돈???�동 경로 가?�성
+CCTV 가?�성
 ```
 
-Open Core에 큰 foreground object를 추가하지 않는다.
+Open Core????foreground object�?추�??��? ?�는??
 
 ## Cafe / Facility
 
-Door가 즉시 식별 가능해야 한다.
+Door가 즉시 ?�별 가?�해???�다.
 
-Door 앞에 새 decorative object를 임의 배치하지 않는다.
+Door ?�에 ??decorative object�??�의 배치?��? ?�는??
 
 ## Main Route / EntryExit
 
-장식보다 이동 경로 가독성이 우선이다.
+?�식보다 ?�동 경로 가?�성???�선?�다.
 
 ---
 
 # 12. CCTV 보호
 
-이번 task에서 CCTV Gameplay를 구현하지 않는다.
+?�번 task?�서 CCTV Gameplay�?구현?��? ?�는??
 
-하지만 Graphics가 다음을 방해하면 안 된다.
+?��?�?Graphics가 ?�음??방해?�면 ???�다.
 
 ```text
-CCTV1 / CCTV2 관찰 대상 식별
-interaction 위치 식별
-coverage 내 NPC 시야
+CCTV1 / CCTV2 관�??�???�별
+interaction ?�치 ?�별
+coverage ??NPC ?�야
 ```
 
-특히 큰 tree crown / foreground가
-CCTV2의 Park + Plaza 시야를 지속적으로 가리지 않도록 한다.
+?�히 ??tree crown / foreground가
+CCTV2??Park + Plaza ?�야�?지?�적?�로 가리�? ?�도�??�다.
 
 ---
 
-# 13. 구현 순서
+# 13. 구현 ?�서
 
-## Phase 1 — Structural Graphics
+## Phase 1 ??Structural Graphics
 
-먼저:
+먼�?:
 
 ```text
 grass
@@ -629,9 +622,9 @@ Public Facility
 Fence
 ```
 
-를 통합한다.
+�??�합?�다.
 
-이 상태에서:
+???�태?�서:
 
 ```text
 geometry alignment
@@ -640,11 +633,11 @@ path readability
 building exact-fit
 ```
 
-를 확인한다.
+�??�인?�다.
 
-## Phase 2 — Y-sort Objects
+## Phase 2 ??Y-sort Objects
 
-그 다음:
+�??�음:
 
 ```text
 Tree
@@ -653,13 +646,13 @@ Bench
 Lamp
 ```
 
-를 통합한다.
+�??�합?�다.
 
-NPC와 앞/뒤 관계를 확인한다.
+NPC?� ????관계�? ?�인?�다.
 
-## Phase 3 — Detail
+## Phase 3 ??Detail
 
-마지막:
+마�?�?
 
 ```text
 grass detail
@@ -669,18 +662,18 @@ lamp glow
 terrain variant
 ```
 
-를 적용한다.
+�??�용?�다.
 
-approved placement가 불명확한 detail은 skip 가능하다.
+approved placement가 불명?�한 detail?� skip 가?�하??
 
 ---
 
 # 14. Visual Validation
 
-가능하면 실제 application을 실행하고
-Plaza/Park scene을 직접 확인한다.
+가?�하�??�제 application???�행?�고
+Plaza/Park scene??직접 ?�인?�다.
 
-반드시 확인:
+반드???�인:
 
 ```text
 Cafe fit
@@ -701,10 +694,10 @@ Lamp/NPC depth
 Foreground clipping
 building foreground behavior
 
-CCTV1/CCTV2 주요 시야 방해 여부
+CCTV1/CCTV2 주요 ?�야 방해 ?��?
 ```
 
-가능하면 before / after screenshot을 남긴다.
+가?�하�?before / after screenshot???�긴??
 
 ---
 
@@ -718,10 +711,10 @@ npm test
 npm run build
 ```
 
-현재 Traffic / Harness tests를 Graphics 변경 때문에 약화시키지 않는다.
+?�재 Traffic / Harness tests�?Graphics 변�??�문???�화?�키지 ?�는??
 
-기존 테스트 실패가 발생하면
-expectation을 바꿔 PASS시키지 말고 원인을 보고한다.
+기존 ?�스???�패가 발생?�면
+expectation??바꿔 PASS?�키지 말고 ?�인??보고?�다.
 
 ---
 
@@ -729,45 +722,39 @@ expectation을 바꿔 PASS시키지 말고 원인을 보고한다.
 
 ## FAIL
 
-다음이면 수정 필요:
+?�음?�면 ?�정 ?�요:
 
 ```text
-Door 가림
-주요 Path 시각적 차단
-명백한 depth 역전
-심각한 clipping
-CCTV 대상 식별 불가
-Geometry 변경
-Collision 변경
-Waypoint/Route 변경
-Door Trigger 변경
-Traffic regression
+Door 가�?주요 Path ?�각??차단
+명백??depth ??��
+?�각??clipping
+CCTV ?�???�별 불�?
+Geometry 변�?Collision 변�?Waypoint/Route 변�?Door Trigger 변�?Traffic regression
 ```
 
 ## WARN
 
-진행 가능:
+진행 가??
 
 ```text
 minor pixel alignment
 small shadow mismatch
-약간의 visual overlap
-detail 반복감
-장식 밀도 약간 어색
+?�간??visual overlap
+detail 반복�??�식 밀???�간 ?�색
 ```
 
-원칙:
+?�칙:
 
 ```text
-Prototype을 막는 FAIL만 수정
-WARN은 기록하고 진행
+Prototype??막는 FAIL�??�정
+WARN?� 기록?�고 진행
 ```
 
 ---
 
-# 17. 변경 범위
+# 17. 변�?범위
 
-가능한 변경:
+가?�한 변�?
 
 ```text
 Plaza/Park graphics renderer / loader
@@ -776,9 +763,9 @@ asset manifest / preload
 graphics-specific helper
 ```
 
-필요한 경우 최소 범위로만 수정한다.
+?�요??경우 최소 범위로만 ?�정?�다.
 
-가급적 수정하지 않을 것:
+가급적 ?�정?��? ?�을 �?
 
 ```text
 src/plazaTraffic.ts
@@ -789,27 +776,26 @@ Full Flow Harness
 
 ---
 
-# 18. 문서 업데이트
+# 18. 문서 ?�데?�트
 
-이번 작업에서는 Source-of-Truth 문서를 자동으로 다시 작성하지 않는다.
+?�번 ?�업?�서??Source-of-Truth 문서�??�동?�로 ?�시 ?�성?��? ?�는??
 
-구현 결과를 보고한 뒤
-사용자 검토 후 문서를 갱신한다.
+구현 결과�?보고?????�용??검????문서�?갱신?�다.
 
 ---
 
-# 19. 최종 보고 형식
+# 19. 최종 보고 ?�식
 
-## 1. 변경 파일
+## 1. 변�??�일
 
-## 2. Asset 연결 방식
+## 2. Asset ?�결 방식
 
-예:
+??
 
 ```text
-원본 경로
+?�본 경로
 runtime 경로
-copy 여부
+copy ?��?
 ```
 
 ## 3. Structural Graphics
@@ -824,7 +810,7 @@ Facility
 Fence
 ```
 
-각각 구현 여부.
+각각 구현 ?��?.
 
 ## 4. Y-sort
 
@@ -847,7 +833,7 @@ Lamp Glow
 Variants
 ```
 
-적용 / skip 및 이유.
+?�용 / skip �??�유.
 
 ## 6. Source-of-Truth 보존
 
@@ -862,7 +848,7 @@ Door
 10 active movers policy
 ```
 
-변경 여부.
+변�??��?.
 
 ## 7. Regression
 
@@ -886,9 +872,9 @@ CCTV visibility
 
 PASS / WARN / FAIL.
 
-## 9. 남은 WARN
+## 9. ?��? WARN
 
-## 10. 최종 판정
+## 10. 최종 ?�정
 
 ```text
 PASS
@@ -898,13 +884,13 @@ FAIL
 
 ## 11. 중단
 
-보고 후 멈춘다.
+보고 ??멈춘??
 
-다음 단계인:
+?�음 ?�계??
 
 ```text
 Graphics Regression 보완
 CCTV1 / CCTV2
 ```
 
-로 자동 진행하지 않는다.
+�??�동 진행?��? ?�는??

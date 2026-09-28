@@ -1,47 +1,46 @@
-# Antigravity Task — Plaza/Park 35 NPC Full Flow Harness Implementation + Logic Run
+# Antigravity Task ??Plaza/Park 35 NPC Full Flow Harness Implementation + Logic Run
 
-## 0. 작업 목적
+## 0. ?�업 목적
 
-Plaza/Park의 **35 NPC Full Flow Harness**를 구현하고,
-동일 Harness를 사용해 Node 기반 Logic Simulation을 실제로 실행하여 결과를 보고한다.
+Plaza/Park??**35 NPC Full Flow Harness**�?구현?�고,
+?�일 Harness�??�용??Node 기반 Logic Simulation???�제�??�행?�여 결과�?보고?�다.
 
-이번 작업의 핵심은:
+?�번 ?�업???�심?�:
 
 ```text
-R1~R8 정식 Route
-+ 35 NPC 확정 배치
-+ Species / Collision Proxy 확정
+R1~R8 ?�식 Route
++ 35 NPC ?�정 배치
++ Species / Collision Proxy ?�정
 + Warm-up 30 sec
 + Measurement 300 sec
-+ 기존 Fix4 Movement 그대로
-```
++ 기존 Fix4 Movement 그�?�?```
 
-이다.
+?�다.
 
 중요:
 
-> 이번 작업에서 35 NPC 결과가 FAIL하더라도
-> Movement Fix5, Route 수정, Map 수정, 30 NPC fallback을 자동으로 진행하지 않는다.
-> 결과를 그대로 보고하고 멈춘다.
+> ?�번 ?�업?�서 35 NPC 결과가 FAIL?�더?�도
+> Movement Fix5, Route ?�정, Map ?�정, 30 NPC fallback???�동?�로 진행?��? ?�는??
+> 결과�?그�?�?보고?�고 멈춘??
 
-문서 Source of Truth는 **결과 검토 후 사용자가 별도로 갱신할 예정**이다.
-이번 Agent 작업에서는 narrative `.md` 문서를 임의로 수정하지 마라.
+문서 Source of Truth??**결과 검?????�용?��? 별도�?갱신???�정**?�다.
+?�번 Agent ?�업?�서??narrative `.md` 문서�??�의�??�정?��? 마라.
 
 ---
 
-# 1. 반드시 먼저 읽기
+# 1. 반드??먼�? ?�기
 
-Repository 기준으로 다음 파일을 먼저 읽어라.
+Repository 기�??�로 ?�음 ?�일??먼�? ?�어??
 
 ```text
 ai/RULES.md
 ai/WORKFLOW.md
 ai/CONTEXT_MAP.md
 
-docs/session_handoff_current.md
+docs/archive/session_handoff_plaza_park_2026-09-14.md
 docs/reference/plaza_park_full_flow_validation_spec.md
 docs/validation/plaza_park_v1/plaza_park_candidate_route_validation_results.md
-docs/map_plaza_park_spec.md
+docs/shared/maps/map_plaza_park_spec.md
 docs/graphics_character_asset_spec.md
 docs/supervised_learning_area_rollout_plan.md
 
@@ -59,35 +58,35 @@ tests/plazaTraffic.test.ts
 public/maps/plaza-park.tmj
 ```
 
-관련 기존 측정 script가 있다면 같이 읽는다.
+관??기존 측정 script가 ?�다�?같이 ?�는??
 
-예:
+??
 
 ```text
 scripts/measure-plaza-fix4.mjs
 ```
 
-실제 repository 구조가 다르면 존재하는 동일 목적 파일을 사용한다.
+?�제 repository 구조가 ?�르�?존재?�는 ?�일 목적 ?�일???�용?�다.
 
 ---
 
-# 2. 현재 확정된 Route Source of Truth
+# 2. ?�재 ?�정??Route Source of Truth
 
-다음 R1~R8은 모두 정식 승인 상태다.
+?�음 R1~R8?� 모두 ?�식 ?�인 ?�태??
 
 ```text
-R1 = W01 → W05 → W12 → W14 → W20 → W21
-R2 = W01 → W05 → W08 → W05 → W12 → W14 → W20 → W22
-R3 = W05 → W12 → W13 → W16 → W20
-R4 = W05 → W12 → W18 → W12 → W14
-R5 = W09 → W11 → W12 → W14
+R1 = W01 ??W05 ??W12 ??W14 ??W20 ??W21
+R2 = W01 ??W05 ??W08 ??W05 ??W12 ??W14 ??W20 ??W22
+R3 = W05 ??W12 ??W13 ??W16 ??W20
+R4 = W05 ??W12 ??W18 ??W12 ??W14
+R5 = W09 ??W11 ??W12 ??W14
 
-R6 = W03 → W05 → W07
-R7 = W13 → W14 → W15
-R8 = W21 → W20 → W22
+R6 = W03 ??W05 ??W07
+R7 = W13 ??W14 ??W15
+R8 = W21 ??W20 ??W22
 ```
 
-R6~R8 Dynamic Validation은 완료됐다.
+R6~R8 Dynamic Validation?� ?�료?�다.
 
 ```text
 Single Small / Medium / Large = PASS
@@ -96,13 +95,13 @@ collisionViolation = 0
 unrecovered_20sec = 0
 ```
 
-`R6~R8`을 다시 Candidate로 취급하지 마라.
+`R6~R8`???�시 Candidate�?취급?��? 마라.
 
 ---
 
-# 3. 35 NPC Route별 인원 — 승인 완료
+# 3. 35 NPC Route�??�원 ???�인 ?�료
 
-정확히 다음 인원으로 구성한다.
+?�확???�음 ?�원?�로 구성?�다.
 
 ```text
 R1 = 4
@@ -134,13 +133,13 @@ Total = 35
 
 주의:
 
-`R8`은 Main Route를 가로지르는 **Through Traffic**으로 집계한다.
+`R8`?� Main Route�?가로�?르는 **Through Traffic**?�로 집계?�다.
 
 ---
 
-# 4. Species 구성 / Collision Proxy — 승인 완료
+# 4. Species 구성 / Collision Proxy ???�인 ?�료
 
-Species 수:
+Species ??
 
 ```text
 Rabbit = 8
@@ -155,63 +154,62 @@ Total = 35
 Full Flow Collision Proxy:
 
 ```text
-Rabbit → Small  = 18×12
-Cat    → Medium = 22×14
-Fox    → Medium = 22×14
-Dog    → Medium = 22×14
-Tiger  → Large  = 26×16
+Rabbit ??Small  = 18×12
+Cat    ??Medium = 22×14
+Fox    ??Medium = 22×14
+Dog    ??Medium = 22×14
+Tiger  ??Large  = 26×16
 ```
 
 중요:
 
 ```text
 Rabbit / Cat / Fox / Dog
-→ Full Flow validation proxy
-→ 최종 Species-specific footprint가 아님
+??Full Flow validation proxy
+??최종 Species-specific footprint가 ?�님
 
 Tiger 26×16
-→ 실제 확정 footprint
+???�제 ?�정 footprint
 ```
 
-`Max96`은 35 NPC Species 구성에서 사용하지 않는다.
+`Max96`?� 35 NPC Species 구성?�서 ?�용?��? ?�는??
 
-Species는 deterministic하게 분산한다.
+Species??deterministic?�게 분산?�다.
 
 권장:
 
 ```text
-Rabbit → Cat → Fox → Dog → Tiger
+Rabbit ??Cat ??Fox ??Dog ??Tiger
 ```
 
-순환 배치하되 최종 quota가 정확히:
+?�환 배치?�되 최종 quota가 ?�확??
 
 ```text
 8 / 7 / 7 / 7 / 6
 ```
 
-이 되도록 한다.
+???�도�??�다.
 
-특정 Route에 Tiger 또는 Medium actor가 몰리지 않도록
-deterministic round-robin으로 Route 전체에 분산한다.
+?�정 Route??Tiger ?�는 Medium actor가 몰리지 ?�도�?deterministic round-robin?�로 Route ?�체??분산?�다.
 
 ---
 
-# 5. 초기 Spawn 분포 목표 — 기존 승인값 유지
+# 5. 초기 Spawn 분포 목표 ??기존 ?�인�??��?
 
-35 NPC 초기 Spawn은 다음 분포를 정확히 만족하도록 한다.
+35 NPC 초기 Spawn?� ?�음 분포�??�확??만족?�도�??�다.
 
 ```text
 Park                     = 11
 Central Plaza            = 10
-Cafe 주변                 = 3
-Public Facility 주변      = 3
+Cafe 주�?                 = 3
+Public Facility 주�?      = 3
 Main Route                = 5
-Entry / Exit 이동중        = 3
+Entry / Exit ?�동�?       = 3
 
 Total                    = 35
 ```
 
-Route별 인원과 모순 없이 다음 allocation을 사용해도 된다.
+Route�??�원�?모순 ?�이 ?�음 allocation???�용?�도 ?�다.
 
 ```text
 Park:
@@ -220,46 +218,46 @@ R6 5 + R5 2 + R1 2 + R2 2 = 11
 Central Plaza:
 R7 6 + R1 1 + R2 1 + R3 1 + R4 1 = 10
 
-Cafe 주변:
+Cafe 주�?:
 R3 3 = 3
 
-Public Facility 주변:
+Public Facility 주�?:
 R4 3 = 3
 
 Main Route:
 R8 5 = 5
 
-Entry / Exit 이동중:
+Entry / Exit ?�동�?
 R1 1 + R2 2 = 3
 ```
 
-이 allocation은 **초기 Spawn 위치 목적**이고,
-Route 자체를 바꾸는 것이 아니다.
+??allocation?� **초기 Spawn ?�치 목적**?�고,
+Route ?�체�?바꾸??것이 ?�니??
 
 ---
 
-# 6. Spawn 구현 원칙
+# 6. Spawn 구현 ?�칙
 
-## 6.1 금지
+## 6.1 금�?
 
-다음은 금지한다.
+?�음?� 금�??�다.
 
 ```text
-새 Waypoint
-TMJ 수정
-Map geometry 수정
-Door width 수정
-Collision 완화
-임의 teleport 좌표 하드코딩
-NPC끼리 겹친 Spawn
-Collision object 내부 Spawn
-World bounds 밖 Spawn
+??Waypoint
+TMJ ?�정
+Map geometry ?�정
+Door width ?�정
+Collision ?�화
+?�의 teleport 좌표 ?�드코딩
+NPC?�리 겹친 Spawn
+Collision object ?��? Spawn
+World bounds �?Spawn
 ```
 
-## 6.2 허용 방식
+## 6.2 ?�용 방식
 
-기존 Route segment / waypoint와
-기존 Map Spec의 승인된 영역을 이용해 deterministic하게 Spawn한다.
+기존 Route segment / waypoint?�
+기존 Map Spec???�인???�역???�용??deterministic?�게 Spawn?�다.
 
 권장 구조:
 
@@ -269,14 +267,14 @@ type FullFlowSpawnDescriptor = {
   area: FullFlowArea;
   species: Species;
   size: FullFlowSize;
-  // 기존 route의 어느 segment에서 시작할지 나타내는 정보
+  // 기존 route???�느 segment?�서 ?�작?��? ?��??�는 ?�보
   fromIndex: number;
   toIndex: number;
-  // 또는 equivalent deterministic seed
+  // ?�는 equivalent deterministic seed
 }
 ```
 
-실제 spawn 위치는 해당 Route segment 위에서:
+?�제 spawn ?�치???�당 Route segment ?�에??
 
 ```text
 approved physical footprint
@@ -285,37 +283,36 @@ approved physical footprint
 + world bounds
 ```
 
-를 검사하면서 deterministic offset search로 찾는다.
+�?검?�하면서 deterministic offset search�?찾는??
 
-기존 `createSmoke()`처럼 `canOccupy()`를 사용한다.
+기존 `createSmoke()`처럼 `canOccupy()`�??�용?�다.
 
-32px 또는 64px deterministic increment는 허용한다.
+32px ?�는 64px deterministic increment???�용?�다.
 
-단:
+??
 
-> 해당 area / route 조건을 만족하는 안전 Spawn을 찾지 못하면
-> 다른 지역으로 조용히 재배치하지 말고 explicit error를 발생시켜라.
+> ?�당 area / route 조건??만족?�는 ?�전 Spawn??찾�? 못하�?> ?�른 지??���?조용???�배치하지 말고 explicit error�?발생?�켜??
 
-Spawn 완료 후 반드시 runtime assertion:
+Spawn ?�료 ??반드??runtime assertion:
 
 ```text
 NPC count = 35
-Route counts 정확
-Species counts 정확
-Size proxy 정확
-Area counts 정확
+Route counts ?�확
+Species counts ?�확
+Size proxy ?�확
+Area counts ?�확
 initial fixed collision = 0
 initial NPC-NPC overlap = 0
 world bounds violation = 0
 ```
 
-을 수행한다.
+???�행?�다.
 
 ---
 
-# 7. 기존 Limited Smoke Regression은 그대로 유지
+# 7. 기존 Limited Smoke Regression?� 그�?�??��?
 
-현재:
+?�재:
 
 ```text
 SMOKE_ROUTES = R1~R5
@@ -323,57 +320,53 @@ createSmoke(map) = 10 NPC
 stepSmoke default duration = 120 sec
 ```
 
-의 의미를 깨뜨리면 안 된다.
+???��?�?깨뜨리면 ???�다.
 
-특히 금지:
+?�히 금�?:
 
 ```text
-SMOKE_ROUTES를 R1~R8로 바꿔 createSmoke()가 16명을 만드는 것
-기존 120 sec를 330 sec로 단순 치환하는 것
-기존 tests의 기대값을 Full Flow에 맞춰 수정하는 것
-```
+SMOKE_ROUTES�?R1~R8�?바꿔 createSmoke()가 16명을 만드??�?기존 120 sec�?330 sec�??�순 치환?�는 �?기존 tests??기�?값을 Full Flow??맞춰 ?�정?�는 �?```
 
-기존 Limited와 Full Flow를 분리한다.
+기존 Limited?� Full Flow�?분리?�다.
 
 ---
 
-# 8. 권장 파일 구조
+# 8. 권장 ?�일 구조
 
-기존 `src/plazaTraffic.ts`에 Full Flow 전부를 밀어 넣지 않는 것을 권장한다.
+기존 `src/plazaTraffic.ts`??Full Flow ?��?�?밀???��? ?�는 것을 권장?�다.
 
-예:
+??
 
 ```text
 src/plazaTraffic.ts
-→ Fix4 movement core
-→ R1~R8 path lookup
-→ Limited Smoke 유지
+??Fix4 movement core
+??R1~R8 path lookup
+??Limited Smoke ?��?
 
 src/plazaFullFlow.ts
-→ Full Flow preset / creator
-→ warm-up / measurement phase
-→ Full Flow metric collector
-→ resetMeasurement()
+??Full Flow preset / creator
+??warm-up / measurement phase
+??Full Flow metric collector
+??resetMeasurement()
 ```
 
-정확한 파일명은 프로젝트 스타일에 맞게 조정 가능하다.
+?�확???�일명�? ?�로?�트 ?��??�에 맞게 조정 가?�하??
 
-핵심은:
+?�심?�:
 
 ```text
 Movement Core
-≠ Full Flow Scenario / Measurement Harness
+??Full Flow Scenario / Measurement Harness
 ```
 
-를 분리하는 것이다.
+�?분리?�는 것이??
 
 ---
 
-# 9. stepSmoke Duration 일반화
+# 9. stepSmoke Duration ?�반??
+?�재 `stepSmoke()`??120 sec?�서 ?�동 ?��??�다.
 
-현재 `stepSmoke()`는 120 sec에서 자동 정지한다.
-
-Full Flow에서는:
+Full Flow?�서??
 
 ```text
 Warm-up 30 sec
@@ -383,11 +376,11 @@ Measurement 300 sec
 Total Simulation 330 sec
 ```
 
-가 필요하다.
+가 ?�요?�다.
 
-최소 변경으로 `SmokeRun`에 optional duration을 추가해도 된다.
+최소 변경으�?`SmokeRun`??optional duration??추�??�도 ?�다.
 
-예:
+??
 
 ```ts
 type SmokeRun = {
@@ -396,19 +389,19 @@ type SmokeRun = {
 }
 ```
 
-그리고:
+그리�?
 
 ```ts
 const maxSeconds = run.maxSeconds ?? 120;
 ```
 
-형태로 기존 default 120 sec를 보존한다.
+?�태�?기존 default 120 sec�?보존?�다.
 
 Limited:
 
 ```text
 maxSeconds undefined
-→ 120 sec
+??120 sec
 ```
 
 Full Flow:
@@ -417,28 +410,28 @@ Full Flow:
 maxSeconds = 330
 ```
 
-기존 `createSmoke()` 반환값에 330을 넣지 마라.
+기존 `createSmoke()` 반환값에 330???��? 마라.
 
 ---
 
-# 10. Warm-up / Measurement — 정확한 정책
+# 10. Warm-up / Measurement ???�확???�책
 
 ## 10.1 Phase
 
 ```text
 0 <= t < 30
-→ WARMUP
+??WARMUP
 
 30 <= t < 330
-→ MEASUREMENT
+??MEASUREMENT
 
 t >= 330
-→ COMPLETE
+??COMPLETE
 ```
 
-## 10.2 Warm-up 동안
+## 10.2 Warm-up ?�안
 
-실제 Fix4 Traffic을 그대로 실행한다.
+?�제 Fix4 Traffic??그�?�??�행?�다.
 
 ```text
 Movement
@@ -450,15 +443,15 @@ Door Enter / Exit
 Collision
 ```
 
-전부 정상 작동해야 한다.
+?��? ?�상 ?�동?�야 ?�다.
 
-가짜 warm-up이나 정지 상태는 금지한다.
+가�?warm-up?�나 ?��? ?�태??금�??�다.
 
 ## 10.3 t = 30 sec
 
-NPC를 재Spawn하지 않는다.
+NPC�??�Spawn?��? ?�는??
 
-### 반드시 유지
+### 반드???��?
 
 ```text
 x / y
@@ -480,11 +473,10 @@ queue
 yieldTo
 yieldBackoff
 forwardWait
-기타 Movement Control State
+기�? Movement Control State
 ```
 
-### Measurement Counter만 초기화
-
+### Measurement Counter�?초기??
 ```text
 trips = 0
 arrivals = 0
@@ -502,10 +494,9 @@ narrow measurement counts = 0
 W12 measurement counts = 0
 ```
 
-현재 `SmokeNpc.wait`가 measurement block duration 역할을 하므로
-t=30에서 `wait = 0`으로 reset해도 된다.
+?�재 `SmokeNpc.wait`가 measurement block duration ??��???��?�?t=30?�서 `wait = 0`?�로 reset?�도 ?�다.
 
-단:
+??
 
 ```text
 forwardWait
@@ -514,33 +505,33 @@ yieldBackoff
 reservation / merge state
 ```
 
-는 유지하여 Traffic behavior가 warm-up boundary에서 바뀌지 않게 한다.
+???��??�여 Traffic behavior가 warm-up boundary?�서 바뀌�? ?�게 ?�다.
 
-`blockedBy`는 measurement event를 새로 셀 수 있도록 reset해도 된다.
-`blockedBy`가 Movement permission에 사용되지 않는지 실제 코드를 확인한 뒤 처리한다.
+`blockedBy`??measurement event�??�로 ?� ???�도�?reset?�도 ?�다.
+`blockedBy`가 Movement permission???�용?��? ?�는지 ?�제 코드�??�인????처리?�다.
 
 ## 10.4 Boundary 처리
 
-30초를 frame delta가 넘어가는 경우
-warm-up과 measurement를 한 frame에 섞지 않는다.
+30초�? frame delta가 ?�어가??경우
+warm-up�?measurement�???frame???��? ?�는??
 
-가능하면 boundary에서 dt를 split하여:
+가?�하�?boundary?�서 dt�?split?�여:
 
 ```text
-... → exactly 30.000 sec
+... ??exactly 30.000 sec
 reset measurement
-remaining dt → measurement
+remaining dt ??measurement
 ```
 
-순서로 처리한다.
+?�서�?처리?�다.
 
-Node와 Browser가 동일한 semantics를 사용해야 한다.
+Node?� Browser가 ?�일??semantics�??�용?�야 ?�다.
 
 ---
 
 # 11. Full Flow Metric Collector
 
-Node와 Browser에서 동일한 Collector를 재사용한다.
+Node?� Browser?�서 ?�일??Collector�??�사?�한??
 
 최소 결과:
 
@@ -589,75 +580,71 @@ w12_owner_change_count
 w12_queue_recovery_count
 ```
 
-## Metric 의미
+## Metric ?��?
 
 ### blocked_time_total
 
-Measurement 동안:
+Measurement ?�안:
 
 ```text
 blockedBy != ''
 ```
 
-인 NPC의 actor-seconds 누적값으로 기록한다.
+??NPC??actor-seconds ?�적값으�?기록?�다.
 
-이 값은 `Blocked >= 0.5s` 분류와 별개의
-raw waiting-time accumulator라고 결과 JSON에 명시한다.
+??값�? `Blocked >= 0.5s` 분류?� 별개??raw waiting-time accumulator?�고 결과 JSON??명시?�다.
 
 ### blocked_npc_count
 
-현재 프로젝트의 Block 기준:
+?�재 ?�로?�트??Block 기�?:
 
 ```text
 wait >= 0.5 sec
 ```
 
-을 사용한다.
+???�용?�다.
 
 ```text
 blocked_npc_count_end
-= measurement 종료 시점
+= measurement 종료 ?�점
 
 blocked_npc_count_peak
-= measurement 동안 최대 동시 Blocked NPC 수
-```
+= measurement ?�안 최�? ?�시 Blocked NPC ??```
 
 ### severe_block_count
 
-각 Block episode가:
+�?Block episode가:
 
 ```text
 wait >= 10 sec
 ```
 
-를 최초로 넘을 때 1회 증가한다.
+�?최초�??�을 ??1??증�??�다.
 
-같은 episode에서 frame마다 중복 증가시키지 않는다.
+같�? episode?�서 frame마다 중복 증�??�키지 ?�는??
 
 ### unrecovered_20sec / deadlock_count
 
-Prototype Hard FAIL 판단을 위해
-20초 threshold crossing을 놓치지 않는다.
+Prototype Hard FAIL ?�단???�해
+20�?threshold crossing???�치지 ?�는??
 
 권장:
 
 ```text
 deadlock_count
-= measurement 중 20 sec threshold에 도달한 unique block episode 수
-
+= measurement �?20 sec threshold???�달??unique block episode ??
 unrecovered_20sec
-= measurement 종료 시점에도 wait >= 20 sec인 NPC 수
-```
+= measurement 종료 ?�점?�도 wait >= 20 sec??NPC ??```
 
-추가로:
+추�?�?
 
 ```text
 ever_20sec_block_count
 ```
 
-를 별도로 기록해도 된다.
+�?별도�?기록?�도 ?�다.
 
-PASS Gate에서는:
+PASS Gate?�서??
 
 ```text
 deadlock_count = 0
@@ -665,45 +652,44 @@ ever_20sec_block_count = 0
 collision_violation = 0
 ```
 
-이어야 한다.
+?�어???�다.
 
 ### Door count
 
-현재 core에서:
+?�재 core?�서:
 
 ```text
-W16 → W17 = Cafe
-W18 → W19 = Facility
+W16 ??W17 = Cafe
+W18 ??W19 = Facility
 ```
 
-의미를 이용한다.
+?��?�??�용?�다.
 
-enter/exit transition을 실제 state change로 측정한다.
+enter/exit transition???�제 state change�?측정?�다.
 
-Route 이름만 보고 count를 추정하지 않는다.
+Route ?�름�?보고 count�?추정?��? ?�는??
 
 ### Narrow
 
-Upper / Lower Narrow 영역의 실제 physical membership transition을
-추적하여 pass count를 측정한다.
+Upper / Lower Narrow ?�역???�제 physical membership transition??추적?�여 pass count�?측정?�다.
 
 ### W12
 
-실제 `run.merge.owner / queue` 상태를 관찰하여:
+?�제 `run.merge.owner / queue` ?�태�?관찰하??
 
 ```text
 max queue
 owner changes
-non-empty queue → empty queue recovery
+non-empty queue ??empty queue recovery
 ```
 
-를 측정한다.
+�?측정?�다.
 
 ---
 
 # 12. Physical Collision Measurement
 
-Full Flow Measurement 동안 매 simulation step에서:
+Full Flow Measurement ?�안 �?simulation step?�서:
 
 ```text
 fixed collision
@@ -711,16 +697,15 @@ NPC-NPC physical overlap
 world bounds
 ```
 
-를 검사한다.
+�?검?�한??
 
-Sprite visual overlap은 여기서 collision violation으로 세지 않는다.
+Sprite visual overlap?� ?�기??collision violation?�로 ?��? ?�는??
 
-`collision_violation`은 physical footprint 기준이다.
+`collision_violation`?� physical footprint 기�??�다.
 
-같은 frame에서 A-B / B-A를 이중 계산하지 않도록
-pair는 `i < j` 방식으로 센다.
+같�? frame?�서 A-B / B-A�??�중 계산?��? ?�도�?pair??`i < j` 방식?�로 ?�다.
 
-결과에:
+결과??
 
 ```text
 fixed_collision_violation
@@ -729,23 +714,23 @@ world_bounds_violation
 collision_violation_total
 ```
 
-을 가능하면 분리해서 출력한다.
+??가?�하�?분리?�서 출력?�다.
 
-PASS는 전부 0이어야 한다.
+PASS???��? 0?�어???�다.
 
 ---
 
 # 13. 35 NPC Full Flow Creator
 
-명시적인 entry point를 만든다.
+명시?�인 entry point�?만든??
 
-예:
+??
 
 ```ts
 createPlazaFullFlow35(map, external?)
 ```
 
-반환 객체는 최소:
+반환 객체??최소:
 
 ```text
 35 NPC SmokeRun
@@ -754,28 +739,28 @@ measurement state
 metric collector state
 ```
 
-를 포함한다.
+�??�함?�다.
 
-생성 직후 self-check를 실행한다.
+?�성 직후 self-check�??�행?�다.
 
-잘못된 count / overlap / spawn이면
-silent fallback 없이 throw한다.
+?�못??count / overlap / spawn?�면
+silent fallback ?�이 throw?�다.
 
 ---
 
 # 14. Node Logic Measurement Script
 
-35 NPC Full Flow를 자동 실행하는 script를 추가한다.
+35 NPC Full Flow�??�동 ?�행?�는 script�?추�??�다.
 
-예:
+??
 
 ```text
 scripts/measure-plaza-full-flow-35.mjs
 ```
 
-Repository 기존 script convention을 우선한다.
+Repository 기존 script convention???�선?�다.
 
-실행:
+?�행:
 
 ```text
 Warm-up = 30 sec
@@ -783,57 +768,57 @@ Measurement = 300 sec
 Simulation step = 1/60 sec
 ```
 
-실제 wall-clock 330초를 기다릴 필요는 없다.
-Node에서는 deterministic simulation time으로 빠르게 실행한다.
+?�제 wall-clock 330초�? 기다�??�요???�다.
+Node?�서??deterministic simulation time?�로 빠르�??�행?�다.
 
-단:
+??
 
-> simulation semantics는 Browser와 동일한 Full Flow Harness를 사용해야 한다.
+> simulation semantics??Browser?� ?�일??Full Flow Harness�??�용?�야 ?�다.
 
-별도 간이 movement simulator를 만들면 안 된다.
+별도 간이 movement simulator�?만들�????�다.
 
-최종 JSON을 stdout에 출력한다.
+최종 JSON??stdout??출력?�다.
 
-가능하면 raw result도:
+가?�하�?raw result??
 
 ```text
 artifacts/plaza_full_flow_35_raw.json
 ```
 
-같은 non-Source-of-Truth 위치에 저장한다.
+같�? non-Source-of-Truth ?�치???�?�한??
 
-Repository에 기존 validation output convention이 있다면 그것을 따른다.
+Repository??기존 validation output convention???�다�?그것???�른??
 
-Narrative Markdown Result 문서는 만들지 마라.
+Narrative Markdown Result 문서??만들지 마라.
 
 ---
 
 # 15. Browser Full Flow Mode
 
-실제 Phaser Browser에서도 같은 35 NPC Scenario를 실행할 수 있어야 한다.
+?�제 Phaser Browser?�서??같�? 35 NPC Scenario�??�행?????�어???�다.
 
-기존 10 NPC Smoke UI는 유지한다.
+기존 10 NPC Smoke UI???��??�다.
 
-최소 추가:
+최소 추�?:
 
 ```text
 Full Flow 35 Start
 Full Flow Stop / Reset
 ```
 
-또는 기존 selector convention에 맞는:
+?�는 기존 selector convention??맞는:
 
 ```text
 full35
 ```
 
-mode 하나.
+mode ?�나.
 
-기존 R1~R5 smoke menu를 삭제하거나 바꾸지 마라.
+기존 R1~R5 smoke menu�???��?�거??바꾸지 마라.
 
 ## Browser Report
 
-최소 표시:
+최소 ?�시:
 
 ```text
 NPC 35
@@ -854,48 +839,47 @@ FPS avg during measurement
 FPS min during measurement
 ```
 
-FPS는 **Measurement 300 sec 동안만** 집계한다.
-Warm-up FPS를 measurement average에 섞지 않는다.
+FPS??**Measurement 300 sec ?�안�?* 집계?�다.
+Warm-up FPS�?measurement average???��? ?�는??
 
-Node 결과에는 FPS를 쓰지 마라.
+Node 결과?�는 FPS�??��? 마라.
 
-Node-only 결과로 FPS PASS를 주장하지 마라.
+Node-only 결과�?FPS PASS�?주장?��? 마라.
 
 ---
 
-# 16. PlazaParkScene 현재 호환 문제도 함께 처리
+# 16. PlazaParkScene ?�재 ?�환 문제???�께 처리
 
-현재 Scene은 Candidate path lookup은 지원하지만
-표시 로직 일부가 R1~R5에 묶여 있을 수 있다.
+?�재 Scene?� Candidate path lookup?� 지?�하지�??�시 로직 ?��?가 R1~R5??묶여 ?�을 ???�다.
 
-실제 코드를 확인하여 최소 수정한다.
+?�제 코드�??�인?�여 최소 ?�정?�다.
 
-예:
+??
 
 ```text
 Object.keys(SMOKE_ROUTES)
-5개 route color array
-/120s 고정 표시
+5�?route color array
+/120s 고정 ?�시
 ```
 
-Full Flow mode에서만 R1~R8 / 330 sec / phase가
-정상적으로 표시되도록 한다.
+Full Flow mode?�서�?R1~R8 / 330 sec / phase가
+?�상?�으�??�시?�도�??�다.
 
-Limited Smoke 화면 의미는 그대로 유지한다.
+Limited Smoke ?�면 ?��???그�?�??��??�다.
 
 ---
 
-# 17. Test 추가
+# 17. Test 추�?
 
-새 테스트를 추가한다.
+???�스?��? 추�??�다.
 
-예:
+??
 
 ```text
 tests/fullFlowHarness.test.ts
 ```
 
-최소 검증:
+최소 검�?
 
 ## A. Creator self-check
 
@@ -903,7 +887,7 @@ tests/fullFlowHarness.test.ts
 NPC = 35
 route counts = 4/5/4/4/2/5/6/5
 species = 8/7/7/7/6
-proxy size counts 정확
+proxy size counts ?�확
 area counts = 11/10/3/3/5/3
 initial fixed collision = 0
 initial NPC overlap = 0
@@ -915,16 +899,16 @@ world bounds violation = 0
 ```text
 createSmoke(map).npcs.length = 10
 default duration = 120 sec
-R1~R5 기존 semantics 유지
+R1~R5 기존 semantics ?��?
 ```
 
-기존 테스트도 그대로 통과해야 한다.
+기존 ?�스?�도 그�?�??�과?�야 ?�다.
 
 ## C. Warm-up reset state preservation
 
-t=30 reset 전/후:
+t=30 reset ????
 
-유지 확인:
+?��? ?�인:
 
 ```text
 x/y
@@ -940,7 +924,7 @@ locks
 merge
 ```
 
-reset 확인:
+reset ?�인:
 
 ```text
 trips
@@ -957,20 +941,20 @@ measurement accumulators
 ## D. Phase duration
 
 ```text
-29.99 → WARMUP
-30.00 → MEASUREMENT
-329.99 → MEASUREMENT
-330.00 → COMPLETE
+29.99 ??WARMUP
+30.00 ??MEASUREMENT
+329.99 ??MEASUREMENT
+330.00 ??COMPLETE
 ```
 
-floating point 때문에 exact literal 비교가 취약하면
-epsilon-based check를 사용한다.
+floating point ?�문??exact literal 비교가 취약?�면
+epsilon-based check�??�용?�다.
 
 ## E. Short Full Flow Smoke
 
-전체 330초를 unit test에 강제하여 test suite를 불필요하게 느리게 만들지 않아도 된다.
+?�체 330초�? unit test??강제?�여 test suite�?불필?�하�??�리�?만들지 ?�아???�다.
 
-대신 Harness가:
+?�??Harness가:
 
 ```text
 multiple routes
@@ -979,19 +963,19 @@ warm-up boundary
 measurement collector
 ```
 
-를 몇 초 동안 실제 `stepSmoke()`로 실행하는 short smoke test를 추가한다.
+�?�?�??�안 ?�제 `stepSmoke()`�??�행?�는 short smoke test�?추�??�다.
 
-실제 330초 run은 Node measurement script에서 수행한다.
+?�제 330�?run?� Node measurement script?�서 ?�행?�다.
 
 ---
 
-# 18. 실제 35 NPC Logic Run
+# 18. ?�제 35 NPC Logic Run
 
-구현 완료 후 반드시 실제 script를 실행한다.
+구현 ?�료 ??반드???�제 script�??�행?�다.
 
-결과를 숨기거나 FAIL을 수정하려 하지 마라.
+결과�??�기거나 FAIL???�정?�려 ?��? 마라.
 
-판정 기준:
+?�정 기�?:
 
 ## PASS
 
@@ -1009,57 +993,56 @@ unrecovered_20sec = 0
 Cafe enter / exit 반복 발생
 Facility enter / exit 반복 발생
 
-Upper / Lower Narrow에서
-20 sec+ unrecovered 교착 없음
+Upper / Lower Narrow?�서
+20 sec+ unrecovered 교착 ?�음
 
-W12 queue가 영구 누적되지 않음
+W12 queue가 ?�구 ?�적?��? ?�음
 ```
 
-`max wait < 10 sec`는 목표이지 Hard FAIL이 아니다.
+`max wait < 10 sec`??목표?��? Hard FAIL???�니??
 
 ## WARN
 
 ```text
-3~10 sec Block 후 회복
-10~20 sec Block 후 회복
-순간 Queue
+3~10 sec Block ???�복
+10~20 sec Block ???�복
+?�간 Queue
 Body visual overlap
 ```
 
-단:
+??
 
 ```text
 20 sec+ block
 ```
 
-은 이번 Full Flow에서는 FAIL로 본다.
+?� ?�번 Full Flow?�서??FAIL�?본다.
 
 ---
 
-# 19. 35 NPC FAIL 시 행동
+# 19. 35 NPC FAIL ???�동
 
-다음은 자동으로 하지 마라.
+?�음?� ?�동?�로 ?��? 마라.
 
 ```text
 Movement tuning
 Fix5
-Route 수정
-NPC count 30으로 감소
-Map 수정
-Collision 완화
-Spawn area 변경
-```
+Route ?�정
+NPC count 30?�로 감소
+Map ?�정
+Collision ?�화
+Spawn area 변�?```
 
-FAIL result를 그대로 저장하고 보고한다.
+FAIL result�?그�?�??�?�하�?보고?�다.
 
-30 NPC fallback은
-사용자와 별도 배치를 확정한 뒤 다음 작업에서 수행한다.
+30 NPC fallback?�
+?�용?��? 별도 배치�??�정?????�음 ?�업?�서 ?�행?�다.
 
 ---
 
-# 20. 실행 명령
+# 20. ?�행 명령
 
-반드시 실행:
+반드???�행:
 
 ```powershell
 npm run typecheck
@@ -1067,33 +1050,33 @@ npm test
 npm run build
 ```
 
-그 다음 35 NPC Node Logic Run script 실행.
+�??�음 35 NPC Node Logic Run script ?�행.
 
-예:
+??
 
 ```powershell
 node scripts/measure-plaza-full-flow-35.mjs
 ```
 
-실제 package/script 구조에 맞게 명령을 사용한다.
+?�제 package/script 구조??맞게 명령???�용?�다.
 
 ---
 
-# 21. 최종 보고 형식
+# 21. 최종 보고 ?�식
 
-아래 순서 그대로 보고한다.
+?�래 ?�서 그�?�?보고?�다.
 
-## 1. 변경 파일
+## 1. 변�??�일
 
-각 파일별 변경 목적.
+�??�일�?변�?목적.
 
 ## 2. 기존 Fix4 semantics
 
 ```text
-변경 없음 / 변경 있음
+변�??�음 / 변�??�음
 ```
 
-변경 있다면 즉시 명시.
+변�??�다�?즉시 명시.
 
 ## 3. 기존 Limited Regression
 
@@ -1117,13 +1100,13 @@ initial collision
 ## 5. Warm-up Reset
 
 ```text
-Traffic state preserved 여부
-Measurement counter reset 여부
+Traffic state preserved ?��?
+Measurement counter reset ?��?
 ```
 
 ## 6. 35 NPC Node Logic Run
 
-전체 JSON 또는 충분한 핵심 필드:
+?�체 JSON ?�는 충분???�심 ?�드:
 
 ```text
 warmup_seconds
@@ -1160,19 +1143,19 @@ W12 max queue / owner change / queue recovery
 ## 7. Browser Full Flow Mode
 
 ```text
-구현 여부
-직접 5분 Browser 측정을 실제 수행했는지 여부
+구현 ?��?
+직접 5�?Browser 측정???�제 ?�행?�는지 ?��?
 ```
 
-실제 실행하지 않았다면:
+?�제 ?�행?��? ?�았?�면:
 
 ```text
 NOT MEASURED
 ```
 
-라고 명확히 쓴다.
+?�고 명확???�다.
 
-FPS를 추정하지 마라.
+FPS�?추정?��? 마라.
 
 ## 8. typecheck
 
@@ -1180,15 +1163,15 @@ PASS / FAIL
 
 ## 9. tests
 
-기존 tests와 신규 tests를 구분해서 결과 작성.
+기존 tests?� ?�규 tests�?구분?�서 결과 ?�성.
 
 ## 10. build
 
 PASS / FAIL
 
-기존 Bundle Size Warning은 별도 WARN.
+기존 Bundle Size Warning?� 별도 WARN.
 
-## 11. 최종 Logic 판정
+## 11. 최종 Logic ?�정
 
 ```text
 PASS
@@ -1196,13 +1179,13 @@ PASS with WARN
 FAIL
 ```
 
-근거를 숫자로 제시한다.
+근거�??�자�??�시?�다.
 
 ## 12. 중단
 
-결과 보고 후 멈춘다.
+결과 보고 ??멈춘??
 
-다음 작업:
+?�음 ?�업:
 
 ```text
 Graphics Integration
@@ -1211,33 +1194,33 @@ Movement Fix
 문서 갱신
 ```
 
-중 어떤 것도 자동으로 시작하지 마라.
+�??�떤 것도 ?�동?�로 ?�작?��? 마라.
 
 ---
 
-# 22. 금지사항 요약
+# 22. 금�??�항 ?�약
 
 ```text
-Map 수정 금지
-TMJ 수정 금지
-Waypoint 수정 금지
-Door Width 수정 금지
-Collision 완화 금지
+Map ?�정 금�?
+TMJ ?�정 금�?
+Waypoint ?�정 금�?
+Door Width ?�정 금�?
+Collision ?�화 금�?
 
-Fix4 Movement 재작성 금지
-Fix5 자동 시작 금지
-새 pathfinding 금지
-본격 personal spacing 금지
+Fix4 Movement ?�작??금�?
+Fix5 ?�동 ?�작 금�?
+??pathfinding 금�?
+본격 personal spacing 금�?
 
-기존 createSmoke 10 NPC 의미 변경 금지
-기존 120 sec regression 변경 금지
+기존 createSmoke 10 NPC ?��? 변�?금�?
+기존 120 sec regression 변�?금�?
 
-30 NPC fallback 자동 실행 금지
+30 NPC fallback ?�동 ?�행 금�?
 
-Narrative Source-of-Truth 문서 자동 갱신 금지
-Graphics 작업 금지
-CCTV 구현 금지
-Shopping / Residential 작업 금지
+Narrative Source-of-Truth 문서 ?�동 갱신 금�?
+Graphics ?�업 금�?
+CCTV 구현 금�?
+Shopping / Residential ?�업 금�?
 ```
 
-이 작업은 **35 NPC Full Flow Harness 구현 + Node Logic Measurement 결과 보고**까지만 한다.
+???�업?� **35 NPC Full Flow Harness 구현 + Node Logic Measurement 결과 보고**까�?�??�다.

@@ -12,11 +12,11 @@
 
 현재 상태 복구와 지도학습 작업에서는 추가로 다음을 우선 읽는다.
 
-- `docs/supervised_learning_rules.md`
-- `docs/supervised_learning_area_rollout_plan.md`
-- `docs/supervised_character_pool.md`
-- `docs/map_plaza_park_spec.md`
-- `docs/session_handoff_current.md`
+- `docs/modules/machine_learning/supervised/supervised_learning_rules.md`
+- `docs/modules/machine_learning/supervised/archive/supervised_learning_area_rollout_plan.md`
+- `docs/modules/machine_learning/supervised/supervised_character_pool.md`
+- `docs/shared/maps/map_plaza_park_spec.md`
+- `docs/archive/session_handoff_plaza_park_2026-09-14.md`
 
 사용자가 직접 지정한 문서가 있다면 그 문서를 우선한다.
 확정된 사항은 이유 없이 다시 논의하거나 변경하지 않는다.
@@ -42,8 +42,8 @@ Archive와 historical validation은 작성 당시의 상태를 보존한다.
 
 기본 읽기:
 
-- `docs/ml_prototype_technical_requirements.md`
-- `docs/graphics_character_asset_spec.md`
+- `docs/shared/technical/ml_prototype_technical_requirements.md`
+- `docs/shared/graphics/graphics_character_asset_spec.md`
 
 Character 이미지 생성·정리 작업이면 추가:
 
@@ -55,7 +55,7 @@ Character 이미지 생성·정리 작업이면 추가:
 
 Scale 검증 작업이면 추가:
 
-- `docs/map_scale_validation_spec.md`
+- `docs/shared/maps/map_scale_validation_spec.md`
 - `docs/validation/general/scale_validation_results.md`
 - 필요 시 `docs/validation/general/corridor_capacity_results.md`
 
@@ -63,35 +63,35 @@ Scale 검증 작업이면 추가:
 
 기본 읽기:
 
-- `docs/ml_prototype_technical_requirements.md`
-- `docs/graphics_character_asset_spec.md`
+- `docs/shared/technical/ml_prototype_technical_requirements.md`
+- `docs/shared/graphics/graphics_character_asset_spec.md`
 - `docs/reference/map_visual_reference.md`
-- `docs/map_scale_validation_spec.md`
+- `docs/shared/maps/map_scale_validation_spec.md`
 
 대상 Map에 따라 해당 Spec만 추가한다.
 
-- Plaza/Park: `docs/map_plaza_park_spec.md`
-- Shopping District: `docs/map_shopping_district_spec.md`
-- Residential: `docs/map_residential_spec.md`
+- Plaza/Park: `docs/shared/maps/map_plaza_park_spec.md`
+- Shopping District: `docs/shared/maps/map_shopping_district_spec.md`
+- Residential: `docs/shared/maps/map_residential_spec.md`
 
 Plaza/Park Navigation 작업이면 추가:
 
-- `docs/plaza_park_navigation_v2_spec.md`
+- `docs/shared/maps/plaza_park_navigation_v2_spec.md`
 - 현재 validation: `docs/validation/plaza_park_v2/`
 
 Map 작업이 CCTV, Tracking 또는 행동 규칙과 연결되면
-`docs/supervised_learning_rules.md`를 추가한다.
+`docs/modules/machine_learning/supervised/supervised_learning_rules.md`를 추가한다.
 
 ## 지도학습 구현
 
 읽기:
 
-- `docs/session_handoff_current.md`
-- `docs/supervised_learning_rules.md`
-- `docs/supervised_learning_area_rollout_plan.md`
-- `docs/supervised_character_pool.md`
-- `docs/map_plaza_park_spec.md`
-- `docs/ml_prototype_technical_requirements.md`
+- `docs/archive/session_handoff_plaza_park_2026-09-14.md`
+- `docs/modules/machine_learning/supervised/supervised_learning_rules.md`
+- `docs/modules/machine_learning/supervised/archive/supervised_learning_area_rollout_plan.md`
+- `docs/modules/machine_learning/supervised/supervised_character_pool.md`
+- `docs/shared/maps/map_plaza_park_spec.md`
+- `docs/shared/technical/ml_prototype_technical_requirements.md`
 
 Target full-game architecture의 global ID는 `CCTV1/CCTV2 = Plaza/Park`, `CCTV3/CCTV4 = Shopping`, `CCTV5 = Residential`이다. Current playable prototype은 이 namespace를 사용하지 않고 `PLAZA_CAM_A~E`를 사용한다.
 
@@ -102,9 +102,9 @@ Traffic density 추가 탐색이나 Navigation topology 변경을 기본 next st
 
 읽기:
 
-- `docs/ml_prototype_technical_requirements.md`
-- `docs/graphics_character_asset_spec.md`
-- `docs/unsupervised_learning_rules.md`
+- `docs/shared/technical/ml_prototype_technical_requirements.md`
+- `docs/shared/graphics/graphics_character_asset_spec.md`
+- `docs/modules/machine_learning/unsupervised/concept_rules.md`
 
 지도학습 Character/Map asset을 재사용할 때 필요한 관련 문서만 추가한다.
 
@@ -112,9 +112,9 @@ Traffic density 추가 탐색이나 Navigation topology 변경을 기본 next st
 
 읽기:
 
-- `docs/ml_prototype_technical_requirements.md`
-- `docs/graphics_character_asset_spec.md`
-- `docs/reinforcement_learning_rules.md`
+- `docs/shared/technical/ml_prototype_technical_requirements.md`
+- `docs/shared/graphics/graphics_character_asset_spec.md`
+- `docs/modules/machine_learning/reinforcement/concept_rules.md`
 
 강화학습용 건물·Route Graph 문서가 실제로 생성된 뒤 해당 문서를 추가한다.
 
@@ -124,7 +124,7 @@ Traffic density 추가 탐색이나 Navigation topology 변경을 기본 next st
 
 - `README.md`
 - `docs/README.md`
-- `docs/ml_prototype_technical_requirements.md`
+- `docs/shared/technical/ml_prototype_technical_requirements.md`
 - 관련 학습 규칙, 구현 및 검증 문서
 
 현재 프로젝트에 존재하지 않는 문서명을 전제로 작업하지 않는다.
