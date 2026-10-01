@@ -2,38 +2,47 @@
 
 ## 현재 상태
 
-- 상태: **IMPLEMENTING**. 전체 gameplay flow를 코드로 연결하고 브라우저에서 1회 완료까지 플레이했다. 일부 실패/전환 분기 검증은 남아 있다.
-- 개발 진입: `?mode=ai-basics` (Hub route 아님).
-- 기존 지도학습 gameplay 내부는 수정하지 않았다.
-- 확정된 설계 기준: `module_spec.md`, 교육 문구와 퀴즈: `docs/project/product_prd.md`.
+- **기능 구현 및 배포 완료.** 사용자가 최종 로컬 전체 플레이, Git push, Vercel 자동 배포와 배포본 확인을 완료했다.
+- 이번 handoff는 구현 재개 지시가 아니라 유지 관리용 현황이다. 세부 동작과 자산은 `module_spec.md`, 실제 값은 코드/asset을 따른다.
+- 배포 주소는 기존 프로젝트 문서에 기록된 `https://sw-project-sooty.vercel.app/`이다. 이번 문서 업데이트에서는 배포본을 다시 검증하지 않았다.
 
-## 이번 구현
+## 최종 진입 / 구조
 
-- `AiBasicsScene.ts`: 1536×960 3층 dark 제어실, 1F 오른쪽/2F 왼쪽 사다리, 좌우 이동, 방향별 cat/female 정지 sprite, 카드 지점 6개, Ari endpoint, zoom 1.5 및 층별 camera.
-- `notes.ts`: AI 3장과 기계 3장의 확정 ID, 문구, 층, 좌표.
-- `AiBasicsApp.tsx` / `aiBasics.css`: 시작/정체 공개 대사, 카드 front/HUD, 퀴즈 3문제와 하트, 오답 설명, 하트 0 reset, 3장 선택, device 5상태, 전원 2단계, Ari 최종 설명과 완료 화면.
-- `assets/background/background_power_stage_1.png`, `background_power_stage_2.png`: dark 원본을 참조한 조명 편집본. 두 이미지는 원본과 같은 1614×975 canvas다.
+| URL | 결과 |
+|---|---|
+| `/` | Hub (`assets/background/world_background.png`) |
+| `/?mode=ai-basics` | AI Basics |
+| `/?mode=supervised` | 기존 지도학습 |
 
-## 검증 사실
+Hub의 투명 hotspot은 이미지 회색 원 위에 놓인다. 왼쪽 위는 AI Basics, 오른쪽 아래는 지도학습이다. AI Basics 완료 panel의 `[첫 화면으로 돌아가기]`는 `/`로 이동한다.
 
-- typecheck / build: PASS.
-- `npm test`: 73 PASS. 최초 실행의 구형 좌표 테스트를 현재 층별 카드 모델에 맞게 수정한 후 전체 재실행했다.
-- 브라우저: dark 배경, 시작 대사, 플레이어, 좌우 이동, 평지 ↑/↓ 무시, 카드 6장 Q 수집, 중복 Q 제거, 두 사다리 상승과 카메라 전환, Esc 닫기, HUD 재열기 확인.
-- 브라우저: 6장 후 자동 퀴즈 금지, Ari endpoint reveal, 퀴즈 3문제, 오답 하트 감소와 3컷, 3장 미만/오조합 경고, 정답 조합 후 장치 empty 시작, Ari 최종 설명과 완료 화면 확인.
-- 브라우저: 기본 지도학습 진입 및 `?mode=dev` 진입 확인, 콘솔 오류 없음.
-- 브라우저 미확인: 하트 0 수집 reset, 장치 1/2/3/final 각각의 타이밍 화면, Power Stage 1/2 각각의 표시, 선택 확대 미리보기와 포인터 X/바깥 클릭. 코드는 연결되어 있어도 이 항목을 PASS로 보고하지 않는다.
+- React (`AiBasicsApp.tsx`): 대화, 퀴즈, 카드 UI/HUD/선택, 오답 컷신, 장치, 하트, 결말.
+- Phaser (`AiBasicsScene.ts`): Player/animation, 3층 world/사다리/CardPoint, Ari, 배경과 실제 카메라 zoom-out/zoom-in 복구 연출.
+- `notes.ts`: 층당 2장, AI 3장/기계 3장. `challenge.ts`: 퀴즈 및 카드 선택 하트 판정.
+- `src/main.tsx`: query parameter 진입과 Hub.
 
-## WARN / 미완료
+## 구현 완료 항목
 
-- walk / pickup / climb animation 없음: 정지 sprite 이동으로 기능 구현.
-- 오답 panel은 DOM/CSS 3컷 임시 연출이며 illustration 없음.
-- Power Stage 1 / 2 이미지의 최종 아트 정렬과 가독성 검토 필요.
-- Hub route, 완료 상태 저장, 다음 모듈 CTA는 아직 미구현.
-- 브라우저 자동 입력 도구의 포인터 클릭이 반응하지 않아 X/바깥 클릭 및 선택 UI의 포인터 동작은 직접 확인하지 못했다. 키보드 Enter와 Esc는 동작했다.
+- 1F 오른쪽 → 2F 왼쪽 → 3F 오른쪽으로 이동하는 제어실. 현재 `FLOOR_Y = [925, 648, 320]`. 6장 수집 후 3F Ari encounter.
+- `←/→` 이동, 사다리 `↑/↓`, `Q` 획득. cat/female 정지/걷기/등반/방향별 줍기 animation; 멈추거나 Ari를 만나면 `IDLE_DOWN`.
+- CardPoint floor line/sparkle/`Q` pulse, 앞면과 6칸 HUD, 획득 카드 재확인.
+- `???` 공개 전 안내와 Ari 공개 후 하단 DOM 대화. 중앙 modal 퀴즈 3문제, 정답 happy/오답 sad, 분기별 9장 이미지 컷신과 오답 설명.
+- 퀴즈/카드 선택 공유 하트 3개. 마지막 하트를 잃어도 오답 설명 또는 선택 판정 뒤 Ari 실패 대사를 마치고 전체 reset.
+- 6개 앞면에서 AI 카드 3장 선택, 장치 empty/1/2/3/final, 카드 뒷면 삽입 연출.
+- Phaser scene 실제 카메라 zoom-out → 배경 dark/Power Stage 1/Stage 2 → zoom-in, Ari 최종 대사와 Hub 복귀.
 
-## 다음 순서
+## 최종 asset 경로
 
-1. 하트 0 reset, 장치 5상태와 Power Stage 화면을 실제 브라우저에서 각각 확인.
-2. 선택 확대 미리보기와 포인터 X/바깥 클릭 확인.
-3. Power 배경 두 장의 아트 정렬 검토.
-4. 사용자 확인 후 별도 요청이 있을 때만 commit / push.
+- Hub: `assets/background/world_background.png`
+- 제어실: `assets/background/background.png`, `background_power_stage_1.png`, `background_power_stage_2.png`
+- Player base: `public/assets/characters/cat/base/female/cat_female_down.png`; runtime animation: `public/assets/characters/cat/animations/female/processed/`의 walk left/right, climb, pickup left/right 5개 sheet (`3072×682`, RGBA, 6 frames)
+- Ari: `assets/ai/fairy.png`, `fairy_happy.png`, `fairy_sad.png`
+- 카드: `assets/cards/card_front.png`, `card_back.png`
+- 장치: `assets/card_insert_device/card_insert_device.png`, `card_insert_device_1.png`, `_2.png`, `_3.png`, `_final.png`
+- 오답 컷신: `assets/wrong_answer_cut_scene/problem_1/` 2장, `problem_2/` 3장, `problem_3/type_1/` 2장, `type_2/` 2장
+
+## 검증 / 유지 관리
+
+- 사용자가 최종 로컬 전체 플레이와 배포본 확인 완료를 보고했다. 이 문서 작업에서는 코드/asset과 문서를 대조했고 browser gameplay를 다시 실행하지 않았다.
+- 이전 handoff의 미구현 animation, 컷신, Power 배경, Hub, 퀴즈 및 부분 플레이 검증 TODO는 현 구현에 해당하지 않는다.
+- 현재 코드에 영구 완료 상태 저장은 없다. 이 동작이 필요해지면 별도 기능 요청으로 다룬다.

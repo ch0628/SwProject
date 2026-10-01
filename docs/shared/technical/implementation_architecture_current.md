@@ -1,4 +1,6 @@
-# SWfestival — Current Implementation Architecture
+# SWfestival — Implementation Architecture Snapshot (2026-09-29)
+
+> **기록 범위 안내 (2026-10-01)**: 아래 본문은 2026-09-29 시점의 기술 스냅샷이다. 그 뒤 Hub와 AI Basics가 구현·배포되어 본문의 `NOT IMPLEMENTED`/배포 `UNKNOWN` 표기는 현재 상태가 아니다. 현재 진입 구조와 상태는 `docs/project/project_state_current.md`, AI Basics 구현은 `docs/modules/ai_basics/module_spec.md`를 따른다.
 
 > **Snapshot date**: 2026-09-29
 > **Purpose**: 실제 repository 코드·설정을 확인해 기록한 현재 구현 상태. 계획이나 희망 구조가 아닌 실제 코드 기준.

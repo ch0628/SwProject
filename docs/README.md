@@ -10,12 +10,15 @@
 → [project/module_contract.md](project/module_contract.md)
 → [project/working_rules.md](project/working_rules.md)
 
-## 현재 작업
+## AI Basics 현재 인수인계
 → [modules/ai_basics/session_handoff.md](modules/ai_basics/session_handoff.md)
 
-현재 다음 작업은: AI Basics — AI가 무엇인지 이해하기
+AI Basics는 기능 구현과 배포 확인이 완료되었다. 현재 상태와 이후 유지 관리 기준은 위 handoff를 따른다.
 
 ## 모듈별 상세 문서
+
+### AI Basics
+→ [modules/ai_basics/module_spec.md](modules/ai_basics/module_spec.md)
 
 ### Machine Learning
 
