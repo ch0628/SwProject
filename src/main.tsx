@@ -17,6 +17,8 @@ import {
   type GameFlowState, type SupervisedGameState, type TrackingReviewContext,
 } from './supervisedGameFlow';
 import { MONITORING_TARGET_IDS, round2ComparisonFor, type Round2TargetStatus } from './plazaRound2';
+import { AiBasicsApp } from './modules/ai-basics/AiBasicsApp';
+import worldBackground from '../assets/background/world_background.png';
 import fairyImg from '../assets/ai/fairy.png';
 import centralAiCoreImg from '../assets/ai/central_ai_core.png';
 const EMPTY_MANUAL_STATE: ManualLabelingState = { cctvs: [], selectedCctv: null, visibleCharacterIds: [], selectedCharacter: null, manualLabeledDistinctCount: 0, verifiedTrainingSampleCount: 0, trainingReady: false };
@@ -702,4 +704,16 @@ function App() {
   </main>;
 }
 
-createRoot(document.getElementById('root')!).render(<App />);
+function Hub() {
+  return <main className="hub" aria-label="첫 화면">
+    <img src={worldBackground} alt="" />
+    <button type="button" className="hub-hotspot hub-ai-basics" aria-label="AI가 무엇인지 이해하기" onClick={() => window.location.assign('/?mode=ai-basics')} />
+    <button type="button" className="hub-hotspot hub-supervised" aria-label="지도학습" onClick={() => window.location.assign('/?mode=supervised')} />
+  </main>;
+}
+
+const entryParams = new URLSearchParams(window.location.search);
+const mode = entryParams.get('mode');
+createRoot(document.getElementById('root')!).render(
+  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' || mode === 'dev' || entryParams.get('debug') === '1' ? <App /> : <Hub />,
+);

@@ -24,6 +24,21 @@ body {
   container-type: inline-size;
 }
 
+.hub {
+  position: relative;
+  width: min(100vw, 172.171254vh);
+  aspect-ratio: 563 / 327;
+}
+
+.hub img { display: block; width: 100%; height: 100%; }
+.hub-hotspot {
+  position: absolute; width: 14.1%; aspect-ratio: 1; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; cursor: pointer;
+}
+.hub-hotspot:focus-visible { outline: 3px solid #243bff; outline-offset: 3px; }
+.hub-ai-basics { left: 17.2%; top: 8%; }
+.hub-supervised { left: 52.75%; top: 44%; }
+
 .game {
   position: absolute;
   inset: 0;

@@ -105,3 +105,88 @@ Git main push 이후 Vercel production 결과도 확인한다.
 - console error
 
 를 smoke test한다.
+
+## Documentation Creation Rules
+
+새 작업에서 문서를 생성할 때 다음 원칙을 따른다.
+
+### 1. 새 문서는 최소화한다
+
+기존 Source of Truth에 포함할 수 있는 내용이면
+새 파일을 만들지 않고 기존 문서를 갱신한다.
+
+### 2. 모듈 문서 기본 구조
+
+각 학습 모듈은 기본적으로 다음 구조를 사용한다.
+
+modules/<module>/
+├─ module_spec.md
+├─ session_handoff.md
+└─ validation/
+
+- module_spec.md:
+  현재 구현 규칙의 Source of Truth
+
+- session_handoff.md:
+  현재 진행 상태와 다음 작업
+
+- validation/:
+  실제 구현 검증 결과
+
+필요성이 명확하지 않으면 추가 문서를 생성하지 않는다.
+
+### 3. 파일 배치
+
+프로젝트 전체 정책:
+→ docs/project/
+
+특정 학습 모듈:
+→ docs/modules/<module>/
+
+공통 기술 / Map / Graphics:
+→ docs/shared/
+
+검증:
+→ docs/validation/ 또는 해당 module의 validation/
+
+템플릿:
+→ docs/templates/
+
+과거 기록:
+→ docs/archive/
+
+### 4. 새 파일 생성 기준
+
+다음 중 하나를 만족하는 경우에만 새 문서를 만든다.
+
+- 기존 Source of Truth와 목적이 명확히 다름
+- 내용이 충분히 커서 독립 관리가 필요함
+- 별도의 validation/evidence로 보존해야 함
+- 여러 문서에서 공통 참조할 독립 규격임
+
+단순 결정 기록이나 작은 변경 때문에 새 문서를 만들지 않는다.
+
+### 5. Current vs Archive
+
+현재 기준 문서는 이름에 날짜나 v1/v2를 남발하지 않는다.
+
+예:
+module_spec.md
+session_handoff.md
+
+과거 기록으로 내려갈 때만 날짜나 버전을 붙인다.
+
+예:
+archive/session_handoff_2026-09-28.md
+
+### 6. 작업 종료 시
+
+세션 종료 전에:
+
+1. module_spec 갱신
+2. session_handoff 갱신
+3. 필요한 validation 결과 갱신
+4. module_registry 상태 갱신 필요 여부 확인
+5. project_state_current 갱신 필요 여부 확인
+
+을 검토한다.
