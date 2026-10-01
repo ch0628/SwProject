@@ -8,7 +8,7 @@ import powerStage2 from '../../../assets/background/background_power_stage_2.png
 import fairy from '../../../assets/ai/fairy.png';
 
 const WORLD = { width: 1536, height: 960 };
-const FLOOR_Y = [925, 648, 320] as const;
+const FLOOR_Y = [925, 652, 320] as const;
 const ARI_Y = 310;
 // The PNG has transparent pixels below the visible feet (same foot line in both facings).
 const FOOT_ORIGIN_Y = 627 / 682;
