@@ -8,7 +8,8 @@ import powerStage2 from '../../../assets/background/background_power_stage_2.png
 import fairy from '../../../assets/ai/fairy.png';
 
 const WORLD = { width: 1536, height: 960 };
-const FLOOR_Y = [910, 625, 310] as const;
+const FLOOR_Y = [925, 648, 320] as const;
+const ARI_Y = 310;
 // The PNG has transparent pixels below the visible feet (same foot line in both facings).
 const FOOT_ORIGIN_Y = 627 / 682;
 const ANIM_FOOT_ORIGIN_Y = 670 / 682;
@@ -68,7 +69,7 @@ export class AiBasicsScene extends Phaser.Scene {
       this.tweens.add({ targets: spark, alpha: 0.25, scale: 0.55, yoyo: true, repeat: -1, duration: 650 + NOTES.indexOf(note) * 90 });
       this.noteVisuals.set(note.id, this.add.container(note.x, y - 4, [line, spark]).setScale(0.5).setDepth(2));
     }
-    this.ari = this.add.image(1320, FLOOR_Y[2], 'ai-basics-ari').setOrigin(0.5, 1).setDisplaySize(76, 102).setVisible(false).setDepth(3);
+    this.ari = this.add.image(1320, ARI_Y, 'ai-basics-ari').setOrigin(0.5, 1).setDisplaySize(76, 102).setVisible(false).setDepth(3);
     this.player = this.add.sprite(SPAWN_X, FLOOR_Y[0], IDLE).setOrigin(0.5, FOOT_ORIGIN_Y).setDepth(4);
     this.player.setScale(PLAYER_HEIGHT / this.player.height);
     const ring = this.add.circle(0, 0, 23, 0xffffff, 0).setStrokeStyle(3, 0xffffff, 0.9);
