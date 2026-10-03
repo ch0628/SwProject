@@ -1,14 +1,17 @@
 """Deterministically prepare the six-frame cat/female sheets for Phaser."""
 
+import sys
 from pathlib import Path
 from statistics import median
 from PIL import Image, ImageDraw
+
+from character_runtime_image import ALPHA_THRESHOLD
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "assets/characters/cat/animations/female"
 OUTPUT = SOURCE / "processed"
 PUBLIC = ROOT / "public/assets/characters/cat/animations/female/processed"
-NAMES = ("walk_left", "walk_right", "climb", "pickup_left", "pickup_right")
+NAMES = ("walk_left", "walk_right", "walk_up", "walk_down", "walk_down_2", "climb", "pickup_left", "pickup_right")
 FRAME = (512, 682)
 BASELINE = 670  # exclusive bottom of opaque pixels; Phaser uses 670 / 682 origin
 TORSO_CENTER_Y = 475
@@ -17,6 +20,10 @@ MARGIN = 8
 
 def alpha_bbox(image):
     return image.getchannel("A").getbbox()
+
+
+def visible_bbox(image):
+    return image.getchannel("A").point(lambda value: 255 if value > ALPHA_THRESHOLD else 0).getbbox()
 
 
 def prepare(name):
@@ -30,37 +37,42 @@ def prepare(name):
                          (i % 3 + 1) * cell_size[0], (i // 3 + 1) * cell_size[1]))
              for i in range(6)]
     boxes = [alpha_bbox(cell) for cell in cells]
+    visible_boxes = [visible_bbox(cell) for cell in cells]
     if any(box is None or box[0] == 0 or box[1] == 0 or
            box[2] == cell_size[0] or box[3] == cell_size[1] for box in boxes):
-        raise ValueError(f"{source}: empty or source-edge-clipped frame")
-    max_width = max(box[2] - box[0] for box in boxes)
-    max_height = max(box[3] - box[1] for box in boxes)
+        if any(box is None or box[0] == 0 or box[1] == 0 or
+               box[2] == cell_size[0] or box[3] == cell_size[1] for box in visible_boxes):
+            raise ValueError(f"{source}: empty or visibly source-edge-clipped frame")
+    max_width = max(box[2] - box[0] for box in visible_boxes)
+    max_height = max(box[3] - box[1] for box in visible_boxes)
     scale = min((FRAME[0] - 2 * MARGIN) / max_width,
                 (BASELINE - MARGIN) / max_height, 1.0)
     if scale < 1:
         scaled_size = tuple(round(side * scale) for side in cell_size)
         cells = [cell.resize(scaled_size, Image.Resampling.LANCZOS) for cell in cells]
         boxes = [alpha_bbox(cell) for cell in cells]
+        visible_boxes = [visible_bbox(cell) for cell in cells]
 
     # Pickup reach is real pose motion: anchor its idle-like endpoints, not every pose.
-    idle_center = median(((boxes[i][0] + boxes[i][2]) / 2 for i in (0, 5)))
+    idle_center = median(((visible_boxes[i][0] + visible_boxes[i][2]) / 2 for i in (0, 5)))
     frames = []
     output_boxes = []
-    for cell, box in zip(cells, boxes):
+    for cell, box in zip(cells, visible_boxes):
         center_x = (box[0] + box[2]) / 2
         x = round(256 - (idle_center if name.startswith("pickup") else center_x))
         y = (round(TORSO_CENTER_Y - (box[1] + box[3]) / 2) if name == "climb"
              else BASELINE - box[3])
         frame = Image.new("RGBA", FRAME)
         frame.paste(cell, (x, y))
-        output_box = alpha_bbox(frame)
+        output_box = visible_bbox(frame)
         if output_box is None or output_box[0] <= 0 or output_box[1] <= 0 or \
                 output_box[2] >= FRAME[0] or output_box[3] >= FRAME[1] or \
                 frame.getchannel("A").getbbox() is None:
             raise ValueError(f"{source}: target clipping")
-        # Alpha extrema catch any clipped pixels even if the remaining bbox looks safe.
-        if sum(cell.getchannel("A").get_flattened_data()) != sum(frame.getchannel("A").get_flattened_data()):
-            raise ValueError(f"{source}: alpha was lost")
+        source_visible_alpha = sum(value for value in cell.getchannel("A").get_flattened_data() if value > ALPHA_THRESHOLD)
+        output_visible_alpha = sum(value for value in frame.getchannel("A").get_flattened_data() if value > ALPHA_THRESHOLD)
+        if source_visible_alpha != output_visible_alpha:
+            raise ValueError(f"{source}: visible alpha was lost")
         frames.append(frame)
         output_boxes.append(output_box)
 
@@ -73,8 +85,9 @@ def prepare(name):
         sheet.paste(frame, (FRAME[0] * index, 0))
     runtime_name = f"cat_female_{name}.png"
     sheet.save(OUTPUT / runtime_name)
-    PUBLIC.mkdir(parents=True, exist_ok=True)
-    sheet.save(PUBLIC / runtime_name)
+    if not name.endswith("_2"):
+        PUBLIC.mkdir(parents=True, exist_ok=True)
+        sheet.save(PUBLIC / runtime_name)
 
     contact = Image.new("RGB", (768, 736), "#eeeeee")
     draw = ImageDraw.Draw(contact)
@@ -96,13 +109,16 @@ def prepare(name):
     # One runnable check for the output contract.
     with Image.open(OUTPUT / runtime_name) as saved:
         assert saved.mode == "RGBA" and saved.size == (3072, 682)
-        assert all(alpha_bbox(saved.crop((i * 512, 0, (i + 1) * 512, 682))) == output_boxes[i]
+        assert all(visible_bbox(saved.crop((i * 512, 0, (i + 1) * 512, 682))) == output_boxes[i]
                    for i in range(6))
     print(name, "source", image.size, "cell", cell_size, "scale", scale,
-          "source_bboxes", boxes, "output_bboxes", output_boxes,
+          "source_bboxes", visible_boxes, "output_bboxes", output_boxes,
           "alignment", "torso-center 475" if name == "climb" else "baseline 670")
 
 
 if __name__ == "__main__":
-    for animation in NAMES:
+    selected = tuple(sys.argv[1:]) or NAMES
+    if unknown := set(selected) - set(NAMES):
+        raise SystemExit(f"Unknown animation(s): {', '.join(sorted(unknown))}")
+    for animation in selected:
         prepare(animation)

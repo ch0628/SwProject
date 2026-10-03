@@ -4,7 +4,7 @@ import { overlaps, footprint, navigationBounds, canNavigate } from './collision'
 import { canStand, mapObjects, mapWorld, moveProbe, plazaArchitecture, enterDoor, doorLane, type GrayboxMap, type MapObject } from './plazaPark';
 import { createSmoke, stepSmoke, smokeMetrics, SMOKE_ROUTES, TRAFFIC_ROUTE_PATHS, SMOKE_SIZES, type RouteId, type AllRouteId, type SmokeRun } from './plazaTraffic';
 import { createPlazaFullFlow35, stepFullFlow, fullFlowSummary, type FullFlowState } from './plazaFullFlow';
-import { characterTexture, characterAssetPath, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
+import { CAT_FEMALE_WALK, CAT_FEMALE_WALK_DOWN_V2, catFemaleWalkAnimationKey, catFemaleWalkDirection, characterTexture, characterAssetPath, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
 import { createSupervisedPlazaDemo, createSupervisedPlazaGroup, stepPlazaNpcGroup } from './plazaNpcRuntime';
 import {
   loadCameraZones, manualCharacterView, setUserLabel, visibleCharactersForZone,
@@ -25,6 +25,7 @@ export class PlazaParkScene extends Phaser.Scene {
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private reportAt = 0;
   private debug = new URLSearchParams(window.location.search).get('debug') === '1' || new URLSearchParams(window.location.search).get('mode') === 'dev';
+  private catWalkDownV2 = new URLSearchParams(window.location.search).get('catWalkDownTest') === 'v2';
   private cctv = true;
   private overview = false;
   private zoom = 1;
@@ -68,6 +69,7 @@ export class PlazaParkScene extends Phaser.Scene {
   preload() {
     const params = new URLSearchParams(window.location.search);
     this.mapVersion = params.get('map') === 'v1' ? 'v1' : 'v2';
+    const characterRuntimeTest = params.get('characterRuntimeTest') ?? params.get('foxRuntimeTest');
     this.load.tilemapTiledJSON('plaza-park', this.mapVersion === 'v2' ? '/maps/plaza-park-v2.tmj' : '/maps/plaza-park.tmj');
     this.load.svg('graybox', '/maps/graybox.svg');
     this.load.once('loaderror', (file: Phaser.Loader.File) => this.report(`LOAD ERROR: ${file.key}`));
@@ -96,15 +98,26 @@ export class PlazaParkScene extends Phaser.Scene {
     for (const species of SPECIES_LIST) {
       for (const gender of GENDER_LIST) {
         for (const facing of FACING_LIST) {
-          this.load.image(characterTexture(species, gender, facing), characterAssetPath(species, gender, facing));
+          this.load.image(characterTexture(species, gender, facing), characterAssetPath(species, gender, facing, characterRuntimeTest));
         }
       }
     }
+    for(const direction of FACING_LIST)this.load.spritesheet(
+      CAT_FEMALE_WALK.keys[direction],CAT_FEMALE_WALK.paths[direction],
+      {frameWidth:CAT_FEMALE_WALK.frameWidth,frameHeight:CAT_FEMALE_WALK.frameHeight,endFrame:CAT_FEMALE_WALK.frameCount-1},
+    );
+    if(this.catWalkDownV2)this.load.spritesheet(CAT_FEMALE_WALK_DOWN_V2.key,CAT_FEMALE_WALK_DOWN_V2.path,
+      {frameWidth:CAT_FEMALE_WALK.frameWidth,frameHeight:CAT_FEMALE_WALK.frameHeight,endFrame:CAT_FEMALE_WALK.frameCount-1});
   }
   create() {
     this.mapData = this.cache.tilemap.get('plaza-park').data as GrayboxMap;
     this.cameraZones = this.mapVersion === 'v2' ? loadCameraZones(this.mapData) : [];
     const map = this.make.tilemap({ key: 'plaza-park' });
+    for(const direction of FACING_LIST){
+      const key=CAT_FEMALE_WALK.keys[direction];
+      if(!this.anims.exists(key))this.anims.create({key,frames:this.anims.generateFrameNumbers(key,{start:0,end:CAT_FEMALE_WALK.frameCount-1}),frameRate:CAT_FEMALE_WALK.frameRate,repeat:-1});
+    }
+    if(this.catWalkDownV2&&!this.anims.exists(CAT_FEMALE_WALK_DOWN_V2.key))this.anims.create({key:CAT_FEMALE_WALK_DOWN_V2.key,frames:this.anims.generateFrameNumbers(CAT_FEMALE_WALK_DOWN_V2.key,{start:0,end:CAT_FEMALE_WALK.frameCount-1}),frameRate:CAT_FEMALE_WALK.frameRate,repeat:-1});
     const tiles = map.addTilesetImage('graybox', 'graybox')!;
     map.createLayer('Ground', tiles)!.setVisible(false);
     map.createLayer('Ground_Detail', tiles)!.setVisible(false);
@@ -214,10 +227,11 @@ export class PlazaParkScene extends Phaser.Scene {
     const authored=Number(new URLSearchParams(window.location.search).get('roundStagger'));
     const config={...DEFAULT_ROUND1_CONFIG,admissionIntervalSeconds:Number.isFinite(authored)&&authored>0?authored:DEFAULT_ROUND1_CONFIG.admissionIntervalSeconds};
     this.round1=createRound1Group(this.mapData,this.cameraZones,config);
-    const CCTV_CHARACTER_VISUAL_SCALE = 1.20;
-    const visualHeight={rabbit:56 * CCTV_CHARACTER_VISUAL_SCALE,cat:56 * CCTV_CHARACTER_VISUAL_SCALE,fox:68 * CCTV_CHARACTER_VISUAL_SCALE,dog:68 * CCTV_CHARACTER_VISUAL_SCALE,tiger:80 * CCTV_CHARACTER_VISUAL_SCALE};
+    const CCTV_CHARACTER_VISUAL_SCALE = 1.40;
+    const visualHeight={rabbit:75 * CCTV_CHARACTER_VISUAL_SCALE,cat:90 * CCTV_CHARACTER_VISUAL_SCALE,fox:90 * CCTV_CHARACTER_VISUAL_SCALE,dog:105 * CCTV_CHARACTER_VISUAL_SCALE,tiger:120 * CCTV_CHARACTER_VISUAL_SCALE};
     for(const npc of this.round1.npcs){
-      const {species,gender,id}=npc.definition,sprite=this.add.image(0,0,characterTexture(species,gender,'down')).setOrigin(.5,1);
+      const {species,gender,id}=npc.definition;
+      const sprite=(species==='cat'&&gender==='female'?this.add.sprite(0,0,characterTexture(species,gender,'down')):this.add.image(0,0,characterTexture(species,gender,'down'))).setOrigin(.5,1);
       sprite.setScale(visualHeight[species]/sprite.height);
       const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.phase}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
       const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
@@ -225,7 +239,7 @@ export class PlazaParkScene extends Phaser.Scene {
       const labelMarker=this.add.text(0,-visualHeight[species]-16,'',badgeStyle).setOrigin(.5,1).setVisible(false);
       const phaseMarker=this.add.text(0,-visualHeight[species]-16,'',{...badgeStyle, fontSize:'22px'}).setOrigin(.5,1).setVisible(false);
       const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker,phaseMarker]);
-      (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;(container as any).facing='down' as Facing;
+      (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;(container as any).facing='down' as Facing;(container as any).visualHeight=visualHeight[species];
       (container as any).debugText=label;(container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;(container as any).phaseMarker=phaseMarker;
       this.supervisedSprites.push(container);
     }
@@ -244,7 +258,7 @@ export class PlazaParkScene extends Phaser.Scene {
     this.selectedCharacterId=null;
     const camera=this.cameras.main,viewportWidth=LOGICAL.width*.75,toolbarAndSpriteSafeHeight=LOGICAL.height-160;
     camera.stopFollow().setViewport(0,0,viewportWidth,LOGICAL.height)
-      .setZoom(Math.min(viewportWidth/zone.width,toolbarAndSpriteSafeHeight/zone.height) * 1.08)
+      .setZoom(Math.min(viewportWidth/zone.width,toolbarAndSpriteSafeHeight/zone.height) * 0.98)
       .centerOn(zone.x+zone.width/2,zone.y+zone.height/2);
     this.publishManualState(true);
   }
@@ -447,10 +461,10 @@ export class PlazaParkScene extends Phaser.Scene {
         this.goTo('W21'); // Keep the inspection actor outside the measured entry flows.
         this.supervised=count===5?createSupervisedPlazaDemo(this.mapData):createSupervisedPlazaGroup(this.mapData,count);
         const CCTV_CHARACTER_VISUAL_SCALE = 1.20;
-        const visualHeight={rabbit:56 * CCTV_CHARACTER_VISUAL_SCALE,cat:56 * CCTV_CHARACTER_VISUAL_SCALE,fox:68 * CCTV_CHARACTER_VISUAL_SCALE,dog:68 * CCTV_CHARACTER_VISUAL_SCALE,tiger:80 * CCTV_CHARACTER_VISUAL_SCALE};
+        const visualHeight={rabbit:75 * CCTV_CHARACTER_VISUAL_SCALE,cat:90 * CCTV_CHARACTER_VISUAL_SCALE,fox:90 * CCTV_CHARACTER_VISUAL_SCALE,dog:105 * CCTV_CHARACTER_VISUAL_SCALE,tiger:120 * CCTV_CHARACTER_VISUAL_SCALE};
         for(const npc of this.supervised.npcs){
           const {species,gender,id}=npc.definition;
-          const sprite=this.add.image(0,0,characterTexture(species,gender,'down')).setOrigin(.5,1);
+          const sprite=(species==='cat'&&gender==='female'?this.add.sprite(0,0,characterTexture(species,gender,'down')):this.add.image(0,0,characterTexture(species,gender,'down'))).setOrigin(.5,1);
           sprite.setScale(visualHeight[species]/sprite.height);
           const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.intents[npc.intentIndex]}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
           const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
@@ -458,7 +472,7 @@ export class PlazaParkScene extends Phaser.Scene {
           const phaseMarker=this.add.text(0,-visualHeight[species]-45,'',{fontSize:'24px',fontStyle:'bold',color:'#fff',padding:{x:4,y:2}}).setOrigin(.5).setVisible(false);
           const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker,phaseMarker]);
           (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;
-          (container as any).facing='down' as Facing;(container as any).debugText=label;
+          (container as any).facing='down' as Facing;(container as any).visualHeight=visualHeight[species];(container as any).debugText=label;
           (container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;(container as any).phaseMarker=phaseMarker;
           this.supervisedSprites.push(container);
         }
@@ -600,7 +614,15 @@ export class PlazaParkScene extends Phaser.Scene {
       let facing=(container as any).facing as Facing;
       if(Math.abs(moveX)>.001||Math.abs(moveY)>.001)facing=Math.abs(moveX)>=Math.abs(moveY)?(moveX>0?'right':'left'):(moveY>0?'down':'up');
       (container as any).lastX=n.position.x;(container as any).lastY=n.position.y;(container as any).facing=facing;
-      (container.list[0] as Phaser.GameObjects.Image).setTexture(characterTexture(n.definition.species,n.definition.gender,facing));
+      const sprite=container.list[0] as Phaser.GameObjects.Image;
+      const isCatFemale=n.definition.species==='cat'&&n.definition.gender==='female';
+      const walkDirection=catFemaleWalkDirection(n.definition.species,n.definition.gender,moveX,moveY);
+      if(walkDirection)(sprite as Phaser.GameObjects.Sprite).play(catFemaleWalkAnimationKey(walkDirection,this.catWalkDownV2),true);
+      else{
+        if(isCatFemale)(sprite as Phaser.GameObjects.Sprite).stop();
+        sprite.setTexture(characterTexture(n.definition.species,n.definition.gender,facing));
+      }
+      if(isCatFemale)sprite.setScale((container as any).visualHeight/sprite.height);
       container.setPosition(n.position.x,n.position.y).setDepth(n.position.y);
       const state='assignment' in n?n.phase:(n.phase==='EXITED'?'EXITED':n.intents[n.intentIndex]);
       (container as any).debugText?.setText(`${n.definition.id} ${state}${n.stopPoint?` @ ${n.stopPoint}`:''}`);
