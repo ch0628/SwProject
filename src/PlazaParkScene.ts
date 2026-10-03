@@ -4,7 +4,7 @@ import { overlaps, footprint, navigationBounds, canNavigate } from './collision'
 import { canStand, mapObjects, mapWorld, moveProbe, plazaArchitecture, enterDoor, doorLane, type GrayboxMap, type MapObject } from './plazaPark';
 import { createSmoke, stepSmoke, smokeMetrics, SMOKE_ROUTES, TRAFFIC_ROUTE_PATHS, SMOKE_SIZES, type RouteId, type AllRouteId, type SmokeRun } from './plazaTraffic';
 import { createPlazaFullFlow35, stepFullFlow, fullFlowSummary, type FullFlowState } from './plazaFullFlow';
-import { CAT_FEMALE_WALK, CAT_FEMALE_WALK_DOWN_V2, catFemaleWalkAnimationKey, catFemaleWalkDirection, characterTexture, characterAssetPath, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
+import { CAT_FEMALE_V01, CAT_FEMALE_WALK, catFemaleWalkAnimationKey, catFemaleWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
 import { createSupervisedPlazaDemo, createSupervisedPlazaGroup, stepPlazaNpcGroup } from './plazaNpcRuntime';
 import {
   loadCameraZones, manualCharacterView, setUserLabel, visibleCharactersForZone,
@@ -24,8 +24,7 @@ export class PlazaParkScene extends Phaser.Scene {
   private coverage!: Phaser.GameObjects.Graphics;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private reportAt = 0;
-  private debug = new URLSearchParams(window.location.search).get('debug') === '1' || new URLSearchParams(window.location.search).get('mode') === 'dev';
-  private catWalkDownV2 = new URLSearchParams(window.location.search).get('catWalkDownTest') === 'v2';
+  private debug = false;
   private cctv = true;
   private overview = false;
   private zoom = 1;
@@ -46,7 +45,7 @@ export class PlazaParkScene extends Phaser.Scene {
   private doorCooldown = false;
   private enters = 0;
   private exits = 0;
-  private mapVersion = 'v1';
+  private readonly mapVersion = 'v2';
   private cameraZones: readonly CameraZone[] = [];
   private selectedCctv: CameraZone | null = null;
   private selectedCharacterId: CharacterId | null = null;
@@ -67,10 +66,7 @@ export class PlazaParkScene extends Phaser.Scene {
     ...(this.round1?.npcs.filter(n=>n.active&&n.visible).map(n=>footprint(n.position.x,n.position.y,n.config.footprint))??[]),
   ];}
   preload() {
-    const params = new URLSearchParams(window.location.search);
-    this.mapVersion = params.get('map') === 'v1' ? 'v1' : 'v2';
-    const characterRuntimeTest = params.get('characterRuntimeTest') ?? params.get('foxRuntimeTest');
-    this.load.tilemapTiledJSON('plaza-park', this.mapVersion === 'v2' ? '/maps/plaza-park-v2.tmj' : '/maps/plaza-park.tmj');
+    this.load.tilemapTiledJSON('plaza-park', '/maps/plaza-park-v2.tmj');
     this.load.svg('graybox', '/maps/graybox.svg');
     this.load.once('loaderror', (file: Phaser.Loader.File) => this.report(`LOAD ERROR: ${file.key}`));
     const ASSETS = [
@@ -98,7 +94,7 @@ export class PlazaParkScene extends Phaser.Scene {
     for (const species of SPECIES_LIST) {
       for (const gender of GENDER_LIST) {
         for (const facing of FACING_LIST) {
-          this.load.image(characterTexture(species, gender, facing), characterAssetPath(species, gender, facing, characterRuntimeTest));
+          this.load.image(characterTexture(species, gender, facing), characterAssetPath(species, gender, facing));
         }
       }
     }
@@ -106,8 +102,11 @@ export class PlazaParkScene extends Phaser.Scene {
       CAT_FEMALE_WALK.keys[direction],CAT_FEMALE_WALK.paths[direction],
       {frameWidth:CAT_FEMALE_WALK.frameWidth,frameHeight:CAT_FEMALE_WALK.frameHeight,endFrame:CAT_FEMALE_WALK.frameCount-1},
     );
-    if(this.catWalkDownV2)this.load.spritesheet(CAT_FEMALE_WALK_DOWN_V2.key,CAT_FEMALE_WALK_DOWN_V2.path,
-      {frameWidth:CAT_FEMALE_WALK.frameWidth,frameHeight:CAT_FEMALE_WALK.frameHeight,endFrame:CAT_FEMALE_WALK.frameCount-1});
+    for(const direction of FACING_LIST){
+      this.load.image(CAT_FEMALE_V01.base.keys[direction],CAT_FEMALE_V01.base.paths[direction]);
+      this.load.spritesheet(CAT_FEMALE_V01.walk.keys[direction],CAT_FEMALE_V01.walk.paths[direction],
+        {frameWidth:CAT_FEMALE_WALK.frameWidth,frameHeight:CAT_FEMALE_WALK.frameHeight,endFrame:CAT_FEMALE_WALK.frameCount-1});
+    }
   }
   create() {
     this.mapData = this.cache.tilemap.get('plaza-park').data as GrayboxMap;
@@ -116,8 +115,9 @@ export class PlazaParkScene extends Phaser.Scene {
     for(const direction of FACING_LIST){
       const key=CAT_FEMALE_WALK.keys[direction];
       if(!this.anims.exists(key))this.anims.create({key,frames:this.anims.generateFrameNumbers(key,{start:0,end:CAT_FEMALE_WALK.frameCount-1}),frameRate:CAT_FEMALE_WALK.frameRate,repeat:-1});
+      const variantKey=CAT_FEMALE_V01.walk.keys[direction];
+      if(!this.anims.exists(variantKey))this.anims.create({key:variantKey,frames:this.anims.generateFrameNumbers(variantKey,{start:0,end:CAT_FEMALE_WALK.frameCount-1}),frameRate:CAT_FEMALE_WALK.frameRate,repeat:-1});
     }
-    if(this.catWalkDownV2&&!this.anims.exists(CAT_FEMALE_WALK_DOWN_V2.key))this.anims.create({key:CAT_FEMALE_WALK_DOWN_V2.key,frames:this.anims.generateFrameNumbers(CAT_FEMALE_WALK_DOWN_V2.key,{start:0,end:CAT_FEMALE_WALK.frameCount-1}),frameRate:CAT_FEMALE_WALK.frameRate,repeat:-1});
     const tiles = map.addTilesetImage('graybox', 'graybox')!;
     map.createLayer('Ground', tiles)!.setVisible(false);
     map.createLayer('Ground_Detail', tiles)!.setVisible(false);
@@ -224,14 +224,13 @@ export class PlazaParkScene extends Phaser.Scene {
   private startRound1(){
     this.smoke={npcs:[],elapsed:0,paused:false};this.fullFlow=null;this.supervised=null;this.round1=null;
     this.supervisedSprites.forEach(sprite=>sprite.destroy());this.supervisedSprites=[];
-    const authored=Number(new URLSearchParams(window.location.search).get('roundStagger'));
-    const config={...DEFAULT_ROUND1_CONFIG,admissionIntervalSeconds:Number.isFinite(authored)&&authored>0?authored:DEFAULT_ROUND1_CONFIG.admissionIntervalSeconds};
-    this.round1=createRound1Group(this.mapData,this.cameraZones,config);
+    this.round1=createRound1Group(this.mapData,this.cameraZones,DEFAULT_ROUND1_CONFIG);
     const CCTV_CHARACTER_VISUAL_SCALE = 1.40;
     const visualHeight={rabbit:75 * CCTV_CHARACTER_VISUAL_SCALE,cat:90 * CCTV_CHARACTER_VISUAL_SCALE,fox:90 * CCTV_CHARACTER_VISUAL_SCALE,dog:105 * CCTV_CHARACTER_VISUAL_SCALE,tiger:120 * CCTV_CHARACTER_VISUAL_SCALE};
     for(const npc of this.round1.npcs){
       const {species,gender,id}=npc.definition;
-      const sprite=(species==='cat'&&gender==='female'?this.add.sprite(0,0,characterTexture(species,gender,'down')):this.add.image(0,0,characterTexture(species,gender,'down'))).setOrigin(.5,1);
+      const texture=characterVisualTexture(id,species,gender,'down');
+      const sprite=(species==='cat'&&gender==='female'?this.add.sprite(0,0,texture):this.add.image(0,0,texture)).setOrigin(.5,1);
       sprite.setScale(visualHeight[species]/sprite.height);
       const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.phase}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
       const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
@@ -248,7 +247,7 @@ export class PlazaParkScene extends Phaser.Scene {
       this.routeDebug.lineStyle(2,color,.65).beginPath().moveTo(points[0].x,points[0].y);points.slice(1).forEach(point=>this.routeDebug.lineTo(point.x,point.y));this.routeDebug.strokePath();
     }
     for(const point of [...this.round1.scenarioPoints.values(),...this.round1.laneRuntime.stops.values()])this.routeDebug.fillStyle(0xffe66d,.9).fillCircle(point.x,point.y,6).lineStyle(2,0x172129,1).strokeCircle(point.x,point.y,6);
-    this.notice=`Round 1 · 35 persistent identities · stagger ${config.admissionIntervalSeconds}s prototype knob.`;
+    this.notice=`Round 1 · 35 persistent identities · stagger ${DEFAULT_ROUND1_CONFIG.admissionIntervalSeconds}s.`;
   }
 
   selectCctv(name:string){
@@ -455,7 +454,7 @@ export class PlazaParkScene extends Phaser.Scene {
     if(mode==='supervised'||mode.startsWith('supervised')){
       this.smoke={npcs:[],elapsed:0,paused:false};
       if(this.mapVersion!=='v2'){
-        this.notice='Supervised runtime requires ?map=v2; no NPC spawned.';
+        this.notice='Supervised runtime requires the production map; no NPC spawned.';
       } else {
         const count=mode==='supervised'?5:Number(mode.slice('supervised'.length));
         this.goTo('W21'); // Keep the inspection actor outside the measured entry flows.
@@ -464,7 +463,8 @@ export class PlazaParkScene extends Phaser.Scene {
         const visualHeight={rabbit:75 * CCTV_CHARACTER_VISUAL_SCALE,cat:90 * CCTV_CHARACTER_VISUAL_SCALE,fox:90 * CCTV_CHARACTER_VISUAL_SCALE,dog:105 * CCTV_CHARACTER_VISUAL_SCALE,tiger:120 * CCTV_CHARACTER_VISUAL_SCALE};
         for(const npc of this.supervised.npcs){
           const {species,gender,id}=npc.definition;
-          const sprite=(species==='cat'&&gender==='female'?this.add.sprite(0,0,characterTexture(species,gender,'down')):this.add.image(0,0,characterTexture(species,gender,'down'))).setOrigin(.5,1);
+          const texture=characterVisualTexture(id,species,gender,'down');
+          const sprite=(species==='cat'&&gender==='female'?this.add.sprite(0,0,texture):this.add.image(0,0,texture)).setOrigin(.5,1);
           sprite.setScale(visualHeight[species]/sprite.height);
           const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.intents[npc.intentIndex]}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
           const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
@@ -617,10 +617,10 @@ export class PlazaParkScene extends Phaser.Scene {
       const sprite=container.list[0] as Phaser.GameObjects.Image;
       const isCatFemale=n.definition.species==='cat'&&n.definition.gender==='female';
       const walkDirection=catFemaleWalkDirection(n.definition.species,n.definition.gender,moveX,moveY);
-      if(walkDirection)(sprite as Phaser.GameObjects.Sprite).play(catFemaleWalkAnimationKey(walkDirection,this.catWalkDownV2),true);
+      if(walkDirection)(sprite as Phaser.GameObjects.Sprite).play(catFemaleWalkAnimationKey(n.definition.id,walkDirection),true);
       else{
         if(isCatFemale)(sprite as Phaser.GameObjects.Sprite).stop();
-        sprite.setTexture(characterTexture(n.definition.species,n.definition.gender,facing));
+        sprite.setTexture(characterVisualTexture(n.definition.id,n.definition.species,n.definition.gender,facing));
       }
       if(isCatFemale)sprite.setScale((container as any).visualHeight/sprite.height);
       container.setPosition(n.position.x,n.position.y).setDepth(n.position.y);

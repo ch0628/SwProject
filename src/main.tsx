@@ -124,8 +124,7 @@ function App() {
   const [corridor, setCorridor] = useState(false);
   const plazaRef = useRef<PlazaParkScene | null>(null);
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const debugMode = searchParams.get('debug') === '1' || searchParams.get('mode') === 'dev';
+  const debugMode = false;
 
   const [plaza, setPlaza] = useState(!debugMode);
   const [, setPlazaStats] = useState('Loading Plaza & Park...');
@@ -715,5 +714,5 @@ function Hub() {
 const entryParams = new URLSearchParams(window.location.search);
 const mode = entryParams.get('mode');
 createRoot(document.getElementById('root')!).render(
-  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' || mode === 'dev' || entryParams.get('debug') === '1' ? <App /> : <Hub />,
+  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' ? <App /> : <Hub />,
 );

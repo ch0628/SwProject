@@ -1,7 +1,6 @@
-"""Export the Cat Female walk pilot by resizing each frame independently."""
+"""Export the canonical Cat Female walk set by resizing each frame independently."""
 
 import hashlib
-import sys
 from pathlib import Path
 
 from PIL import Image
@@ -11,23 +10,18 @@ from character_runtime_image import bbox, premultiplied_lanczos, round1_target_h
 
 FRAME_COUNT = 6
 ANIMATIONS = ("walk_left", "walk_right", "walk_up", "walk_down")
-VARIANTS = ("walk_down_2",)
 
 
 def main() -> None:
     repo = Path(__file__).resolve().parents[1]
     source_root = repo / "assets/characters/cat/animations/female/processed"
-    output_base = repo / "public/assets/characters/runtime-test/world/cat/female/animation/walk"
+    output_root = repo / "public/assets/characters/cat/animations/female/runtime/world"
     target_height = round1_target_height(repo, "cat")
     runtime_height = target_height * 4
-    selected = tuple(sys.argv[1:]) or ANIMATIONS
-    if unknown := set(selected) - set(ANIMATIONS) - set(VARIANTS):
-        raise SystemExit(f"Unknown animation(s): {', '.join(sorted(unknown))}")
+    output_root.mkdir(parents=True, exist_ok=True)
 
     expected_frame_size = None
-    for animation in selected:
-        output_root = output_base / ("4lp-v2" if animation in VARIANTS else "4lp")
-        output_root.mkdir(parents=True, exist_ok=True)
+    for animation in ANIMATIONS:
         source_path = source_root / f"cat_female_{animation}.png"
         with Image.open(source_path) as opened:
             opened.load()

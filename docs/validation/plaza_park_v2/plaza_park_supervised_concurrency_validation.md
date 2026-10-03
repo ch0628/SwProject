@@ -108,13 +108,15 @@ Lower completion at failed levels is a consequence of unrecovered upstream stall
 
 ## 7. Browser Visual Smoke
 
-Open the app with `?map=v2`, enter **Plaza & Park**, then select one of:
+This archived validation used the former developer selectors for:
 
 - `v2 Supervised · 5 NPC`
 - `v2 Supervised · 10 NPC`
 - `v2 Supervised · 15 NPC`
 
-The validation mode moves the inspection actor to W21 so it does not block N02 entry flow. Debug labels show ID/current intent, green footprints show active actors, and red footprints show watchdog stalled candidates.
+Those experiment selectors are no longer exposed through production query parameters. The production supervised entry point is `?mode=supervised`.
+
+The validation mode moved the inspection actor to W21 so it did not block N02 entry flow. Debug labels showed ID/current intent, green footprints showed active actors, and red footprints showed watchdog stalled candidates.
 
 Direct browser smoke on 2026-09-14 confirmed all three selectors and live status output. The 5-NPC mode started with `Active 5 / Stalled candidates 0`; after 24 real-time seconds the 10-NPC mode showed `Active 4 / Exited 6 / Stalled candidates 4`, and the 15-NPC mode showed `Active 8 / Exited 7 / Stalled candidates 8`. Browser warning/error console output was empty. These short visual observations agree with the deterministic headless runs but do not replace their independent 120-s simulation measurements.
 

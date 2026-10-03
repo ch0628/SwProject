@@ -138,8 +138,9 @@ index.html
 ### Mode 분기 (URL Query Parameter)
 
 ```
-?debug=1 또는 ?mode=dev  → debugMode=true, ScaleValidationScene, Dev Toolbar
-(기본)                   → plaza=true, PlazaParkScene, guideStep='START'
+/                         → Hub
+?mode=ai-basics           → AI Basics
+?mode=supervised          → PlazaParkScene, guideStep='START'
 ```
 
 ### Scene 관리
@@ -469,16 +470,14 @@ update loop에서 state signature 변화 시 callback 호출.
 ### URL-based Mode 분기
 
 ```
-?debug=1     → debugMode=true, ScaleValidationScene
-?mode=dev    → debugMode=true, ScaleValidationScene
-?map=v1      → 구형 맵 로드
-?map=v2      → 신형 맵 로드 (default)
-?roundStagger=N → Round 1 NPC 입장 간격
+/                         → Hub
+?mode=ai-basics           → AI Basics
+?mode=supervised          → 지도학습 (plaza-park-v2)
 ```
 
 - React Router: **사용 안 함** (dependency 없음)
 - SPA routing: **없음**
-- 단일 URL, query parameter로 mode 구분
+- 단일 URL, production `mode` query parameter로 모듈 구분
 
 ### Scene 간 전환
 
@@ -699,5 +698,5 @@ docs/shared/technical/ml_prototype_technical_requirements.md
 2. `config.ts WORLD_SIZE`는 ScaleValidationScene 전용; PlazaParkScene 실제 맵은 96×56 tiles
 3. `assets/ai/` 이미지 — Vite static import (`'../assets/ai/...'` 경로)
 4. 환경/캐릭터 에셋 — Phaser `this.load.image(key, '/assets/...')` (public URL)
-5. NPC 걸음 애니메이션 없음 (방향 전환만)
-6. `?debug=1` 없으면 바로 Plaza gameplay 시작 (START 화면부터)
+5. Cat Female NPC는 4방향 걸음 애니메이션, 나머지 NPC는 정적 방향 전환 사용
+6. 지도학습은 `?mode=supervised`에서 Plaza gameplay 시작 (START 화면부터)

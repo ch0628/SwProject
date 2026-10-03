@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "assets/characters/cat/animations/female"
 OUTPUT = SOURCE / "processed"
 PUBLIC = ROOT / "public/assets/characters/cat/animations/female/processed"
-NAMES = ("walk_left", "walk_right", "walk_up", "walk_down", "walk_down_2", "climb", "pickup_left", "pickup_right")
+NAMES = ("walk_left", "walk_right", "walk_up", "walk_down", "climb", "pickup_left", "pickup_right")
 FRAME = (512, 682)
 BASELINE = 670  # exclusive bottom of opaque pixels; Phaser uses 670 / 682 origin
 TORSO_CENTER_Y = 475
@@ -85,9 +85,8 @@ def prepare(name):
         sheet.paste(frame, (FRAME[0] * index, 0))
     runtime_name = f"cat_female_{name}.png"
     sheet.save(OUTPUT / runtime_name)
-    if not name.endswith("_2"):
-        PUBLIC.mkdir(parents=True, exist_ok=True)
-        sheet.save(PUBLIC / runtime_name)
+    PUBLIC.mkdir(parents=True, exist_ok=True)
+    sheet.save(PUBLIC / runtime_name)
 
     contact = Image.new("RGB", (768, 736), "#eeeeee")
     draw = ImageDraw.Draw(contact)

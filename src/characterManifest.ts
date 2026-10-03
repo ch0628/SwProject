@@ -14,20 +14,61 @@ export const CAT_FEMALE_WALK = Object.freeze({
     up: 'world-cat-female-walk-up-4lp',
   }),
   paths: Object.freeze({
-    down: '/assets/characters/runtime-test/world/cat/female/animation/walk/4lp/cat_female_walk_down.png',
-    left: '/assets/characters/runtime-test/world/cat/female/animation/walk/4lp/cat_female_walk_left.png',
-    right: '/assets/characters/runtime-test/world/cat/female/animation/walk/4lp/cat_female_walk_right.png',
-    up: '/assets/characters/runtime-test/world/cat/female/animation/walk/4lp/cat_female_walk_up.png',
+    down: '/assets/characters/cat/animations/female/runtime/world/cat_female_walk_down.png',
+    left: '/assets/characters/cat/animations/female/runtime/world/cat_female_walk_left.png',
+    right: '/assets/characters/cat/animations/female/runtime/world/cat_female_walk_right.png',
+    up: '/assets/characters/cat/animations/female/runtime/world/cat_female_walk_up.png',
   }),
 });
 
-export const CAT_FEMALE_WALK_DOWN_V2 = Object.freeze({
-  key: 'world-cat-female-walk-down-4lp-v2',
-  path: '/assets/characters/runtime-test/world/cat/female/animation/walk/4lp-v2/cat_female_walk_down_2.png',
+export const CAT_FEMALE_V01 = Object.freeze({
+  id: 'v01',
+  base: Object.freeze({
+    keys: Object.freeze({
+      down: 'world-cat-female-v01-down-4lp',
+      left: 'world-cat-female-v01-left-4lp',
+      right: 'world-cat-female-v01-right-4lp',
+      up: 'world-cat-female-v01-up-4lp',
+    }),
+    paths: Object.freeze({
+      down: '/assets/characters/world/cat/female/v01/base/cat_female_v01_down.png',
+      left: '/assets/characters/world/cat/female/v01/base/cat_female_v01_left.png',
+      right: '/assets/characters/world/cat/female/v01/base/cat_female_v01_right.png',
+      up: '/assets/characters/world/cat/female/v01/base/cat_female_v01_up.png',
+    }),
+  }),
+  walk: Object.freeze({
+    keys: Object.freeze({
+      down: 'world-cat-female-v01-walk-down-4lp',
+      left: 'world-cat-female-v01-walk-left-4lp',
+      right: 'world-cat-female-v01-walk-right-4lp',
+      up: 'world-cat-female-v01-walk-up-4lp',
+    }),
+    paths: Object.freeze({
+      down: '/assets/characters/world/cat/female/v01/walk/cat_female_v01_walk_down.png',
+      left: '/assets/characters/world/cat/female/v01/walk/cat_female_v01_walk_left.png',
+      right: '/assets/characters/world/cat/female/v01/walk/cat_female_v01_walk_right.png',
+      up: '/assets/characters/world/cat/female/v01/walk/cat_female_v01_walk_up.png',
+    }),
+  }),
 });
 
-export function catFemaleWalkAnimationKey(direction: Facing, downV2 = false): string {
-  return direction === 'down' && downV2 ? CAT_FEMALE_WALK_DOWN_V2.key : CAT_FEMALE_WALK.keys[direction];
+export function characterVisualVariant(characterId: string): 'v01' | null {
+  return characterId === 'NPC27' ? 'v01' : null;
+}
+
+export function characterVisualTexture(
+  characterId: string, species: Species, gender: Gender, facing: Facing,
+): string {
+  return characterVisualVariant(characterId) === 'v01' && species === 'cat' && gender === 'female'
+    ? CAT_FEMALE_V01.base.keys[facing]
+    : characterTexture(species, gender, facing);
+}
+
+export function catFemaleWalkAnimationKey(characterId: string, direction: Facing): string {
+  return characterVisualVariant(characterId) === 'v01'
+    ? CAT_FEMALE_V01.walk.keys[direction]
+    : CAT_FEMALE_WALK.keys[direction];
 }
 
 export function catFemaleWalkDirection(
@@ -41,22 +82,8 @@ export function characterTexture(species: Species, gender: Gender, facing: Facin
   return `${species}_${gender}_${facing}`;
 }
 
-export function characterAssetPath(species: Species, gender: Gender, facing: Facing, runtimeTest: string | null = null): string {
-  const profile: Record<string, string> = {
-    '1': '', '2': '/2x', '4': '/4x', '4n': '/4x', '6n': '/6x-nearest', '4l': '/4x-lanczos',
-    '4lp': '/4x-lanczos-premultiplied', '4lps': '/4x-lanczos-premultiplied-sharp', '6l': '/6x-lanczos',
-  };
-  const crossValidation = gender === 'female' && (species === 'cat' || species === 'tiger') && (
-    runtimeTest === `${species}-female-4lp` ||
-    runtimeTest === 'cat-tiger-4lp'
-  );
-  const suffix = runtimeTest === null ? undefined : profile[runtimeTest];
-  const folder = crossValidation
-    ? `/assets/characters/runtime-test/world/${species}/female/4lp`
-    : suffix !== undefined && species === 'fox' && gender === 'female'
-    ? `/assets/characters/runtime-test/world/fox/female${suffix}`
-    : `/assets/characters/${species}/base/${gender}`;
-  return `${folder}/${species}_${gender}_${facing}.png`;
+export function characterAssetPath(species: Species, gender: Gender, facing: Facing): string {
+  return `/assets/characters/${species}/base/${gender}/${species}_${gender}_${facing}.png`;
 }
 
 export const SPECIES_LIST: Species[] = ['rabbit', 'cat', 'fox', 'dog', 'tiger'];
