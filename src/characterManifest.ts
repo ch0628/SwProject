@@ -2,6 +2,25 @@ export type Species = 'rabbit' | 'cat' | 'fox' | 'dog' | 'tiger';
 export type Gender = 'male' | 'female';
 export type Facing = 'down' | 'left' | 'right' | 'up';
 
+export const RABBIT_FEMALE_WALK = Object.freeze({
+  frameWidth: 420,
+  frameHeight: 420,
+  frameCount: 6,
+  frameRate: 9,
+  keys: Object.freeze({
+    down: 'world-rabbit-female-walk-down-4lp',
+    left: 'world-rabbit-female-walk-left-4lp',
+    right: 'world-rabbit-female-walk-right-4lp',
+    up: 'world-rabbit-female-walk-up-4lp',
+  }),
+  paths: Object.freeze({
+    down: '/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_down.png',
+    left: '/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_left.png',
+    right: '/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_right.png',
+    up: '/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_up.png',
+  }),
+});
+
 export const CAT_FEMALE_WALK = Object.freeze({
   frameWidth: 378,
   frameHeight: 504,
@@ -76,6 +95,20 @@ export function catFemaleWalkDirection(
 ): Facing | null {
   if (species !== 'cat' || gender !== 'female' || Math.abs(dx) <= .001 && Math.abs(dy) <= .001) return null;
   return Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+}
+
+export function characterWalkDirection(
+  species: Species, gender: Gender, dx: number, dy: number,
+): Facing | null {
+  if (gender !== 'female' || species !== 'cat' && species !== 'rabbit') return null;
+  return catFemaleWalkDirection('cat', 'female', dx, dy);
+}
+
+export function characterWalkAnimationKey(
+  characterId: string, species: Species, gender: Gender, direction: Facing,
+): string | null {
+  if (species === 'cat' && gender === 'female') return catFemaleWalkAnimationKey(characterId, direction);
+  return species === 'rabbit' && gender === 'female' ? RABBIT_FEMALE_WALK.keys[direction] : null;
 }
 
 export function characterTexture(species: Species, gender: Gender, facing: Facing): string {

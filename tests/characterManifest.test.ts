@@ -4,9 +4,12 @@ import { test } from 'node:test';
 import {
   CAT_FEMALE_V01,
   CAT_FEMALE_WALK,
+  RABBIT_FEMALE_WALK,
   catFemaleWalkAnimationKey,
   catFemaleWalkDirection,
   characterAssetPath,
+  characterWalkAnimationKey,
+  characterWalkDirection,
   characterVisualTexture,
   characterVisualVariant,
   FACING_LIST,
@@ -20,6 +23,26 @@ test('Character assets use canonical production paths', () => {
 
   for (const direction of FACING_LIST) {
     assert.ok(existsSync(new URL(`../public${characterAssetPath('cat', 'female', direction)}`, import.meta.url)));
+  }
+});
+
+test('Rabbit Female base walk is four-directional and isolated by species/gender', () => {
+  assert.equal(characterWalkDirection('rabbit', 'female', -1, 0), 'left');
+  assert.equal(characterWalkDirection('rabbit', 'female', 1, 0), 'right');
+  assert.equal(characterWalkDirection('rabbit', 'female', 0, -1), 'up');
+  assert.equal(characterWalkDirection('rabbit', 'female', 0, 1), 'down');
+  assert.equal(characterWalkDirection('rabbit', 'male', 1, 0), null);
+  assert.equal(characterWalkDirection('fox', 'female', 1, 0), null);
+  assert.equal(characterWalkAnimationKey('NPC21', 'rabbit', 'female', 'left'), RABBIT_FEMALE_WALK.keys.left);
+  assert.equal(characterWalkAnimationKey('NPC21', 'rabbit', 'male', 'left'), null);
+  assert.deepEqual(
+    (({ id, species, gender, verifiedLabel }) => ({ id, species, gender, verifiedLabel }))(characterDefinition('NPC21')!),
+    { id: 'NPC21', species: 'rabbit', gender: 'female', verifiedLabel: 'CITIZEN' },
+  );
+  for (const direction of FACING_LIST) {
+    const path = RABBIT_FEMALE_WALK.paths[direction];
+    assert.equal(path, `/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_${direction}.png`);
+    assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
   }
 });
 

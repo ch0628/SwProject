@@ -1,5 +1,6 @@
-"""Export the canonical Cat Female walk set by resizing each frame independently."""
+"""Export a canonical character walk set by resizing each frame independently."""
 
+import argparse
 import hashlib
 from pathlib import Path
 
@@ -13,16 +14,20 @@ ANIMATIONS = ("walk_left", "walk_right", "walk_up", "walk_down")
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("species", nargs="?", default="cat")
+    parser.add_argument("gender", nargs="?", default="female")
+    args = parser.parse_args()
     repo = Path(__file__).resolve().parents[1]
-    source_root = repo / "assets/characters/cat/animations/female/processed"
-    output_root = repo / "public/assets/characters/cat/animations/female/runtime/world"
-    target_height = round1_target_height(repo, "cat")
+    source_root = repo / f"assets/characters/{args.species}/animations/{args.gender}/processed"
+    output_root = repo / f"public/assets/characters/{args.species}/animations/{args.gender}/runtime/world"
+    target_height = round1_target_height(repo, args.species)
     runtime_height = target_height * 4
     output_root.mkdir(parents=True, exist_ok=True)
 
     expected_frame_size = None
     for animation in ANIMATIONS:
-        source_path = source_root / f"cat_female_{animation}.png"
+        source_path = source_root / f"{args.species}_{args.gender}_{animation}.png"
         with Image.open(source_path) as opened:
             opened.load()
             if opened.mode != "RGBA" or opened.width % FRAME_COUNT:
@@ -71,7 +76,7 @@ def main() -> None:
         print(f"  runtime_bboxes={runtime_boxes}")
         print(f"  sha256={hashlib.sha256(output_path.read_bytes()).hexdigest()}")
 
-    print(f"target_visual_height={target_height} runtime_scale={target_height / runtime_height:.2f}")
+    print(f"character={args.species}/{args.gender} target_visual_height={target_height} runtime_scale={target_height / runtime_height:.2f}")
     print("filter=premultiplied-alpha LANCZOS sharpen=NONE")
 
 

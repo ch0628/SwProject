@@ -4,7 +4,7 @@ import { overlaps, footprint, navigationBounds, canNavigate } from './collision'
 import { canStand, mapObjects, mapWorld, moveProbe, plazaArchitecture, enterDoor, doorLane, type GrayboxMap, type MapObject } from './plazaPark';
 import { createSmoke, stepSmoke, smokeMetrics, SMOKE_ROUTES, TRAFFIC_ROUTE_PATHS, SMOKE_SIZES, type RouteId, type AllRouteId, type SmokeRun } from './plazaTraffic';
 import { createPlazaFullFlow35, stepFullFlow, fullFlowSummary, type FullFlowState } from './plazaFullFlow';
-import { CAT_FEMALE_V01, CAT_FEMALE_WALK, catFemaleWalkAnimationKey, catFemaleWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
+import { CAT_FEMALE_V01, CAT_FEMALE_WALK, RABBIT_FEMALE_WALK, characterWalkAnimationKey, characterWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
 import { createSupervisedPlazaDemo, createSupervisedPlazaGroup, stepPlazaNpcGroup } from './plazaNpcRuntime';
 import {
   loadCameraZones, manualCharacterView, setUserLabel, visibleCharactersForZone,
@@ -98,9 +98,9 @@ export class PlazaParkScene extends Phaser.Scene {
         }
       }
     }
-    for(const direction of FACING_LIST)this.load.spritesheet(
-      CAT_FEMALE_WALK.keys[direction],CAT_FEMALE_WALK.paths[direction],
-      {frameWidth:CAT_FEMALE_WALK.frameWidth,frameHeight:CAT_FEMALE_WALK.frameHeight,endFrame:CAT_FEMALE_WALK.frameCount-1},
+    for(const walk of [CAT_FEMALE_WALK,RABBIT_FEMALE_WALK])for(const direction of FACING_LIST)this.load.spritesheet(
+      walk.keys[direction],walk.paths[direction],
+      {frameWidth:walk.frameWidth,frameHeight:walk.frameHeight,endFrame:walk.frameCount-1},
     );
     for(const direction of FACING_LIST){
       this.load.image(CAT_FEMALE_V01.base.keys[direction],CAT_FEMALE_V01.base.paths[direction]);
@@ -112,9 +112,11 @@ export class PlazaParkScene extends Phaser.Scene {
     this.mapData = this.cache.tilemap.get('plaza-park').data as GrayboxMap;
     this.cameraZones = this.mapVersion === 'v2' ? loadCameraZones(this.mapData) : [];
     const map = this.make.tilemap({ key: 'plaza-park' });
+    for(const walk of [CAT_FEMALE_WALK,RABBIT_FEMALE_WALK])for(const direction of FACING_LIST){
+      const key=walk.keys[direction];
+      if(!this.anims.exists(key))this.anims.create({key,frames:this.anims.generateFrameNumbers(key,{start:0,end:walk.frameCount-1}),frameRate:walk.frameRate,repeat:-1});
+    }
     for(const direction of FACING_LIST){
-      const key=CAT_FEMALE_WALK.keys[direction];
-      if(!this.anims.exists(key))this.anims.create({key,frames:this.anims.generateFrameNumbers(key,{start:0,end:CAT_FEMALE_WALK.frameCount-1}),frameRate:CAT_FEMALE_WALK.frameRate,repeat:-1});
       const variantKey=CAT_FEMALE_V01.walk.keys[direction];
       if(!this.anims.exists(variantKey))this.anims.create({key:variantKey,frames:this.anims.generateFrameNumbers(variantKey,{start:0,end:CAT_FEMALE_WALK.frameCount-1}),frameRate:CAT_FEMALE_WALK.frameRate,repeat:-1});
     }
@@ -230,7 +232,8 @@ export class PlazaParkScene extends Phaser.Scene {
     for(const npc of this.round1.npcs){
       const {species,gender,id}=npc.definition;
       const texture=characterVisualTexture(id,species,gender,'down');
-      const sprite=(species==='cat'&&gender==='female'?this.add.sprite(0,0,texture):this.add.image(0,0,texture)).setOrigin(.5,1);
+      const animated=characterWalkAnimationKey(id,species,gender,'down')!==null;
+      const sprite=(animated?this.add.sprite(0,0,texture):this.add.image(0,0,texture)).setOrigin(.5,1);
       sprite.setScale(visualHeight[species]/sprite.height);
       const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.phase}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
       const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
@@ -238,7 +241,7 @@ export class PlazaParkScene extends Phaser.Scene {
       const labelMarker=this.add.text(0,-visualHeight[species]-16,'',badgeStyle).setOrigin(.5,1).setVisible(false);
       const phaseMarker=this.add.text(0,-visualHeight[species]-16,'',{...badgeStyle, fontSize:'22px'}).setOrigin(.5,1).setVisible(false);
       const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker,phaseMarker]);
-      (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;(container as any).facing='down' as Facing;(container as any).visualHeight=visualHeight[species];
+      (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;(container as any).facing='down' as Facing;(container as any).visualHeight=visualHeight[species];(container as any).animated=animated;
       (container as any).debugText=label;(container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;(container as any).phaseMarker=phaseMarker;
       this.supervisedSprites.push(container);
     }
@@ -464,7 +467,8 @@ export class PlazaParkScene extends Phaser.Scene {
         for(const npc of this.supervised.npcs){
           const {species,gender,id}=npc.definition;
           const texture=characterVisualTexture(id,species,gender,'down');
-          const sprite=(species==='cat'&&gender==='female'?this.add.sprite(0,0,texture):this.add.image(0,0,texture)).setOrigin(.5,1);
+          const animated=characterWalkAnimationKey(id,species,gender,'down')!==null;
+          const sprite=(animated?this.add.sprite(0,0,texture):this.add.image(0,0,texture)).setOrigin(.5,1);
           sprite.setScale(visualHeight[species]/sprite.height);
           const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.intents[npc.intentIndex]}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
           const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
@@ -472,7 +476,7 @@ export class PlazaParkScene extends Phaser.Scene {
           const phaseMarker=this.add.text(0,-visualHeight[species]-45,'',{fontSize:'24px',fontStyle:'bold',color:'#fff',padding:{x:4,y:2}}).setOrigin(.5).setVisible(false);
           const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker,phaseMarker]);
           (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;
-          (container as any).facing='down' as Facing;(container as any).visualHeight=visualHeight[species];(container as any).debugText=label;
+          (container as any).facing='down' as Facing;(container as any).visualHeight=visualHeight[species];(container as any).animated=animated;(container as any).debugText=label;
           (container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;(container as any).phaseMarker=phaseMarker;
           this.supervisedSprites.push(container);
         }
@@ -615,14 +619,14 @@ export class PlazaParkScene extends Phaser.Scene {
       if(Math.abs(moveX)>.001||Math.abs(moveY)>.001)facing=Math.abs(moveX)>=Math.abs(moveY)?(moveX>0?'right':'left'):(moveY>0?'down':'up');
       (container as any).lastX=n.position.x;(container as any).lastY=n.position.y;(container as any).facing=facing;
       const sprite=container.list[0] as Phaser.GameObjects.Image;
-      const isCatFemale=n.definition.species==='cat'&&n.definition.gender==='female';
-      const walkDirection=catFemaleWalkDirection(n.definition.species,n.definition.gender,moveX,moveY);
-      if(walkDirection)(sprite as Phaser.GameObjects.Sprite).play(catFemaleWalkAnimationKey(n.definition.id,walkDirection),true);
+      const walkDirection=characterWalkDirection(n.definition.species,n.definition.gender,moveX,moveY);
+      const walkKey=walkDirection&&characterWalkAnimationKey(n.definition.id,n.definition.species,n.definition.gender,walkDirection);
+      if(walkKey)(sprite as Phaser.GameObjects.Sprite).play(walkKey,true);
       else{
-        if(isCatFemale)(sprite as Phaser.GameObjects.Sprite).stop();
+        if((container as any).animated)(sprite as Phaser.GameObjects.Sprite).stop();
         sprite.setTexture(characterVisualTexture(n.definition.id,n.definition.species,n.definition.gender,facing));
       }
-      if(isCatFemale)sprite.setScale((container as any).visualHeight/sprite.height);
+      if((container as any).animated)sprite.setScale((container as any).visualHeight/sprite.height);
       container.setPosition(n.position.x,n.position.y).setDepth(n.position.y);
       const state='assignment' in n?n.phase:(n.phase==='EXITED'?'EXITED':n.intents[n.intentIndex]);
       (container as any).debugText?.setText(`${n.definition.id} ${state}${n.stopPoint?` @ ${n.stopPoint}`:''}`);
