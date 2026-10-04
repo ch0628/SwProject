@@ -55,7 +55,7 @@ def family_pixels(image: Image.Image, family: str) -> list[tuple[int, int, int]]
             elif family == "base_shirt" and .43 <= ry <= .68 and .18 <= rx <= .82 and value >= 105 and b > r + 8 and g > r - 20:
                 samples.append((r, g, b))
             elif family == "variant_shirt" and .43 <= ry <= .68 and .18 <= rx <= .82 and value >= 105 and (
-                b > r + 8 and g > r - 20 or g > r + 5 and g > b + 5
+                b > r + 8 and g > r - 20 or g > r + 5 and g > b + 5 or value >= 160 and chroma <= 35
             ):
                 samples.append((r, g, b))
     if len(samples) < 100:

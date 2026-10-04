@@ -6,6 +6,7 @@ import {
   CAT_FEMALE_WALK,
   RABBIT_FEMALE_V01,
   RABBIT_FEMALE_V02,
+  RABBIT_FEMALE_V03,
   RABBIT_FEMALE_WALK,
   catFemaleWalkAnimationKey,
   catFemaleWalkDirection,
@@ -121,6 +122,27 @@ test('NPC21 alone uses Rabbit Female v02 static and walk visuals', () => {
   );
   assert.equal(new Set([...Object.values(RABBIT_FEMALE_V02.base.keys), ...Object.values(RABBIT_FEMALE_V02.walk.keys)]).size, 8);
   for (const path of [...Object.values(RABBIT_FEMALE_V02.base.paths), ...Object.values(RABBIT_FEMALE_V02.walk.paths)]) {
+    assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
+  }
+});
+
+test('NPC31 alone uses Rabbit Female v03 static and walk visuals', () => {
+  assert.equal(characterVisualVariant('NPC02'), null);
+  assert.equal(characterVisualVariant('NPC11'), 'v01');
+  assert.equal(characterVisualVariant('NPC21'), 'v02');
+  assert.equal(characterVisualVariant('NPC31'), 'v03');
+  assert.equal(characterVisualTexture('NPC02', 'rabbit', 'female', 'down'), 'rabbit_female_down');
+  assert.equal(characterVisualTexture('NPC21', 'rabbit', 'female', 'up'), RABBIT_FEMALE_V02.base.keys.up);
+  assert.equal(characterVisualTexture('NPC31', 'rabbit', 'female', 'down'), RABBIT_FEMALE_V03.base.keys.down);
+  assert.equal(rabbitFemaleWalkAnimationKey('NPC02', 'left'), RABBIT_FEMALE_WALK.keys.left);
+  assert.equal(rabbitFemaleWalkAnimationKey('NPC21', 'right'), RABBIT_FEMALE_V02.walk.keys.right);
+  assert.equal(rabbitFemaleWalkAnimationKey('NPC31', 'up'), RABBIT_FEMALE_V03.walk.keys.up);
+  assert.deepEqual(
+    (({ id, species, gender, verifiedLabel }) => ({ id, species, gender, verifiedLabel }))(characterDefinition('NPC31')!),
+    { id: 'NPC31', species: 'rabbit', gender: 'female', verifiedLabel: 'VILLAIN' },
+  );
+  assert.equal(new Set([...Object.values(RABBIT_FEMALE_V03.base.keys), ...Object.values(RABBIT_FEMALE_V03.walk.keys)]).size, 8);
+  for (const path of [...Object.values(RABBIT_FEMALE_V03.base.paths), ...Object.values(RABBIT_FEMALE_V03.walk.paths)]) {
     assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
   }
 });
