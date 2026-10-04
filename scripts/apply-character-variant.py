@@ -2,7 +2,8 @@
 
 import argparse
 import hashlib
-from bisect import bisect_right
+import json
+import math
 from pathlib import Path
 from statistics import median
 
@@ -14,6 +15,9 @@ from character_runtime_image import ALPHA_THRESHOLD, bbox, premultiplied_lanczos
 DIRECTIONS = ("down", "left", "right", "up")
 FRAME_COUNT = 6
 WALK_FRAME = (512, 682)
+SHADE_LEVELS = (("shadow", .05), ("highlight", .95))
+PaletteLut = tuple[tuple[int, int, int], ...]
+CanonicalPalette = dict[str, PaletteLut]
 
 
 def luma(rgb: tuple[int, int, int]) -> int:
@@ -50,20 +54,49 @@ def family_pixels(image: Image.Image, family: str) -> list[tuple[int, int, int]]
     return samples
 
 
-def palette_lut(source: list[tuple[int, int, int]], target: list[tuple[int, int, int]]) -> list[tuple[int, int, int]]:
+def palette_lut(source: list[tuple[int, int, int]], target: list[tuple[int, int, int]]) -> PaletteLut:
     source_lumas = sorted(luma(color) for color in source)
     target_sorted = sorted(target, key=luma)
     radius = max(8, len(target_sorted) // 200)
+    anchors = []
+    for _, quantile in SHADE_LEVELS:
+        source_index = round(quantile * (len(source_lumas) - 1))
+        target_index = round(quantile * (len(target_sorted) - 1))
+        sample = target_sorted[max(0, target_index - radius):min(len(target_sorted), target_index + radius + 1)]
+        anchors.append((
+            source_lumas[source_index],
+            tuple(round(median(color[channel] for color in sample)) for channel in range(3)),
+        ))
     result = []
     for value in range(256):
-        percentile = bisect_right(source_lumas, value) / len(source_lumas)
-        center = min(len(target_sorted) - 1, round(percentile * (len(target_sorted) - 1)))
-        sample = target_sorted[max(0, center - radius):min(len(target_sorted), center + radius + 1)]
-        result.append(tuple(round(median(color[channel] for color in sample)) for channel in range(3)))
-    return result
+        if value <= anchors[0][0]:
+            result.append(anchors[0][1])
+            continue
+        if value >= anchors[-1][0]:
+            result.append(anchors[-1][1])
+            continue
+        for (start_value, start_color), (end_value, end_color) in zip(anchors, anchors[1:]):
+            if value <= end_value:
+                amount = (value - start_value) / (end_value - start_value or 1)
+                result.append(tuple(round(start + (end - start) * amount) for start, end in zip(start_color, end_color)))
+                break
+    return tuple(result)
 
 
-def transfer_frame(frame: Image.Image, fur_lut: list[tuple[int, int, int]], shirt_lut: list[tuple[int, int, int]]) -> Image.Image:
+def canonical_palette(base_images: list[Image.Image], variant_references: list[Image.Image]) -> CanonicalPalette:
+    return {
+        "fur": palette_lut(
+            [pixel for image in base_images for pixel in family_pixels(image, "base_fur")],
+            [pixel for image in variant_references for pixel in family_pixels(image, "variant_fur")],
+        ),
+        "shirt": palette_lut(
+            [pixel for image in base_images for pixel in family_pixels(image, "base_shirt")],
+            [pixel for image in variant_references for pixel in family_pixels(image, "variant_shirt")],
+        ),
+    }
+
+
+def transfer_frame(frame: Image.Image, palette: CanonicalPalette) -> Image.Image:
     left, top, right, bottom = visible_bbox(frame)
     width, height = right - left, bottom - top
     output = frame.copy()
@@ -82,9 +115,9 @@ def transfer_frame(frame: Image.Image, fur_lut: list[tuple[int, int, int]], shir
             target = None
             body_offset = abs(x - body_center)
             if .43 <= ry <= .70 and body_offset <= frame.width * .22 and value >= 105 and chroma <= 70:
-                target = shirt_lut[value]
+                target = palette["shirt"][value]
             elif chroma <= 75 and (ry < .49 and 35 <= value <= 225 or body_offset > frame.width * .18 and 45 <= value <= 190):
-                target = fur_lut[value]
+                target = palette["fur"][value]
             if target is not None and target != (r, g, b):
                 output_pixels[x, y] = (*target, a)
                 changed += 1
@@ -95,11 +128,81 @@ def transfer_frame(frame: Image.Image, fur_lut: list[tuple[int, int, int]], shir
     return output
 
 
+def load_idle_visual_scales(base_root: Path, variant_root: Path | None = None) -> dict[str, float]:
+    configured = {}
+    config_paths = [base_root / "visual_profile.json"]
+    if variant_root is not None:
+        config_paths.append(variant_root / "variant_config.json")
+    for config_path in config_paths:
+        if not config_path.exists():
+            continue
+        try:
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            raise RuntimeError(f"Invalid visual config {config_path}: {error}") from error
+        if not isinstance(config, dict) or not isinstance(config.get("idle_visual_scale", {}), dict):
+            raise RuntimeError(f"{config_path}: idle_visual_scale must be an object")
+        configured.update(config.get("idle_visual_scale", {}))
+
+    scales = {}
+    for direction in DIRECTIONS:
+        value = configured.get(direction, 1.0)
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise RuntimeError(f"idle_visual_scale.{direction} must be a number")
+        if not 0 < value <= 1.5:
+            raise RuntimeError(f"idle_visual_scale.{direction} must satisfy 0 < scale <= 1.5")
+        scales[direction] = float(value)
+    return scales
+
+
+def export_base_statics(repo: Path, species: str, gender: str) -> None:
+    base_root = repo / f"assets/characters/{species}/base/{gender}"
+    runtime_root = repo / f"public/assets/characters/{species}/base/{gender}"
+    scales = load_idle_visual_scales(base_root)
+    print("visual_profile", base_root / "visual_profile.json")
+    for direction in DIRECTIONS:
+        source_path = base_root / f"{species}_{gender}_{direction}.png"
+        with Image.open(source_path) as opened:
+            source = opened.convert("RGBA")
+        tuned = tune_static_visual(source, scales[direction])
+        output_path = runtime_root / source_path.name
+        save_png(tuned, output_path)
+        print(f"{direction:<5} idle_visual_scale={scales[direction]:g} bbox={visible_bbox(source)}->{visible_bbox(tuned)}")
+        print("  runtime", output_path)
+
+
+def tune_static_visual(image: Image.Image, scale: float) -> Image.Image:
+    if scale == 1.0:
+        return image.copy()
+    left, top, right, bottom = visible_bbox(image)
+    content = image.crop((left, top, right, bottom))
+    scaled_size = max(1, round(content.width * scale)), max(1, round(content.height * scale))
+    scaled = premultiplied_lanczos(content, scaled_size)
+    target_left = round((left + right - scaled.width) / 2)
+    target_top = bottom - scaled.height
+    if target_left < 0 or target_top < 0 or target_left + scaled.width > image.width or bottom > image.height:
+        raise RuntimeError(f"Static visual scale {scale:g} would clip content in canvas {image.size}")
+    output = Image.new("RGBA", image.size)
+    output.paste(scaled, (target_left, target_top))
+    tuned_box = visible_bbox(output)
+    if tuned_box[3] != bottom:
+        raise RuntimeError(f"Static visual scale {scale:g} moved the feet baseline: {bottom} -> {tuned_box[3]}")
+    if abs((tuned_box[0] + tuned_box[2]) - (left + right)) > 1:
+        raise RuntimeError(f"Static visual scale {scale:g} moved the horizontal center: {(left, right)} -> {(tuned_box[0], tuned_box[2])}")
+    return output
+
+
+def save_png(image: Image.Image, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.tmp")
+    image.save(temporary, format="PNG", optimize=False, compress_level=6)
+    temporary.replace(path)
+
+
 def save_runtime(source: Image.Image, target_height: int, path: Path) -> tuple[int, int]:
     size = round(source.width * target_height / source.height), target_height
     runtime = premultiplied_lanczos(source, size)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    runtime.save(path, format="PNG", optimize=False, compress_level=6)
+    save_png(runtime, path)
     return size
 
 
@@ -107,10 +210,21 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("species")
     parser.add_argument("gender")
-    parser.add_argument("variant")
+    parser.add_argument("variant", nargs="?")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--static-only", action="store_true", help="Generate only Variant authoring and WORLD runtime Static assets")
+    mode.add_argument("--base-static-only", action="store_true", help="Generate only Base public runtime Static assets")
     args = parser.parse_args()
 
     repo = Path(__file__).resolve().parents[1]
+    if args.base_static_only:
+        if args.variant is not None:
+            parser.error("variant must be omitted with --base-static-only")
+        export_base_statics(repo, args.species, args.gender)
+        return
+    if args.variant is None:
+        parser.error("variant is required unless --base-static-only is used")
+
     variant_root = repo / f"assets/characters/{args.species}/variants/{args.gender}/{args.variant}"
     reference_path = variant_root / "source" / f"{args.species}_{args.gender}_{args.variant}_reference_sheet.png"
     base_root = repo / f"assets/characters/{args.species}/base/{args.gender}"
@@ -125,22 +239,46 @@ def main() -> None:
         reference = opened.copy()
     cell_size = reference.width // 4, reference.height
     target_height = round1_target_height(repo, args.species) * 4
-    alpha_hashes = []
+    idle_visual_scales = load_idle_visual_scales(base_root, variant_root)
+    static_alpha_hashes = []
+    walk_alpha_hashes = []
+    reference_cells = []
+    base_statics = {}
 
     for index, direction in enumerate(DIRECTIONS):
         cell = reference.crop((index * cell_size[0], 0, (index + 1) * cell_size[0], cell_size[1]))
         cell_box = visible_bbox(cell)
         if cell_box[0] <= 0 or cell_box[1] <= 0 or cell_box[2] >= cell.width or cell_box[3] >= cell.height:
             raise RuntimeError(f"{direction}: visibly clipped reference cell {cell_box}")
-        static_path = variant_root / "base" / f"{args.species}_{args.gender}_{args.variant}_{direction}.png"
-        static_path.parent.mkdir(parents=True, exist_ok=True)
-        cell.save(static_path, format="PNG", optimize=False, compress_level=6)
-        save_runtime(cell, target_height, runtime_root / "base" / static_path.name)
-
         with Image.open(base_root / f"{args.species}_{args.gender}_{direction}.png") as opened:
-            base_static = opened.convert("RGBA")
-        fur_lut = palette_lut(family_pixels(base_static, "base_fur"), family_pixels(cell, "variant_fur"))
-        shirt_lut = palette_lut(family_pixels(base_static, "base_shirt"), family_pixels(cell, "variant_shirt"))
+            base_statics[direction] = opened.convert("RGBA")
+        reference_cells.append(cell)
+
+    palette = canonical_palette(list(base_statics.values()), reference_cells)
+    print("visual_profile", base_root / "visual_profile.json")
+    config_path = variant_root / "variant_config.json"
+    print("variant_config", config_path if config_path.exists() else "NONE")
+
+    for direction in DIRECTIONS:
+        base_static = base_statics[direction]
+        canonical_static = transfer_frame(base_static, palette)
+        source_alpha = hashlib.sha256(base_static.getchannel("A").tobytes()).hexdigest()
+        canonical_alpha = hashlib.sha256(canonical_static.getchannel("A").tobytes()).hexdigest()
+        if source_alpha != canonical_alpha:
+            raise RuntimeError(f"{direction} canonical static: alpha hash mismatch")
+        static_alpha_hashes.append((direction, source_alpha))
+        scale = idle_visual_scales[direction]
+        variant_static = tune_static_visual(canonical_static, scale)
+        static_path = variant_root / "base" / f"{args.species}_{args.gender}_{args.variant}_{direction}.png"
+        save_png(variant_static, static_path)
+        runtime_static_path = runtime_root / "base" / static_path.name
+        save_runtime(variant_static, target_height, runtime_static_path)
+        print(f"{direction:<5} idle_visual_scale={scale:g}")
+        print("  static", static_path)
+        print("  runtime", runtime_static_path)
+
+        if args.static_only:
+            continue
 
         frames = []
         direction_root = output_walk / direction
@@ -151,14 +289,14 @@ def main() -> None:
                 source = opened.convert("RGBA")
             if source.size != WALK_FRAME:
                 raise RuntimeError(f"Unexpected walk frame size: {source_path} {source.size}")
-            variant = transfer_frame(source, fur_lut, shirt_lut)
+            variant = transfer_frame(source, palette)
             output_path = direction_root / f"{args.species}_{args.gender}_{args.variant}_walk_{direction}_{frame_index:02}.png"
-            variant.save(output_path, format="PNG", optimize=False, compress_level=6)
+            save_png(variant, output_path)
             source_alpha = hashlib.sha256(source.getchannel("A").tobytes()).hexdigest()
             variant_alpha = hashlib.sha256(variant.getchannel("A").tobytes()).hexdigest()
             if source_alpha != variant_alpha:
                 raise RuntimeError(f"{direction} frame {frame_index}: alpha hash mismatch")
-            alpha_hashes.append((direction, frame_index, source_alpha))
+            walk_alpha_hashes.append((direction, frame_index, source_alpha))
             frames.append(variant)
 
         sheet = Image.new("RGBA", (WALK_FRAME[0] * FRAME_COUNT, WALK_FRAME[1]))
@@ -167,17 +305,20 @@ def main() -> None:
             sheet.paste(frame, (frame_index * WALK_FRAME[0], 0))
             runtime_frames.append(premultiplied_lanczos(frame, (round(WALK_FRAME[0] * target_height / WALK_FRAME[1]), target_height)))
         processed_path = output_walk / "processed" / f"{args.species}_{args.gender}_{args.variant}_walk_{direction}.png"
-        processed_path.parent.mkdir(parents=True, exist_ok=True)
-        sheet.save(processed_path, format="PNG", optimize=False, compress_level=6)
+        save_png(sheet, processed_path)
         runtime_sheet = Image.new("RGBA", (runtime_frames[0].width * FRAME_COUNT, target_height))
         for frame_index, frame in enumerate(runtime_frames):
             runtime_sheet.paste(frame, (frame_index * frame.width, 0))
         runtime_path = runtime_root / "walk" / processed_path.name
-        runtime_path.parent.mkdir(parents=True, exist_ok=True)
-        runtime_sheet.save(runtime_path, format="PNG", optimize=False, compress_level=6)
-        print(direction, "static", cell.size, cell_box, "walk", sheet.size, "runtime", runtime_sheet.size)
+        save_png(runtime_sheet, runtime_path)
+        print(direction, "static", variant_static.size, visible_bbox(variant_static), "walk", sheet.size, "runtime", runtime_sheet.size)
 
-    print("alpha_sha256_matches", len(alpha_hashes), "of", len(DIRECTIONS) * FRAME_COUNT)
+    print("canonical_palette", "one mapping shared by all directions and states")
+    print("canonical_static_alpha_sha256_matches", len(static_alpha_hashes), "of", len(DIRECTIONS))
+    if args.static_only:
+        print("walk_generation", "SKIPPED (--static-only)")
+    else:
+        print("walk_alpha_sha256_matches", len(walk_alpha_hashes), "of", len(DIRECTIONS) * FRAME_COUNT)
     print("filter=premultiplied-alpha LANCZOS sharpen=NONE")
 
 
