@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import {
   CAT_FEMALE_V01,
   CAT_FEMALE_WALK,
+  RABBIT_FEMALE_V01,
   RABBIT_FEMALE_WALK,
   catFemaleWalkAnimationKey,
   catFemaleWalkDirection,
@@ -13,6 +14,7 @@ import {
   characterVisualTexture,
   characterVisualVariant,
   FACING_LIST,
+  rabbitFemaleWalkAnimationKey,
 } from '../src/characterManifest.ts';
 import { characterDefinition } from '../src/characterPool.ts';
 
@@ -80,6 +82,26 @@ test('NPC27 alone uses Cat Female v01 static and walk visuals', () => {
   );
   assert.equal(new Set([...Object.values(CAT_FEMALE_V01.base.keys), ...Object.values(CAT_FEMALE_V01.walk.keys)]).size, 8);
   for (const path of [...Object.values(CAT_FEMALE_V01.base.paths), ...Object.values(CAT_FEMALE_V01.walk.paths)]) {
+    assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
+  }
+});
+
+test('NPC11 alone uses Rabbit Female v01 static and walk visuals', () => {
+  assert.equal(characterVisualVariant('NPC02'), null);
+  assert.equal(characterVisualVariant('NPC21'), null);
+  assert.equal(characterVisualVariant('NPC11'), 'v01');
+  assert.equal(characterVisualTexture('NPC02', 'rabbit', 'female', 'down'), 'rabbit_female_down');
+  assert.equal(characterVisualTexture('NPC21', 'rabbit', 'female', 'up'), 'rabbit_female_up');
+  assert.equal(characterVisualTexture('NPC11', 'rabbit', 'female', 'down'), RABBIT_FEMALE_V01.base.keys.down);
+  assert.equal(rabbitFemaleWalkAnimationKey('NPC02', 'left'), RABBIT_FEMALE_WALK.keys.left);
+  assert.equal(rabbitFemaleWalkAnimationKey('NPC21', 'right'), RABBIT_FEMALE_WALK.keys.right);
+  assert.equal(rabbitFemaleWalkAnimationKey('NPC11', 'up'), RABBIT_FEMALE_V01.walk.keys.up);
+  assert.deepEqual(
+    (({ id, species, gender, verifiedLabel }) => ({ id, species, gender, verifiedLabel }))(characterDefinition('NPC11')!),
+    { id: 'NPC11', species: 'rabbit', gender: 'female', verifiedLabel: 'VILLAIN' },
+  );
+  assert.equal(new Set([...Object.values(RABBIT_FEMALE_V01.base.keys), ...Object.values(RABBIT_FEMALE_V01.walk.keys)]).size, 8);
+  for (const path of [...Object.values(RABBIT_FEMALE_V01.base.paths), ...Object.values(RABBIT_FEMALE_V01.walk.paths)]) {
     assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
   }
 });

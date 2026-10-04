@@ -14,7 +14,6 @@ from character_runtime_image import ALPHA_THRESHOLD, bbox, premultiplied_lanczos
 
 DIRECTIONS = ("down", "left", "right", "up")
 FRAME_COUNT = 6
-WALK_FRAME = (512, 682)
 SHADE_LEVELS = (("shadow", .05), ("highlight", .95))
 PaletteLut = tuple[tuple[int, int, int], ...]
 CanonicalPalette = dict[str, PaletteLut]
@@ -41,13 +40,13 @@ def family_pixels(image: Image.Image, family: str) -> list[tuple[int, int, int]]
                 continue
             rx = (x - left) / width
             value, chroma = luma((r, g, b)), max(r, g, b) - min(r, g, b)
-            if family == "base_fur" and ry < .47 and 35 <= value <= 190 and chroma <= 55:
+            if family.endswith("fur") and ry < .47 and 50 <= value <= 235 and r > g + 5 and g > b + 5:
                 samples.append((r, g, b))
-            elif family == "variant_fur" and ry < .47 and r > g + 15 and g > b + 15 and 45 <= value <= 230:
+            elif family.endswith("marking") and value >= 195 and chroma <= 50 and (
+                .34 <= ry < .50 or ry >= .68 or .45 <= ry < .75 and abs(rx - .5) > .28
+            ):
                 samples.append((r, g, b))
-            elif family == "base_shirt" and .43 <= ry <= .72 and .18 <= rx <= .82 and value >= 125 and chroma <= 60:
-                samples.append((r, g, b))
-            elif family == "variant_shirt" and .43 <= ry <= .72 and .18 <= rx <= .82 and g > r + 2 and b > r + 2:
+            elif family.endswith("shirt") and .43 <= ry <= .68 and .18 <= rx <= .82 and value >= 105 and b > r + 8 and g > r - 20:
                 samples.append((r, g, b))
     if len(samples) < 100:
         raise RuntimeError(f"Not enough {family} reference pixels: {len(samples)}")
@@ -89,6 +88,10 @@ def canonical_palette(base_images: list[Image.Image], variant_references: list[I
             [pixel for image in base_images for pixel in family_pixels(image, "base_fur")],
             [pixel for image in variant_references for pixel in family_pixels(image, "variant_fur")],
         ),
+        "marking": palette_lut(
+            [pixel for image in base_images for pixel in family_pixels(image, "base_marking")],
+            [pixel for image in variant_references for pixel in family_pixels(image, "variant_marking")],
+        ),
         "shirt": palette_lut(
             [pixel for image in base_images for pixel in family_pixels(image, "base_shirt")],
             [pixel for image in variant_references for pixel in family_pixels(image, "variant_shirt")],
@@ -114,9 +117,18 @@ def transfer_frame(frame: Image.Image, palette: CanonicalPalette) -> Image.Image
             value, chroma = luma((r, g, b)), max(r, g, b) - min(r, g, b)
             target = None
             body_offset = abs(x - body_center)
-            if .43 <= ry <= .70 and body_offset <= frame.width * .22 and value >= 105 and chroma <= 70:
+            eye_region = .20 <= ry <= .39 and body_offset <= frame.width * .25
+            nose_region = ry < .49 and r > g + 25 and r > b + 15 and abs(g - b) < 35
+            pants_region = ry >= .60 and body_offset <= frame.width * .25 and value <= 145
+            if not pants_region and .43 <= ry <= .68 and body_offset <= frame.width * .22 and value >= 105 and b > r + 8 and g > r - 20:
                 target = palette["shirt"][value]
-            elif chroma <= 75 and (ry < .49 and 35 <= value <= 225 or body_offset > frame.width * .18 and 45 <= value <= 190):
+            elif value >= 195 and chroma <= 50 and not eye_region and not nose_region and not pants_region and (
+                .34 <= ry < .50 or ry >= .68 or .45 <= ry < .75 and body_offset > frame.width * .28
+            ):
+                target = palette["marking"][value]
+            elif 50 <= value <= 235 and r > g + 5 and g > b + 5 and not eye_region and not nose_region and not pants_region and (
+                ry < .49 or body_offset > frame.width * .18 and ry < .88
+            ):
                 target = palette["fur"][value]
             if target is not None and target != (r, g, b):
                 output_pixels[x, y] = (*target, a)
@@ -206,6 +218,21 @@ def save_runtime(source: Image.Image, target_height: int, path: Path) -> tuple[i
     return size
 
 
+def equal_reference_cells(reference: Image.Image) -> tuple[list[Image.Image], tuple[int, int]]:
+    remainder = reference.width % len(DIRECTIONS)
+    left_trim = remainder // 2
+    right_trim = remainder - left_trim
+    if remainder:
+        left_alpha = reference.getchannel("A").crop((0, 0, left_trim, reference.height))
+        right_alpha = reference.getchannel("A").crop((reference.width - right_trim, 0, reference.width, reference.height))
+        if left_alpha.getbbox() is not None or right_alpha.getbbox() is not None:
+            raise RuntimeError("Reference sheet width is not divisible into four equal cells and required trim is not transparent")
+        reference = reference.crop((left_trim, 0, reference.width - right_trim, reference.height))
+    cell_width = reference.width // len(DIRECTIONS)
+    return [reference.crop((index * cell_width, 0, (index + 1) * cell_width, reference.height))
+            for index in range(len(DIRECTIONS))], (left_trim, right_trim)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("species")
@@ -234,25 +261,25 @@ def main() -> None:
 
     with Image.open(reference_path) as opened:
         opened.load()
-        if opened.mode != "RGBA" or opened.width % 4 or opened.height <= 0:
-            raise RuntimeError("Reference sheet must be RGBA with four equal columns")
+        if opened.mode != "RGBA" or opened.height <= 0:
+            raise RuntimeError("Reference sheet must be non-empty RGBA")
         reference = opened.copy()
-    cell_size = reference.width // 4, reference.height
+    reference_cells, reference_trim = equal_reference_cells(reference)
+    cell_size = reference_cells[0].size
     target_height = round1_target_height(repo, args.species) * 4
     idle_visual_scales = load_idle_visual_scales(base_root, variant_root)
     static_alpha_hashes = []
     walk_alpha_hashes = []
-    reference_cells = []
     base_statics = {}
 
-    for index, direction in enumerate(DIRECTIONS):
-        cell = reference.crop((index * cell_size[0], 0, (index + 1) * cell_size[0], cell_size[1]))
+    print("reference", reference_path, reference.size, reference.mode)
+    print("reference_cells", len(reference_cells), cell_size, f"transparent_outer_trim={reference_trim[0]}+{reference_trim[1]}")
+    for direction, cell in zip(DIRECTIONS, reference_cells):
         cell_box = visible_bbox(cell)
         if cell_box[0] <= 0 or cell_box[1] <= 0 or cell_box[2] >= cell.width or cell_box[3] >= cell.height:
             raise RuntimeError(f"{direction}: visibly clipped reference cell {cell_box}")
         with Image.open(base_root / f"{args.species}_{args.gender}_{direction}.png") as opened:
             base_statics[direction] = opened.convert("RGBA")
-        reference_cells.append(cell)
 
     palette = canonical_palette(list(base_statics.values()), reference_cells)
     print("visual_profile", base_root / "visual_profile.json")
@@ -281,14 +308,17 @@ def main() -> None:
             continue
 
         frames = []
+        walk_frame_size = None
         direction_root = output_walk / direction
         direction_root.mkdir(parents=True, exist_ok=True)
         for frame_index in range(1, FRAME_COUNT + 1):
             source_path = walk_root / f"walk_{direction}" / f"{args.species}_{args.gender}_walk_{direction}_{frame_index:02}.png"
             with Image.open(source_path) as opened:
                 source = opened.convert("RGBA")
-            if source.size != WALK_FRAME:
-                raise RuntimeError(f"Unexpected walk frame size: {source_path} {source.size}")
+            if walk_frame_size is None:
+                walk_frame_size = source.size
+            elif source.size != walk_frame_size:
+                raise RuntimeError(f"Walk frame size mismatch: {source_path} {source.size} != {walk_frame_size}")
             variant = transfer_frame(source, palette)
             output_path = direction_root / f"{args.species}_{args.gender}_{args.variant}_walk_{direction}_{frame_index:02}.png"
             save_png(variant, output_path)
@@ -299,11 +329,13 @@ def main() -> None:
             walk_alpha_hashes.append((direction, frame_index, source_alpha))
             frames.append(variant)
 
-        sheet = Image.new("RGBA", (WALK_FRAME[0] * FRAME_COUNT, WALK_FRAME[1]))
+        if walk_frame_size is None:
+            raise RuntimeError(f"No walk frames found for {direction}")
+        sheet = Image.new("RGBA", (walk_frame_size[0] * FRAME_COUNT, walk_frame_size[1]))
         runtime_frames = []
         for frame_index, frame in enumerate(frames):
-            sheet.paste(frame, (frame_index * WALK_FRAME[0], 0))
-            runtime_frames.append(premultiplied_lanczos(frame, (round(WALK_FRAME[0] * target_height / WALK_FRAME[1]), target_height)))
+            sheet.paste(frame, (frame_index * walk_frame_size[0], 0))
+            runtime_frames.append(premultiplied_lanczos(frame, (round(walk_frame_size[0] * target_height / walk_frame_size[1]), target_height)))
         processed_path = output_walk / "processed" / f"{args.species}_{args.gender}_{args.variant}_walk_{direction}.png"
         save_png(sheet, processed_path)
         runtime_sheet = Image.new("RGBA", (runtime_frames[0].width * FRAME_COUNT, target_height))

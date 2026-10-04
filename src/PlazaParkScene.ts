@@ -4,7 +4,7 @@ import { overlaps, footprint, navigationBounds, canNavigate } from './collision'
 import { canStand, mapObjects, mapWorld, moveProbe, plazaArchitecture, enterDoor, doorLane, type GrayboxMap, type MapObject } from './plazaPark';
 import { createSmoke, stepSmoke, smokeMetrics, SMOKE_ROUTES, TRAFFIC_ROUTE_PATHS, SMOKE_SIZES, type RouteId, type AllRouteId, type SmokeRun } from './plazaTraffic';
 import { createPlazaFullFlow35, stepFullFlow, fullFlowSummary, type FullFlowState } from './plazaFullFlow';
-import { CAT_FEMALE_V01, CAT_FEMALE_WALK, RABBIT_FEMALE_WALK, characterWalkAnimationKey, characterWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
+import { CAT_FEMALE_V01, CAT_FEMALE_WALK, RABBIT_FEMALE_V01, RABBIT_FEMALE_WALK, characterWalkAnimationKey, characterWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
 import { createSupervisedPlazaDemo, createSupervisedPlazaGroup, stepPlazaNpcGroup } from './plazaNpcRuntime';
 import {
   loadCameraZones, manualCharacterView, setUserLabel, visibleCharactersForZone,
@@ -102,10 +102,10 @@ export class PlazaParkScene extends Phaser.Scene {
       walk.keys[direction],walk.paths[direction],
       {frameWidth:walk.frameWidth,frameHeight:walk.frameHeight,endFrame:walk.frameCount-1},
     );
-    for(const direction of FACING_LIST){
-      this.load.image(CAT_FEMALE_V01.base.keys[direction],CAT_FEMALE_V01.base.paths[direction]);
-      this.load.spritesheet(CAT_FEMALE_V01.walk.keys[direction],CAT_FEMALE_V01.walk.paths[direction],
-        {frameWidth:CAT_FEMALE_WALK.frameWidth,frameHeight:CAT_FEMALE_WALK.frameHeight,endFrame:CAT_FEMALE_WALK.frameCount-1});
+    for(const [variant,walk] of [[CAT_FEMALE_V01,CAT_FEMALE_WALK],[RABBIT_FEMALE_V01,RABBIT_FEMALE_WALK]] as const)for(const direction of FACING_LIST){
+      this.load.image(variant.base.keys[direction],variant.base.paths[direction]);
+      this.load.spritesheet(variant.walk.keys[direction],variant.walk.paths[direction],
+        {frameWidth:walk.frameWidth,frameHeight:walk.frameHeight,endFrame:walk.frameCount-1});
     }
   }
   create() {
@@ -116,9 +116,9 @@ export class PlazaParkScene extends Phaser.Scene {
       const key=walk.keys[direction];
       if(!this.anims.exists(key))this.anims.create({key,frames:this.anims.generateFrameNumbers(key,{start:0,end:walk.frameCount-1}),frameRate:walk.frameRate,repeat:-1});
     }
-    for(const direction of FACING_LIST){
-      const variantKey=CAT_FEMALE_V01.walk.keys[direction];
-      if(!this.anims.exists(variantKey))this.anims.create({key:variantKey,frames:this.anims.generateFrameNumbers(variantKey,{start:0,end:CAT_FEMALE_WALK.frameCount-1}),frameRate:CAT_FEMALE_WALK.frameRate,repeat:-1});
+    for(const [variant,walk] of [[CAT_FEMALE_V01,CAT_FEMALE_WALK],[RABBIT_FEMALE_V01,RABBIT_FEMALE_WALK]] as const)for(const direction of FACING_LIST){
+      const variantKey=variant.walk.keys[direction];
+      if(!this.anims.exists(variantKey))this.anims.create({key:variantKey,frames:this.anims.generateFrameNumbers(variantKey,{start:0,end:walk.frameCount-1}),frameRate:walk.frameRate,repeat:-1});
     }
     const tiles = map.addTilesetImage('graybox', 'graybox')!;
     map.createLayer('Ground', tiles)!.setVisible(false);
