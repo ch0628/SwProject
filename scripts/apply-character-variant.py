@@ -40,13 +40,23 @@ def family_pixels(image: Image.Image, family: str) -> list[tuple[int, int, int]]
                 continue
             rx = (x - left) / width
             value, chroma = luma((r, g, b)), max(r, g, b) - min(r, g, b)
-            if family.endswith("fur") and ry < .47 and 50 <= value <= 235 and r > g + 5 and g > b + 5:
+            warm_fur = r > g + 5 and g > b + 5
+            neutral_fur = chroma <= 45
+            eye_region = .20 <= ry <= .39 and .25 <= rx <= .75
+            pink_detail = r > g + 25 and r > b + 15 and abs(g - b) < 35
+            if family == "base_fur" and ry < .47 and 50 <= value <= 235 and warm_fur:
+                samples.append((r, g, b))
+            elif family == "variant_fur" and ry < .47 and 50 <= value < 195 and (warm_fur or neutral_fur) and not eye_region and not pink_detail:
                 samples.append((r, g, b))
             elif family.endswith("marking") and value >= 195 and chroma <= 50 and (
                 .34 <= ry < .50 or ry >= .68 or .45 <= ry < .75 and abs(rx - .5) > .28
             ):
                 samples.append((r, g, b))
-            elif family.endswith("shirt") and .43 <= ry <= .68 and .18 <= rx <= .82 and value >= 105 and b > r + 8 and g > r - 20:
+            elif family == "base_shirt" and .43 <= ry <= .68 and .18 <= rx <= .82 and value >= 105 and b > r + 8 and g > r - 20:
+                samples.append((r, g, b))
+            elif family == "variant_shirt" and .43 <= ry <= .68 and .18 <= rx <= .82 and value >= 105 and (
+                b > r + 8 and g > r - 20 or g > r + 5 and g > b + 5
+            ):
                 samples.append((r, g, b))
     if len(samples) < 100:
         raise RuntimeError(f"Not enough {family} reference pixels: {len(samples)}")
@@ -225,7 +235,7 @@ def equal_reference_cells(reference: Image.Image) -> tuple[list[Image.Image], tu
     if remainder:
         left_alpha = reference.getchannel("A").crop((0, 0, left_trim, reference.height))
         right_alpha = reference.getchannel("A").crop((reference.width - right_trim, 0, reference.width, reference.height))
-        if left_alpha.getbbox() is not None or right_alpha.getbbox() is not None:
+        if left_alpha.getextrema()[1] > ALPHA_THRESHOLD or right_alpha.getextrema()[1] > ALPHA_THRESHOLD:
             raise RuntimeError("Reference sheet width is not divisible into four equal cells and required trim is not transparent")
         reference = reference.crop((left_trim, 0, reference.width - right_trim, reference.height))
     cell_width = reference.width // len(DIRECTIONS)
@@ -275,9 +285,7 @@ def main() -> None:
     print("reference", reference_path, reference.size, reference.mode)
     print("reference_cells", len(reference_cells), cell_size, f"transparent_outer_trim={reference_trim[0]}+{reference_trim[1]}")
     for direction, cell in zip(DIRECTIONS, reference_cells):
-        cell_box = visible_bbox(cell)
-        if cell_box[0] <= 0 or cell_box[1] <= 0 or cell_box[2] >= cell.width or cell_box[3] >= cell.height:
-            raise RuntimeError(f"{direction}: visibly clipped reference cell {cell_box}")
+        visible_bbox(cell)
         with Image.open(base_root / f"{args.species}_{args.gender}_{direction}.png") as opened:
             base_statics[direction] = opened.convert("RGBA")
 

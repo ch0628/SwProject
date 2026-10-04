@@ -104,39 +104,76 @@ export const RABBIT_FEMALE_V01 = Object.freeze({
   }),
 });
 
-const CHARACTER_VISUAL_VARIANTS: Record<string, { species: Species, gender: Gender, id: 'v01' }> = {
+export const RABBIT_FEMALE_V02 = Object.freeze({
+  id: 'v02',
+  base: Object.freeze({
+    keys: Object.freeze({
+      down: 'world-rabbit-female-v02-down-4lp',
+      left: 'world-rabbit-female-v02-left-4lp',
+      right: 'world-rabbit-female-v02-right-4lp',
+      up: 'world-rabbit-female-v02-up-4lp',
+    }),
+    paths: Object.freeze({
+      down: '/assets/characters/world/rabbit/female/v02/base/rabbit_female_v02_down.png',
+      left: '/assets/characters/world/rabbit/female/v02/base/rabbit_female_v02_left.png',
+      right: '/assets/characters/world/rabbit/female/v02/base/rabbit_female_v02_right.png',
+      up: '/assets/characters/world/rabbit/female/v02/base/rabbit_female_v02_up.png',
+    }),
+  }),
+  walk: Object.freeze({
+    keys: Object.freeze({
+      down: 'world-rabbit-female-v02-walk-down-4lp',
+      left: 'world-rabbit-female-v02-walk-left-4lp',
+      right: 'world-rabbit-female-v02-walk-right-4lp',
+      up: 'world-rabbit-female-v02-walk-up-4lp',
+    }),
+    paths: Object.freeze({
+      down: '/assets/characters/world/rabbit/female/v02/walk/rabbit_female_v02_walk_down.png',
+      left: '/assets/characters/world/rabbit/female/v02/walk/rabbit_female_v02_walk_left.png',
+      right: '/assets/characters/world/rabbit/female/v02/walk/rabbit_female_v02_walk_right.png',
+      up: '/assets/characters/world/rabbit/female/v02/walk/rabbit_female_v02_walk_up.png',
+    }),
+  }),
+});
+
+type VisualVariant = 'v01' | 'v02';
+
+const CHARACTER_VISUAL_VARIANTS: Record<string, { species: Species, gender: Gender, id: VisualVariant }> = {
   NPC11: { species: 'rabbit', gender: 'female', id: 'v01' },
+  NPC21: { species: 'rabbit', gender: 'female', id: 'v02' },
   NPC27: { species: 'cat', gender: 'female', id: 'v01' },
 };
 
-export function characterVisualVariant(characterId: string): 'v01' | null {
+export function characterVisualVariant(characterId: string): VisualVariant | null {
   return CHARACTER_VISUAL_VARIANTS[characterId]?.id ?? null;
 }
 
-function hasVisualVariant(characterId: string, species: Species, gender: Gender): boolean {
+function assignedVisualVariant(characterId: string, species: Species, gender: Gender): VisualVariant | null {
   const assignment = CHARACTER_VISUAL_VARIANTS[characterId];
-  return assignment?.species === species && assignment.gender === gender;
+  return assignment?.species === species && assignment.gender === gender ? assignment.id : null;
 }
 
 export function characterVisualTexture(
   characterId: string, species: Species, gender: Gender, facing: Facing,
 ): string {
-  if (!hasVisualVariant(characterId, species, gender)) return characterTexture(species, gender, facing);
-  if (species === 'cat' && gender === 'female') return CAT_FEMALE_V01.base.keys[facing];
-  if (species === 'rabbit' && gender === 'female') return RABBIT_FEMALE_V01.base.keys[facing];
+  const variant = assignedVisualVariant(characterId, species, gender);
+  if (species === 'cat' && gender === 'female' && variant === 'v01') return CAT_FEMALE_V01.base.keys[facing];
+  if (species === 'rabbit' && gender === 'female' && variant === 'v01') return RABBIT_FEMALE_V01.base.keys[facing];
+  if (species === 'rabbit' && gender === 'female' && variant === 'v02') return RABBIT_FEMALE_V02.base.keys[facing];
   return characterTexture(species, gender, facing);
 }
 
 export function catFemaleWalkAnimationKey(characterId: string, direction: Facing): string {
-  return hasVisualVariant(characterId, 'cat', 'female')
+  return assignedVisualVariant(characterId, 'cat', 'female') === 'v01'
     ? CAT_FEMALE_V01.walk.keys[direction]
     : CAT_FEMALE_WALK.keys[direction];
 }
 
 export function rabbitFemaleWalkAnimationKey(characterId: string, direction: Facing): string {
-  return hasVisualVariant(characterId, 'rabbit', 'female')
-    ? RABBIT_FEMALE_V01.walk.keys[direction]
-    : RABBIT_FEMALE_WALK.keys[direction];
+  const variant = assignedVisualVariant(characterId, 'rabbit', 'female');
+  if (variant === 'v01') return RABBIT_FEMALE_V01.walk.keys[direction];
+  if (variant === 'v02') return RABBIT_FEMALE_V02.walk.keys[direction];
+  return RABBIT_FEMALE_WALK.keys[direction];
 }
 
 export function catFemaleWalkDirection(
