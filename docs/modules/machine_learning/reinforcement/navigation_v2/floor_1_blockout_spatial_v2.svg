@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" aria-hidden="true" shape-rendering="geometricPrecision">
+<rect width="1600" height="900" fill="#20262d"/>
+<rect x="55" y="45" width="1490" height="810" fill="#9099a1"/>
+<rect x="710" y="780" width="180" height="75" fill="#dfe9e3"/>
+<rect x="620" y="645" width="360" height="150" fill="#dfe9e3"/>
+<rect x="500" y="610" width="145" height="85" fill="#dfe9e3"/>
+<rect x="170" y="535" width="430" height="95" fill="#dfe9e3"/>
+<rect x="170" y="205" width="105" height="425" fill="#dfe9e3"/>
+<rect x="95" y="140" width="285" height="110" fill="#d5dce0"/>
+<rect x="120" y="65" width="235" height="135" fill="#b8c2c8"/>
+<line x1="138" y1="81.875" x2="337" y2="81.875" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="138" y1="98.75" x2="337" y2="98.75" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="138" y1="115.625" x2="337" y2="115.625" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="138" y1="132.5" x2="337" y2="132.5" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="138" y1="149.375" x2="337" y2="149.375" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="138" y1="166.25" x2="337" y2="166.25" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="138" y1="183.125" x2="337" y2="183.125" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<rect x="100" y="650" width="350" height="130" fill="#dfe9e3"/>
+<rect x="420" y="620" width="100" height="55" fill="#dfe9e3"/>
+<rect x="305" y="360" width="260" height="150" fill="#dfe9e3"/>
+<rect x="250" y="405" width="80" height="60" fill="#dfe9e3"/>
+<rect x="315" y="175" width="275" height="135" fill="#edf0f1"/>
+<rect x="250" y="225" width="90" height="55" fill="#dfe9e3"/>
+<rect x="80" y="335" width="105" height="130" fill="#edf0f1"/>
+<rect x="955" y="655" width="170" height="80" fill="#ddd5c9"/>
+<rect x="1080" y="610" width="310" height="125" fill="#ddd5c9"/>
+<rect x="1275" y="200" width="115" height="535" fill="#ddd5c9"/>
+<rect x="1165" y="140" width="300" height="110" fill="#d5dce0"/>
+<rect x="1200" y="65" width="235" height="135" fill="#b8c2c8"/>
+<line x1="1218" y1="81.875" x2="1417" y2="81.875" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1218" y1="98.75" x2="1417" y2="98.75" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1218" y1="115.625" x2="1417" y2="115.625" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1218" y1="132.5" x2="1417" y2="132.5" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1218" y1="149.375" x2="1417" y2="149.375" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1218" y1="166.25" x2="1417" y2="166.25" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1218" y1="183.125" x2="1417" y2="183.125" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<rect x="1030" y="430" width="210" height="125" fill="#ddd5c9"/>
+<rect x="1220" y="465" width="80" height="55" fill="#ddd5c9"/>
+<rect x="1040" y="255" width="200" height="120" fill="#ddd5c9"/>
+<rect x="1220" y="285" width="80" height="55" fill="#ddd5c9"/>
+<rect x="1375" y="335" width="125" height="135" fill="#ddd5c9"/>
+<rect x="625" y="205" width="390" height="385" fill="#68737c"/>
+<rect x="715" y="285" width="210" height="205" fill="#9099a1"/>
+<line x1="670" y1="255" x2="970" y2="255" stroke="#4d5860" stroke-width="6" stroke-linecap="square"/>
+<line x1="670" y1="535" x2="970" y2="535" stroke="#4d5860" stroke-width="6" stroke-linecap="square"/>
+<circle cx="705" cy="705" r="13" fill="#4d5860"/>
+<circle cx="800" cy="705" r="13" fill="#4d5860"/>
+<circle cx="895" cy="705" r="13" fill="#4d5860"/>
+</svg>

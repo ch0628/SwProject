@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Floor 5 navigation blockout</title>
+  <desc id="desc">Central search hub reaches four guarded search rooms in two wings. The hidden Boss is seeded randomly. After neutralization all rooms reconnect to the fixed central Control Room.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#dbeafe"/></marker>
+    <style>
+      .shell{fill:#111827;stroke:#64748b;stroke-width:4}.route{fill:none;stroke:#dbeafe;stroke-width:13;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}.left{stroke:#38bdf8}.right{stroke:#22c55e}.return{stroke:#94a3b8;stroke-width:7;stroke-dasharray:14 12}.post{stroke:#c084fc;stroke-width:8;stroke-dasharray:18 11}.final{stroke:#fbbf24}
+      .node{fill:#1e293b;stroke:#e2e8f0;stroke-width:4}.decision{fill:#312e81;stroke:#a5b4fc}.wing{fill:#164e63;stroke:#67e8f9}.room{fill:#1f2937;stroke:#f8fafc}.villain{fill:#7f1d1d;stroke:#fca5a5}.hall{fill:#3f3f46;stroke:#d4d4d8}.lock{fill:#713f12;stroke:#fde68a}.control{fill:#14532d;stroke:#86efac}.goal{fill:#064e3b;stroke:#6ee7b7}
+      .label{fill:#f8fafc;font:700 20px system-ui,sans-serif;text-anchor:middle}.small{fill:#cbd5e1;font:16px system-ui,sans-serif;text-anchor:middle}.tiny{fill:#cbd5e1;font:15px system-ui,sans-serif}.heading{fill:#f8fafc;font:700 38px system-ui,sans-serif}.sub{fill:#94a3b8;font:20px system-ui,sans-serif}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#020617"/><text x="70" y="62" class="heading">5F · BOSS SEARCH / FINAL CONTROL</text><text x="70" y="98" class="sub">Search Room ≠ Control Room · Boss location is hidden seeded environment state</text>
+  <rect x="55" y="115" width="1490" height="720" rx="28" class="shell"/>
+
+  <path data-edge-id="E_F5_HUB_LEFT" d="M725 740 C620 710 520 665 460 625" class="route left"/><path data-edge-id="E_F5_LEFT_L1_GUARD" d="M390 575 L320 485" class="route left"/><path data-edge-id="E_F5_L1_ROOM" d="M265 415 L205 350" class="route left"/>
+  <path data-edge-id="E_F5_LEFT_L2_GUARD" d="M450 565 L505 430" class="route left"/><path data-edge-id="E_F5_L2_ROOM" d="M490 345 L440 260" class="route left"/>
+  <path data-edge-id="E_F5_HUB_RIGHT" d="M875 740 C980 710 1080 665 1140 625" class="route right"/><path data-edge-id="E_F5_RIGHT_R1_GUARD" d="M1210 575 L1280 485" class="route right"/><path data-edge-id="E_F5_R1_ROOM" d="M1335 415 L1395 350" class="route right"/>
+  <path data-edge-id="E_F5_RIGHT_R2_GUARD" d="M1150 565 L1095 430" class="route right"/><path data-edge-id="E_F5_R2_ROOM" d="M1110 345 L1160 260" class="route right"/>
+
+  <path data-edge-id="E_F5_L1_NO_BOSS_RETURN" d="M235 355 C330 690 540 790 705 775" class="route return"/><path data-edge-id="E_F5_L2_NO_BOSS_RETURN" d="M455 260 C520 620 630 720 720 750" class="route return"/>
+  <path data-edge-id="E_F5_R1_NO_BOSS_RETURN" d="M1365 355 C1270 690 1060 790 895 775" class="route return"/><path data-edge-id="E_F5_R2_NO_BOSS_RETURN" d="M1145 260 C1080 620 970 720 880 750" class="route return"/>
+
+  <path data-edge-id="E_F5_L1_POST_BOSS" d="M250 300 C410 290 565 365 710 430" class="route post"/><path data-edge-id="E_F5_L2_POST_BOSS" d="M500 220 C610 260 685 335 740 405" class="route post"/>
+  <path data-edge-id="E_F5_R1_POST_BOSS" d="M1350 300 C1190 290 1035 365 890 430" class="route post"/><path data-edge-id="E_F5_R2_POST_BOSS" d="M1100 220 C990 260 915 335 860 405" class="route post"/>
+  <path data-edge-id="E_F5_HALL_LOCK" d="M800 400 L800 390" class="route final"/><path data-edge-id="E_F5_LOCK_CONTROL" d="M800 315 L800 300" class="route final"/><path data-edge-id="E_F5_CONTROL_GOAL" d="M800 205 L800 188" class="route final"/>
+
+  <g data-node-id="F5_SEARCH_HUB"><rect x="640" y="700" width="320" height="105" rx="22" class="node decision"/><text x="800" y="738" class="label">CENTRAL SEARCH HUB</text><text x="800" y="768" class="small">4F arrival · choose unsearched room</text><text x="800" y="792" class="small">F5_ROOM_SEARCH[remaining set]</text></g>
+  <g data-node-id="F5_LEFT_WING"><rect x="330" y="560" width="200" height="90" rx="18" class="node wing"/><text x="430" y="600" class="label">LEFT WING</text><text x="430" y="628" class="small">L1 / L2</text></g>
+  <g data-node-id="F5_L1_GUARD"><rect x="225" y="410" width="150" height="85" rx="17" class="node villain"/><text x="300" y="445" class="label">VILLAIN ×1</text><text x="300" y="475" class="small">L1 guard</text></g>
+  <g data-node-id="F5_ROOM_L1"><rect x="75" y="260" width="210" height="105" rx="18" class="node room"/><text x="180" y="303" class="label">ROOM L1</text><text x="180" y="335" class="small">SEARCH ROOM</text></g>
+  <g data-node-id="F5_L2_GUARD"><rect x="445" y="345" width="150" height="85" rx="17" class="node villain"/><text x="520" y="380" class="label">VILLAIN ×1</text><text x="520" y="410" class="small">L2 guard</text></g>
+  <g data-node-id="F5_ROOM_L2"><rect x="315" y="160" width="210" height="105" rx="18" class="node room"/><text x="420" y="203" class="label">ROOM L2</text><text x="420" y="235" class="small">SEARCH ROOM</text></g>
+  <g data-node-id="F5_RIGHT_WING"><rect x="1070" y="560" width="200" height="90" rx="18" class="node wing"/><text x="1170" y="600" class="label">RIGHT WING</text><text x="1170" y="628" class="small">R1 / R2</text></g>
+  <g data-node-id="F5_R1_GUARD"><rect x="1225" y="410" width="150" height="85" rx="17" class="node villain"/><text x="1300" y="445" class="label">VILLAIN ×1</text><text x="1300" y="475" class="small">R1 guard</text></g>
+  <g data-node-id="F5_ROOM_R1"><rect x="1315" y="260" width="210" height="105" rx="18" class="node room"/><text x="1420" y="303" class="label">ROOM R1</text><text x="1420" y="335" class="small">SEARCH ROOM</text></g>
+  <g data-node-id="F5_R2_GUARD"><rect x="1005" y="345" width="150" height="85" rx="17" class="node villain"/><text x="1080" y="380" class="label">VILLAIN ×1</text><text x="1080" y="410" class="small">R2 guard</text></g>
+  <g data-node-id="F5_ROOM_R2"><rect x="1075" y="160" width="210" height="105" rx="18" class="node room"/><text x="1180" y="203" class="label">ROOM R2</text><text x="1180" y="235" class="small">SEARCH ROOM</text></g>
+  <g data-node-id="F5_CENTRAL_HALL"><rect x="680" y="400" width="240" height="85" rx="18" class="node hall"/><text x="800" y="437" class="label">CENTRAL HALL</text><text x="800" y="466" class="small">post-Boss return</text></g>
+  <g data-node-id="F5_SECURITY_LOCK"><rect x="690" y="315" width="220" height="75" rx="17" class="node lock"/><text x="800" y="347" class="label">SECURITY LOCK</text><text x="800" y="374" class="small">Boss required</text></g>
+  <g data-node-id="F5_CONTROL_ROOM"><rect x="660" y="205" width="280" height="95" rx="18" class="node control"/><text x="800" y="244" class="label">CONTROL ROOM</text><text x="800" y="274" class="small">fixed final space</text></g>
+  <g data-node-id="F5_GOAL"><rect x="680" y="130" width="240" height="58" rx="16" class="node goal"/><text x="800" y="167" class="label">GOAL_REACHED</text></g>
+
+  <rect x="555" y="520" width="490" height="65" rx="15" fill="#4c1d95" stroke="#d8b4fe" stroke-width="3"/><text x="800" y="548" class="label">BOSS: seeded random in L1 / L2 / R1 / R2</text><text x="800" y="574" class="small">hidden from Route Context and Policy input</text>
+  <text x="75" y="865" class="tiny">Solid blue/green = room approach · gray dashed = NO_BOSS return · purple dashed = BOSS_NEUTRALIZED return · gold = locked final route</text>
+</svg>

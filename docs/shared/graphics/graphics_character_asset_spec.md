@@ -268,18 +268,25 @@ Tile 크기는 다음으로 고정한다.
 32 × 32 px
 ```
 
-## 8.2 Character Sprite Frame
-캐릭터 Sprite Frame은 **모든 Species에 동일한 크기를 강제하지 않는다.**
+## 8.2 Character Authoring Canvas
+모든 Species / Gender의 canonical authoring canvas는 다음 규격으로 통일한다.
+이 규격은 원본 Asset의 canvas / frame 규격이며, 게임 화면에서의 Species별 표시 크기는 Runtime Scale로 별도 제어한다.
 
-Species별로 다른 Frame 크기를 사용할 수 있다.
+| Asset | Canonical 규격 | 구성 |
+|---|---:|---|
+| Directional Base Static | 512 × 682 RGBA | 방향별 1장 |
+| Variant Directional Static | 512 × 682 RGBA | 방향별 1장 |
+| Variant Reference Sheet | 2048 × 682 RGBA | 가로 4셀, `DOWN \| LEFT \| RIGHT \| UP` |
+| Walk Frame | 512 × 682 RGBA | Frame별 1장 |
+| Walk Raw Spritesheet | 1536 × 1364 RGBA | 3열 × 2행, 총 6 Frames |
 
-```text
-Rabbit Frame
-Cat Frame
-Dog Frame
-Fox Frame
-Tiger Frame
-```
+Canonical authoring 규칙:
+
+- 방향별 canvas 크기를 변경하지 않는다.
+- Non-uniform stretch를 금지한다.
+- Visible anatomy를 crop하지 않는다.
+- 모든 결과물은 실제 Alpha Channel을 가진 투명 PNG(RGBA)여야 한다.
+- Base / Variant / Walk 사이의 apparent scale과 Bottom-center / feet baseline을 일관되게 유지한다.
 
 Scale Validation을 통해 다음 공통 기준이 확정되었다.
 
@@ -321,7 +328,7 @@ Tiger
 ```
 
 ## 8.3 Frame 규칙
-Species별 Frame 크기는 다를 수 있지만 다음 규칙은 공통으로 유지한다.
+모든 Species는 위 canonical authoring canvas를 사용하며 다음 규칙을 공통으로 유지한다.
 
 ### Anchor
 모든 캐릭터의 위치 기준은 **발 중앙(Bottom Center)** 으로 통일한다.
@@ -332,8 +339,8 @@ Species별 Frame 크기는 다를 수 있지만 다음 규칙은 공통으로 �
 ### Collision Footprint
 보이는 Sprite 크기와 실제 이동 충돌 범위를 분리한다.
 
-### Species 내부 규격
-같은 Species의 캐릭터는 동일한 Frame 규격을 사용한다.
+### Species / Variant 내부 규격
+같은 Species의 Base와 모든 Variant는 동일한 Frame 규격, Anchor, apparent scale을 사용한다.
 
 예:
 
@@ -343,7 +350,21 @@ Orange Tiger
 Dark Tiger
 ```
 
-모두 동일한 Tiger Frame 규격을 사용한다.
+모두 동일한 512 × 682 Frame 규격을 사용한다.
+
+## 8.4 Walk Raw Authoring Asset 경계
+
+1536 × 1364, 3열 × 2행, 6 Frames의 Walk Sheet는 **RAW AUTHORING ASSET**이다.
+Image 제작 단계는 이 Raw Sheet 생성과 규격 / Alpha / geometry 검증에서 종료한다.
+
+다음 작업은 별도 deterministic integration pipeline의 책임이다.
+
+- 512 × 682 개별 Frame 추출
+- Processed Sheet 생성
+- WORLD Runtime Export 및 4LP 처리
+- Manifest / Runtime Wiring
+
+Raw Walk Sheet를 `public` production runtime 경로에 직접 배치하거나 Runtime Asset으로 직접 참조하지 않는다.
 
 ---
 
@@ -800,7 +821,8 @@ assets/
 └─ ui/
 ```
 
-Sprite Sheet Packing 방식은 Animation 제작 단계에서 별도로 확정한다.
+Processed / Runtime Sprite Sheet Packing 방식은 별도 integration 단계에서 확정한다.
+Walk Raw Authoring Sheet의 규격과 Packing은 8.2의 1536 × 1364, 3열 × 2행으로 고정한다.
 
 ---
 
@@ -810,10 +832,9 @@ Sprite Sheet Packing 방식은 Animation 제작 단계에서 별도로 확정한
 
 - Rabbit / Fox / Cat / Dog의 최종 Visual Height
 - Rabbit / Fox / Cat / Dog의 최종 Physical Footprint
-- Species별 최종 Source Frame Width / Height
-- 각 Animation의 정확한 Frame 수
+- Walk 이외 Animation의 정확한 Frame 수
 - Animation FPS
-- Sprite Sheet Packing 방식
+- Processed / Runtime Sprite Sheet Packing 방식
 - Outfit / Equipment 개수
 - Base Character 이후 추가 외형 Variation 개수
 - 핵심 캐릭터 정확한 명단
@@ -844,8 +865,10 @@ Sprite Sheet Packing 방식은 Animation 제작 단계에서 별도로 확정한
 - Tiger Large 기준 Visual Height 80px
 - 일반 NPC Visual Height 최대 96px
 - Tiger Collision Footprint 26×16px
-- Sprite Frame은 Species별 차등 허용
-- Species 내부 Frame 규격은 통일
+- Canonical Directional Static / Variant Static / Walk Frame은 512×682 RGBA
+- Variant Reference Sheet는 2048×682, 가로 `DOWN | LEFT | RIGHT | UP`
+- Walk Raw Authoring Sheet는 1536×1364, 3열×2행, 6 Frames
+- Raw Walk Sheet와 Runtime Integration Asset은 분리
 - Bottom-center Anchor
 - 발 위치 Y 기준 Depth
 - Sprite와 Collision Footprint 분리

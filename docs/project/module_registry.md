@@ -9,7 +9,7 @@
 | `supervised-learning` | 지도학습 | 정답이 있는 예시로 AI를 어떻게 가르칠까? | `/?mode=supervised` | PROTOTYPE COMPLETE / DEPLOYED |
 | `machine-learning` | 머신러닝 | AI는 어떻게 배울까? | 미구현 | PLANNED |
 | `unsupervised-learning` | 비지도학습 | 정답 없이 비슷한 것끼리 어떻게 찾을까? | 미구현 | PLANNED |
-| `reinforcement-learning` | 강화학습 | 보상과 벌점으로 어떻게 배울까? | 미구현 | PLANNED |
+| `reinforcement-learning` | 강화학습 | 보상과 벌점으로 어떻게 배울까? | 미구현 | DESIGNING |
 | `deep-learning` | 딥러닝 | 여러 층의 신경망은 어떻게 특징을 배울까? | 미구현 | PLANNED |
 | `nlp` | 자연어 처리 | AI는 글과 말을 어떻게 이해할까? | 미구현 | PLANNED |
 | `computer-vision` | 컴퓨터 비전 | AI는 이미지와 영상을 어떻게 이해할까? | 미구현 | PLANNED |

@@ -1,0 +1,105 @@
+{
+  "columns": 8,
+  "image": "../../assets/environment/reinforcement/blockout/reinforcement_blockout_tiles.png",
+  "imagewidth": 256,
+  "imageheight": 32,
+  "margin": 0,
+  "spacing": 0,
+  "name": "reinforcement_blockout_tileset",
+  "tilecount": 8,
+  "tilewidth": 32,
+  "tileheight": 32,
+  "type": "tileset",
+  "version": "1.10",
+  "tiledversion": "1.11.2",
+  "tiles": [
+    {
+      "id": 0,
+      "class": "Ground",
+      "properties": [
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "class": "FloorDetail",
+      "properties": [
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "class": "Wall",
+      "properties": [
+        {
+          "name": "blocksRobot",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "class": "WallTop",
+      "properties": [
+        {
+          "name": "blocksRobot",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "class": "StaticProp",
+      "properties": [
+        {
+          "name": "blocksRobot",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "class": "Stair",
+      "properties": [
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "class": "LockedRoom",
+      "properties": [
+        {
+          "name": "blocksRobot",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "class": "Debug",
+      "properties": [
+        {
+          "name": "gameplay",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    }
+  ]
+}

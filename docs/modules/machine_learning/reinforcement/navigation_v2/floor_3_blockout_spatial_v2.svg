@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" aria-hidden="true" shape-rendering="geometricPrecision">
+<rect width="1600" height="900" fill="#20262d"/>
+<rect x="55" y="45" width="1490" height="810" fill="#9099a1"/>
+<rect x="690" y="755" width="220" height="95" fill="#b8c2c8"/>
+<line x1="708" y1="766.875" x2="892" y2="766.875" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="708" y1="778.75" x2="892" y2="778.75" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="708" y1="790.625" x2="892" y2="790.625" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="708" y1="802.5" x2="892" y2="802.5" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="708" y1="814.375" x2="892" y2="814.375" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="708" y1="826.25" x2="892" y2="826.25" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="708" y1="838.125" x2="892" y2="838.125" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<rect x="640" y="675" width="320" height="130" fill="#d5dce0"/>
+<rect x="445" y="635" width="215" height="90" fill="#d8d0c4"/>
+<rect x="395" y="320" width="100" height="405" fill="#d8d0c4"/>
+<rect x="245" y="250" width="270" height="130" fill="#d8d0c4"/>
+<rect x="105" y="135" width="330" height="150" fill="#d5dce0"/>
+<rect x="135" y="60" width="235" height="135" fill="#b8c2c8"/>
+<line x1="153" y1="76.875" x2="352" y2="76.875" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="153" y1="93.75" x2="352" y2="93.75" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="153" y1="110.625" x2="352" y2="110.625" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="153" y1="127.5" x2="352" y2="127.5" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="153" y1="144.375" x2="352" y2="144.375" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="153" y1="161.25" x2="352" y2="161.25" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="153" y1="178.125" x2="352" y2="178.125" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<rect x="930" y="710" width="440" height="80" fill="#d8e5e4"/>
+<rect x="1280" y="235" width="90" height="555" fill="#d8e5e4"/>
+<rect x="1120" y="205" width="270" height="130" fill="#d8e5e4"/>
+<rect x="1165" y="125" width="325" height="125" fill="#d5dce0"/>
+<rect x="1210" y="55" width="235" height="130" fill="#b8c2c8"/>
+<line x1="1228" y1="71.25" x2="1427" y2="71.25" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1228" y1="87.5" x2="1427" y2="87.5" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1228" y1="103.75" x2="1427" y2="103.75" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1228" y1="120" x2="1427" y2="120" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1228" y1="136.25" x2="1427" y2="136.25" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1228" y1="152.5" x2="1427" y2="152.5" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<line x1="1228" y1="168.75" x2="1427" y2="168.75" stroke="#4d5860" stroke-width="5" stroke-linecap="square"/>
+<rect x="90" y="410" width="255" height="160" fill="#d8d0c4"/>
+<rect x="325" y="455" width="90" height="60" fill="#d8d0c4"/>
+<rect x="520" y="410" width="165" height="130" fill="#ddd5c9"/>
+<rect x="475" y="445" width="70" height="55" fill="#d8d0c4"/>
+<rect x="1050" y="390" width="185" height="135" fill="#edf0f1"/>
+<rect x="1210" y="430" width="90" height="55" fill="#d8e5e4"/>
+<rect x="1015" y="560" width="220" height="110" fill="#edf0f1"/>
+<rect x="1210" y="590" width="90" height="55" fill="#d8e5e4"/>
+<rect x="700" y="230" width="300" height="360" fill="#68737c"/>
+<rect x="785" y="315" width="130" height="190" fill="#9099a1"/>
+<rect x="395" y="455" width="55" height="50" fill="#68737c"/>
+<rect x="440" y="535" width="55" height="50" fill="#68737c"/>
+<circle cx="715" cy="705" r="12" fill="#4d5860"/>
+<circle cx="885" cy="705" r="12" fill="#4d5860"/>
+</svg>

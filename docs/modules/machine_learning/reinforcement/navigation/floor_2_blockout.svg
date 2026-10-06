@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Floor 2 navigation blockout</title>
+  <desc id="desc">Distinct left and right arrivals each have a short and long internal route before converging at a center stair guarded by two villains.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#dbeafe"/></marker>
+    <style>
+      .shell{fill:#111827;stroke:#64748b;stroke-width:4}.route{fill:none;stroke:#dbeafe;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}.short{stroke:#f59e0b}.long{stroke:#38bdf8}
+      .node{fill:#1e293b;stroke:#e2e8f0;stroke-width:4}.decision{fill:#312e81;stroke:#a5b4fc}.stair{fill:#164e63;stroke:#67e8f9}.zone{fill:#3f3f46;stroke:#d4d4d8}.villain{fill:#7f1d1d;stroke:#fca5a5}
+      .label{fill:#f8fafc;font:700 22px system-ui,sans-serif;text-anchor:middle}.small{fill:#cbd5e1;font:17px system-ui,sans-serif;text-anchor:middle}.tiny{fill:#cbd5e1;font:16px system-ui,sans-serif}.heading{fill:#f8fafc;font:700 38px system-ui,sans-serif}.sub{fill:#94a3b8;font:20px system-ui,sans-serif}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#020617"/>
+  <text x="70" y="70" class="heading">2F · CONVERGENCE / FIRST VILLAIN FLOOR</text><text x="70" y="108" class="sub">Two approaches per arrival · both converge at the guarded center stair</text>
+  <rect x="70" y="130" width="1460" height="690" rx="28" class="shell"/>
+
+  <path data-edge-id="E_F2_LEFT_DIRECT_A" d="M285 680 L430 555" class="route short"/><path data-edge-id="E_F2_LEFT_DIRECT_B" d="M530 505 L730 390" class="route short"/>
+  <path data-edge-id="E_F2_LEFT_OUTER_A" d="M205 655 C150 500 215 300 355 255" class="route long"/><path data-edge-id="E_F2_LEFT_OUTER_B" d="M490 255 C610 255 665 300 730 350" class="route long"/>
+  <path data-edge-id="E_F2_RIGHT_INNER_A" d="M1315 680 L1170 555" class="route short"/><path data-edge-id="E_F2_RIGHT_INNER_B" d="M1070 505 L870 390" class="route short"/>
+  <path data-edge-id="E_F2_RIGHT_SERVICE_A" d="M1395 655 C1450 500 1385 300 1245 255" class="route long"/><path data-edge-id="E_F2_RIGHT_SERVICE_B" d="M1110 255 C990 255 935 300 870 350" class="route long"/>
+  <path data-edge-id="E_F2_GUARD_STAIR" d="M800 315 L800 210" class="route short"/>
+
+  <g data-node-id="F2_LEFT_ARRIVAL"><rect x="105" y="650" width="230" height="105" rx="20" class="node decision"/><text x="220" y="693" class="label">LEFT ARRIVAL</text><text x="220" y="727" class="small">F2_LEFT_APPROACH</text></g>
+  <g data-node-id="F2_LEFT_DIRECT_ZONE"><rect x="350" y="475" width="240" height="105" rx="18" class="node zone"/><text x="470" y="518" class="label">DIRECT OFFICE</text><text x="470" y="550" class="small">short · ambiguous</text></g>
+  <g data-node-id="F2_LEFT_OUTER_ZONE"><rect x="300" y="205" width="240" height="105" rx="18" class="node zone"/><text x="420" y="248" class="label">OUTER CORRIDOR</text><text x="420" y="280" class="small">long · safer</text></g>
+  <g data-node-id="F2_RIGHT_ARRIVAL"><rect x="1265" y="650" width="230" height="105" rx="20" class="node decision"/><text x="1380" y="693" class="label">RIGHT ARRIVAL</text><text x="1380" y="727" class="small">F2_RIGHT_APPROACH</text></g>
+  <g data-node-id="F2_RIGHT_INNER_ZONE"><rect x="1010" y="475" width="240" height="105" rx="18" class="node zone"/><text x="1130" y="518" class="label">INNER HALL</text><text x="1130" y="550" class="small">short · narrow</text></g>
+  <g data-node-id="F2_RIGHT_SERVICE_ZONE"><rect x="1060" y="205" width="240" height="105" rx="18" class="node zone"/><text x="1180" y="248" class="label">SERVICE DETOUR</text><text x="1180" y="280" class="small">long · obstacle</text></g>
+  <g data-node-id="F2_CENTER_GUARD"><rect x="680" y="315" width="240" height="105" rx="20" class="node villain"/><text x="800" y="356" class="label">VILLAIN ×2</text><text x="800" y="390" class="small">VILLAIN_ENCOUNTER</text></g>
+  <g data-node-id="F2_CENTER_STAIR"><rect x="680" y="145" width="240" height="95" rx="20" class="node stair"/><text x="800" y="185" class="label">CENTER STAIR ↑</text><text x="800" y="215" class="small">to 3F center arrival</text></g>
+
+  <text x="95" y="855" class="tiny">Route labels: amber = short/riskier · cyan = long/safer or different obstacle profile · center stair has no BYPASS</text>
+</svg>

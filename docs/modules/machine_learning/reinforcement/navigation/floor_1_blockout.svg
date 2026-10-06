@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Floor 1 navigation blockout</title>
+  <desc id="desc">Central entrance splits toward a short citizen-heavy left evacuation route and a long obstacle-heavy right service route.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#dbeafe"/></marker>
+    <style>
+      .shell{fill:#111827;stroke:#64748b;stroke-width:4}.route{fill:none;stroke:#dbeafe;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+      .safe{stroke:#38bdf8}.risk{stroke:#f59e0b}.node{fill:#1e293b;stroke:#e2e8f0;stroke-width:4}.decision{fill:#312e81;stroke:#a5b4fc}.stair{fill:#164e63;stroke:#67e8f9}.zone{fill:#3f3f46;stroke:#d4d4d8}
+      .citizen{fill:#0f766e;stroke:#5eead4}.obstacle{fill:#7c2d12;stroke:#fdba74}.label{fill:#f8fafc;font:700 24px system-ui,sans-serif;text-anchor:middle}.small{fill:#cbd5e1;font:18px system-ui,sans-serif;text-anchor:middle}.tiny{fill:#cbd5e1;font:16px system-ui,sans-serif}.heading{fill:#f8fafc;font:700 38px system-ui,sans-serif}.sub{fill:#94a3b8;font:20px system-ui,sans-serif}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#020617"/>
+  <text x="70" y="70" class="heading">1F · ENTRANCE / EVACUATION</text>
+  <text x="70" y="108" class="sub">One-floor 2.5D review view · no stair guards</text>
+  <rect x="70" y="130" width="1460" height="690" rx="28" class="shell"/>
+
+  <path data-edge-id="E_F1_START_LEFT" d="M760 700 C650 650 570 560 485 495" class="route safe"/>
+  <path data-edge-id="E_F1_LEFT_STAIR" d="M435 430 C350 350 280 270 230 225" class="route safe"/>
+  <path data-edge-id="E_F1_START_RIGHT" d="M840 700 C970 665 1060 590 1120 535" class="route risk"/>
+  <path data-edge-id="E_F1_RIGHT_STAIR" d="M1175 455 C1260 370 1325 285 1370 225" class="route risk"/>
+
+  <g data-node-id="F1_START"><rect x="650" y="675" width="300" height="105" rx="22" class="node decision"/><text x="800" y="718" class="label">START · CENTRAL ENTRANCE</text><text x="800" y="752" class="small">F1_ENTRY_SPLIT</text></g>
+  <g data-node-id="F1_LEFT_EVAC_ZONE"><rect x="310" y="390" width="300" height="140" rx="24" class="node zone"/><text x="460" y="440" class="label">LEFT EVAC ROUTE</text><text x="460" y="476" class="small">SHORT · CITIZENS HIGH</text><text x="460" y="505" class="small">OBSTACLES LOW</text></g>
+  <g data-node-id="F1_LEFT_STAIR"><rect x="105" y="155" width="230" height="100" rx="20" class="node stair"/><text x="220" y="198" class="label">LEFT STAIR ↑</text><text x="220" y="230" class="small">to 2F left arrival</text></g>
+  <g data-node-id="F1_RIGHT_SERVICE_ZONE"><rect x="980" y="420" width="320" height="160" rx="24" class="node zone"/><text x="1140" y="466" class="label">RIGHT SERVICE ROUTE</text><text x="1140" y="502" class="small">LONG · CITIZENS LOW</text><text x="1140" y="532" class="small">OBSTACLES / FACILITY HIGH</text></g>
+  <g data-node-id="F1_RIGHT_STAIR"><rect x="1265" y="155" width="230" height="100" rx="20" class="node stair"/><text x="1380" y="198" class="label">RIGHT STAIR ↑</text><text x="1380" y="230" class="small">to 2F right arrival</text></g>
+
+  <g aria-label="encounter zones"><rect x="220" y="555" width="330" height="75" rx="16" class="citizen"/><text x="385" y="586" class="label">CITIZEN ZONE</text><text x="385" y="613" class="small">CITIZEN_NEARBY candidates</text><rect x="1070" y="610" width="350" height="75" rx="16" class="obstacle"/><text x="1245" y="641" class="label">OBSTACLE ZONE</text><text x="1245" y="668" class="small">facility-risk candidates</text></g>
+  <text x="95" y="855" class="tiny">Legend: cyan = safer geometry · amber = obstacle/facility exposure · labels supplement color</text>
+</svg>

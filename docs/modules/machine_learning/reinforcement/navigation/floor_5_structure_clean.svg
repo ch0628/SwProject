@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<rect width="1600" height="900" fill="#f7f7f4"/>
+<rect x="50" y="50" width="1500" height="800" fill="#20262b"/>
+<rect x="650" y="650" width="300" height="150" fill="#d9dee2"/>
+<rect x="760" y="790" width="80" height="60" fill="#d9dee2"/>
+<rect x="330" y="600" width="940" height="100" fill="#d9dee2"/>
+<rect x="340" y="180" width="120" height="480" fill="#d9dee2"/>
+<rect x="1140" y="180" width="120" height="480" fill="#d9dee2"/>
+<rect x="70" y="100" width="250" height="190" fill="#eef1f3"/>
+<rect x="300" y="170" width="120" height="90" fill="#eef1f3"/>
+<rect x="70" y="390" width="250" height="190" fill="#eef1f3"/>
+<rect x="300" y="460" width="120" height="90" fill="#eef1f3"/>
+<rect x="1280" y="100" width="250" height="190" fill="#eef1f3"/>
+<rect x="1180" y="170" width="120" height="90" fill="#eef1f3"/>
+<rect x="1280" y="390" width="250" height="190" fill="#eef1f3"/>
+<rect x="1180" y="460" width="120" height="90" fill="#eef1f3"/>
+<rect x="740" y="390" width="120" height="300" fill="#d9dee2"/>
+<rect x="650" y="330" width="300" height="130" fill="#d9dee2"/>
+<rect x="740" y="250" width="120" height="100" fill="#f5f7f3"/>
+<rect x="620" y="70" width="360" height="200" fill="#f5f7f3"/>
+<line x1="740" y1="304" x2="785" y2="304" stroke="#30363b" stroke-width="10" stroke-linecap="square"/>
+<line x1="815" y1="304" x2="860" y2="304" stroke="#30363b" stroke-width="10" stroke-linecap="square"/>
+<rect x="720" y="690" width="160" height="80" fill="#aeb8bf"/>
+<line x1="738" y1="701.4285714285714" x2="862" y2="701.4285714285714" stroke="#20262b" stroke-width="5" stroke-linecap="square"/>
+<line x1="738" y1="712.8571428571429" x2="862" y2="712.8571428571429" stroke="#20262b" stroke-width="5" stroke-linecap="square"/>
+<line x1="738" y1="724.2857142857143" x2="862" y2="724.2857142857143" stroke="#20262b" stroke-width="5" stroke-linecap="square"/>
+<line x1="738" y1="735.7142857142857" x2="862" y2="735.7142857142857" stroke="#20262b" stroke-width="5" stroke-linecap="square"/>
+<line x1="738" y1="747.1428571428571" x2="862" y2="747.1428571428571" stroke="#20262b" stroke-width="5" stroke-linecap="square"/>
+<line x1="738" y1="758.5714285714286" x2="862" y2="758.5714285714286" stroke="#20262b" stroke-width="5" stroke-linecap="square"/>
+</svg>

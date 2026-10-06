@@ -131,12 +131,8 @@ docs/
 광장·공원
 ├─ CCTV 1
 └─ CCTV 2
-
-상점가
 ├─ CCTV 3
 └─ CCTV 4
-
-주거지역
 └─ CCTV 5
 ```
 
@@ -146,11 +142,6 @@ Map Size:
 Plaza & Park
 = 96×56
 
-Shopping District
-= 96×50
-
-Residential Area
-= 84×52
 ```
 
 상세 규칙:

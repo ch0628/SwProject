@@ -50,14 +50,41 @@ Ari Start → Round 1 → 정답 데이터 생성 → First Training
 
 핵심 메시지는 “정답이 있는 예시를 알려주며 AI를 가르치는 방법을 지도학습이라고 한다”이다. Hub 오른쪽 아래 hotspot이 `/?mode=supervised`로 진입시킨다.
 
-## 5. 검증 / 배포 상태
+## 5. 강화학습 모듈 — 현재 설계 중
+
+상태: **DESIGNING**
+
+현재 다음 개발 대상은 머신러닝 하위의 강화학습 모듈이다.
+
+- Module ID: `reinforcement-learning`
+- 핵심 질문: **보상과 벌점으로 AI는 어떻게 배울까?**
+- 현재 작업 위치: `/machine_learning/reinforcement_learning`
+- 현재 단계: gameplay / interaction 설계
+- 구현 전 `검토 → 사용자 승인 → 구현` 순서를 따른다.
+
+강화학습의 상세 설계 Source of Truth:
+
+`docs/modules/reinforcement_learning/module_spec.md`
+
+현재 세션 진행 상태와 다음 작업:
+
+`docs/modules/reinforcement_learning/session_handoff.md`
+
+세부 gameplay, 보상/벌점 구조, 로봇 학습 방식,
+실패/재시도 규칙 등은 `project_state_current.md`에 중복 기록하지 않고
+`module_spec.md`에서 관리한다.
+
+현재 강화학습은 아직 Hub 진입 및 실제 gameplay 구현 전이므로
+기존 Hub / Routing 표에는 추가하지 않는다.
+
+## 6. 검증 / 배포 상태
 
 - 사용자 확인: AI Basics 최종 로컬 전체 플레이, Git push, Vercel 자동 배포와 배포본 확인 완료.
 - 기존 프로젝트 문서에 기록된 URL: `https://sw-project-sooty.vercel.app/`. 이번 문서 업데이트에서 배포본을 다시 실행하지 않았다.
 - 코드/asset 대조 결과, Hub, 3층 탐색, 카드, Ari, 퀴즈/컷신/공유 하트, 선택, 장치, 전원 복구, 완료 복귀가 연결되어 있다.
 - 현재 코드에는 AI Basics의 영구 완료 상태 저장이 없다. 추가 기능이 필요해질 때 별도 판단한다.
 
-## 6. 핵심 원칙
+## 7. 핵심 원칙
 
 - 교육: 먼저 문제를 경험하고 조작한 뒤 결과와 개념을 연결한다.
 - 개발: 모듈 단위 독립성을 유지하고, 지도학습 gameplay 흐름을 보호한다.

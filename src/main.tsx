@@ -18,6 +18,7 @@ import {
 } from './supervisedGameFlow';
 import { MONITORING_TARGET_IDS, round2ComparisonFor, type Round2TargetStatus } from './plazaRound2';
 import { AiBasicsApp } from './modules/ai-basics/AiBasicsApp';
+import { ReinforcementFloor1DebugApp } from './modules/reinforcement/debug/ReinforcementFloor1DebugApp';
 import worldBackground from '../assets/background/world_background.png';
 import fairyImg from '../assets/ai/fairy.png';
 import centralAiCoreImg from '../assets/ai/central_ai_core.png';
@@ -714,5 +715,5 @@ function Hub() {
 const entryParams = new URLSearchParams(window.location.search);
 const mode = entryParams.get('mode');
 createRoot(document.getElementById('root')!).render(
-  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' ? <App /> : <Hub />,
+  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' ? <App /> : mode === 'reinforcement-floor1-debug' ? <ReinforcementFloor1DebugApp /> : <Hub />,
 );

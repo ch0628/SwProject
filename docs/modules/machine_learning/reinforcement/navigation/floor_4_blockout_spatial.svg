@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid meet" role="img">
+<title>Floor 4 spatial navigation blockout</title>
+<rect width="1600" height="900" fill="#f4f5f1"/>
+<rect x="50" y="50" width="1500" height="800" fill="#242a2f"/>
+<rect x="80" y="650" width="260" height="140" fill="#aeb8bf"/>
+<line x1="117.14285714285714" y1="668" x2="117.14285714285714" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="154.28571428571428" y1="668" x2="154.28571428571428" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="191.42857142857142" y1="668" x2="191.42857142857142" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="228.57142857142856" y1="668" x2="228.57142857142856" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="265.7142857142857" y1="668" x2="265.7142857142857" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="302.85714285714283" y1="668" x2="302.85714285714283" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<rect x="1260" y="650" width="260" height="140" fill="#aeb8bf"/>
+<line x1="1297.142857142857" y1="668" x2="1297.142857142857" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="1334.2857142857142" y1="668" x2="1334.2857142857142" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="1371.4285714285713" y1="668" x2="1371.4285714285713" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="1408.5714285714284" y1="668" x2="1408.5714285714284" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="1445.7142857142858" y1="668" x2="1445.7142857142858" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="1482.857142857143" y1="668" x2="1482.857142857143" y2="772" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<rect x="300" y="580" width="420" height="110" fill="#dde0eb"/>
+<rect x="650" y="490" width="100" height="200" fill="#dde0eb"/>
+<rect x="150" y="210" width="100" height="460" fill="#dce9e8"/>
+<rect x="150" y="210" width="550" height="100" fill="#dce9e8"/>
+<rect x="880" y="580" width="420" height="110" fill="#dde0eb"/>
+<rect x="850" y="490" width="100" height="200" fill="#dde0eb"/>
+<rect x="1350" y="210" width="100" height="460" fill="#e5ddd1"/>
+<rect x="900" y="210" width="550" height="100" fill="#e5ddd1"/>
+<rect x="650" y="270" width="300" height="240" fill="#dbe0e3"/>
+<rect x="740" y="190" width="120" height="100" fill="#dbe0e3"/>
+<rect x="680" y="70" width="240" height="150" fill="#aeb8bf"/>
+<line x1="698" y1="91.42857142857143" x2="902" y2="91.42857142857143" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="698" y1="112.85714285714286" x2="902" y2="112.85714285714286" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="698" y1="134.28571428571428" x2="902" y2="134.28571428571428" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="698" y1="155.71428571428572" x2="902" y2="155.71428571428572" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="698" y1="177.14285714285714" x2="902" y2="177.14285714285714" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="698" y1="198.57142857142856" x2="902" y2="198.57142857142856" stroke="#242a2f" stroke-width="5" stroke-linecap="square"/>
+<line x1="700" y1="455" x2="760" y2="455" stroke="#8b5e24" stroke-width="9" stroke-linecap="square"/>
+<line x1="840" y1="455" x2="900" y2="455" stroke="#8b5e24" stroke-width="9" stroke-linecap="square"/>
+<text x="65" y="32" fill="#172027" font-family="Arial, sans-serif" font-size="21" font-weight="700" text-anchor="start">4F · SPATIAL BLOCKOUT</text>
+<text x="210" y="730" fill="#172027" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">LEFT ARRIVAL</text>
+<text x="1390" y="730" fill="#172027" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">RIGHT ARRIVAL</text>
+<text x="500" y="635" fill="#172027" font-family="Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">SECURITY HALL</text>
+<text x="420" y="260" fill="#172027" font-family="Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">PERIMETER DETOUR</text>
+<text x="1100" y="635" fill="#172027" font-family="Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">INNER SECURITY</text>
+<text x="1180" y="260" fill="#172027" font-family="Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">SERVICE ROUTE</text>
+<text x="800" y="430" fill="#172027" font-family="Arial, sans-serif" font-size="18" font-weight="700" text-anchor="middle">CONTROLLED CHOKE POINT</text>
+<text x="800" y="145" fill="#172027" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">CENTER STAIR</text>
+<circle cx="782" cy="345" r="12" fill="#b4232d"/>
+<circle cx="818" cy="345" r="12" fill="#b4232d"/>
+<text x="800" y="379" fill="#172027" font-family="Arial, sans-serif" font-size="15" font-weight="700" text-anchor="middle">V ×2</text>
+<circle cx="510" cy="620" r="10" fill="#b7791f"/>
+<circle cx="1085" cy="620" r="10" fill="#b7791f"/>
+</svg>

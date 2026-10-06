@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Floor 3 navigation blockout</title>
+  <desc id="desc">Center arrival splits to a short hazardous maintenance route and a long safer perimeter route. Both stairs are guarded by two villains.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#dbeafe"/></marker>
+    <style>
+      .shell{fill:#111827;stroke:#64748b;stroke-width:4}.route{fill:none;stroke-width:18;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}.risk{stroke:#f59e0b}.safe{stroke:#38bdf8}
+      .node{fill:#1e293b;stroke:#e2e8f0;stroke-width:4}.decision{fill:#312e81;stroke:#a5b4fc}.stair{fill:#164e63;stroke:#67e8f9}.zone{fill:#3f3f46;stroke:#d4d4d8}.villain{fill:#7f1d1d;stroke:#fca5a5}.obstacle{fill:#7c2d12;stroke:#fdba74}
+      .label{fill:#f8fafc;font:700 22px system-ui,sans-serif;text-anchor:middle}.small{fill:#cbd5e1;font:17px system-ui,sans-serif;text-anchor:middle}.tiny{fill:#cbd5e1;font:16px system-ui,sans-serif}.heading{fill:#f8fafc;font:700 38px system-ui,sans-serif}.sub{fill:#94a3b8;font:20px system-ui,sans-serif}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#020617"/><text x="70" y="70" class="heading">3F · FACILITY / SPLIT FLOOR</text><text x="70" y="108" class="sub">Central arrival · short hazardous maintenance vs long safer perimeter</text>
+  <rect x="70" y="130" width="1460" height="690" rx="28" class="shell"/>
+
+  <path data-edge-id="E_F3_LEFT_A" d="M730 680 C620 630 530 550 475 505" class="route risk"/><path data-edge-id="E_F3_LEFT_B" d="M400 425 L285 340" class="route risk"/><path data-edge-id="E_F3_LEFT_C" d="M235 260 L190 205" class="route risk"/>
+  <path data-edge-id="E_F3_RIGHT_A" d="M870 680 C1020 650 1120 560 1150 485" class="route safe"/><path data-edge-id="E_F3_RIGHT_B" d="M1220 410 L1315 340" class="route safe"/><path data-edge-id="E_F3_RIGHT_C" d="M1365 260 L1410 205" class="route safe"/>
+
+  <g data-node-id="F3_CENTER_ARRIVAL"><rect x="650" y="660" width="300" height="105" rx="22" class="node decision"/><text x="800" y="703" class="label">CENTER ARRIVAL</text><text x="800" y="737" class="small">F3_STAIR_SPLIT</text></g>
+  <g data-node-id="F3_LEFT_MAINT_ZONE"><rect x="315" y="405" width="270" height="125" rx="20" class="node zone"/><text x="450" y="451" class="label">MAINTENANCE</text><text x="450" y="484" class="small">short · obstacle HIGH</text><text x="450" y="512" class="small">facility risk HIGH</text></g>
+  <g data-node-id="F3_LEFT_GUARD"><rect x="145" y="255" width="230" height="100" rx="20" class="node villain"/><text x="260" y="297" class="label">VILLAIN ×2</text><text x="260" y="329" class="small">left stair guard</text></g>
+  <g data-node-id="F3_LEFT_STAIR"><rect x="75" y="145" width="210" height="90" rx="18" class="node stair"/><text x="180" y="183" class="label">LEFT STAIR ↑</text><text x="180" y="212" class="small">to 4F left</text></g>
+  <g data-node-id="F3_RIGHT_PERIMETER_ZONE"><rect x="1015" y="365" width="270" height="125" rx="20" class="node zone"/><text x="1150" y="411" class="label">PERIMETER</text><text x="1150" y="444" class="small">long · obstacle LOW</text><text x="1150" y="472" class="small">facility risk LOW</text></g>
+  <g data-node-id="F3_RIGHT_GUARD"><rect x="1225" y="255" width="230" height="100" rx="20" class="node villain"/><text x="1340" y="297" class="label">VILLAIN ×2</text><text x="1340" y="329" class="small">right stair guard</text></g>
+  <g data-node-id="F3_RIGHT_STAIR"><rect x="1315" y="145" width="210" height="90" rx="18" class="node stair"/><text x="1420" y="183" class="label">RIGHT STAIR ↑</text><text x="1420" y="212" class="small">to 4F right</text></g>
+  <g aria-label="obstacle candidates"><rect x="285" y="580" width="330" height="62" rx="14" class="obstacle"/><text x="450" y="619" class="label">OBSTACLE / FACILITY ZONE</text></g>
+  <text x="95" y="855" class="tiny">Both stair guards use VILLAIN_ENCOUNTER and block direct BYPASS; general villain defeat is not a global objective.</text>
+</svg>
