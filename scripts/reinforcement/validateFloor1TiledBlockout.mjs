@@ -9,6 +9,7 @@ const TILE = 32;
 const REQUIRED_LAYERS = [
   "Ground", "FloorDetail", "Walls", "WallTop", "StaticProps", "Collision",
   "NavigationNodes", "NavigationEdges", "EncounterZones", "FloorTransitions", "SpawnPoints", "Debug",
+  "CameraZones", "ArchitecturalMass",
 ];
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, "../..");
@@ -66,13 +67,27 @@ if (existsSync(tilesetPath)) {
     failures.push(`tileset JSON parse failed: ${error.message}`);
   }
 }
-check(tileset.tilewidth === TILE && tileset.tileheight === TILE && tileset.tilecount === 8, "tileset dimensions/count are invalid");
+const expectedTilesetSource = mapPath.endsWith("floor_1_artpass_v1.tmj") ? "floor1_art_tileset_v1.tsj" : "floor1_visual_tileset.tsj";
+check(tilesetRef?.source === expectedTilesetSource, `map must use ${expectedTilesetSource}`);
+check(tileset.tilewidth === TILE && tileset.tileheight === TILE && tileset.tilecount === 48, "tileset dimensions/count are invalid");
+const tileByGid = new Map((tileset.tiles ?? []).map((tile) => [tile.id + (tilesetRef?.firstgid ?? 1), tile]));
+const gidsWith = (name) => new Set([...tileByGid].filter(([, tile]) => props(tile)[name] === true).map(([gid]) => gid));
+const walkableGids = gidsWith("walkable");
+const stairGids = gidsWith("stair");
+for (const module of [
+  "WallHorizontal", "WallVertical", "OuterCornerNW", "OuterCornerNE", "OuterCornerSE", "OuterCornerSW",
+  "InnerCornerNW", "InnerCornerNE", "InnerCornerSE", "InnerCornerSW", "HorizontalCapW", "HorizontalCapE",
+  "VerticalCapN", "VerticalCapS", "TJunctionN", "TJunctionE", "TJunctionS", "TJunctionW",
+  "DoorwayWallHorizontal", "DoorwayWallVertical", "OfficeDoor", "LockedDoorHorizontal", "LockedDoorVertical",
+  "GlassWallHorizontal", "GlassWallVertical", "GlassEntranceDoor", "StairTread", "StairLanding",
+  "ReceptionDesk", "WaitingSofaHorizontal", "WaitingSofaVertical", "LowTable", "CompanyDisplay",
+]) check((tileset.tiles ?? []).some((tile) => tile.class === module), `visual tileset is missing ${module}`);
 const imagePath = resolve(dirname(tilesetPath), tileset.image ?? "");
 check(existsSync(imagePath), "tileset PNG is missing");
 if (existsSync(imagePath)) {
   const png = readFileSync(imagePath);
   check(png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), "tileset image is not a PNG");
-  check(png.readUInt32BE(16) === 256 && png.readUInt32BE(20) === 32, "tileset PNG must be 256x32");
+  check(png.readUInt32BE(16) === 256 && png.readUInt32BE(20) === 192, "tileset PNG must be 256x192");
 }
 
 const allObjects = (map.layers ?? []).flatMap((layer) => layer.objects ?? []);
@@ -87,6 +102,29 @@ check(map.nextobjectid > Math.max(...allObjects.map(({ id }) => id)), "nextobjec
 const spawns = layerObjects("SpawnPoints");
 check(spawns.length === 1, `expected one spawn, found ${spawns.length}`);
 check(props(spawns[0])?.spawnId === "F1_ROBOT_SPAWN" && props(spawns[0])?.floor === 1, "F1_ROBOT_SPAWN is invalid");
+
+const expectedCameraZones = new Map([
+  ["F1_CAM_LOBBY", [672, 960, 1216, 480]],
+  ["F1_CAM_LEFT_HORIZONTAL", [192, 736, 768, 448]],
+  ["F1_CAM_LEFT_VERTICAL", [0, 320, 768, 672]],
+  ["F1_CAM_LEFT_STAIR", [0, 0, 768, 480]],
+  ["F1_CAM_RIGHT_LOWER", [1600, 800, 768, 448]],
+  ["F1_CAM_RIGHT_MIDDLE", [1792, 576, 768, 480]],
+  ["F1_CAM_RIGHT_UPPER", [1792, 256, 768, 544]],
+  ["F1_CAM_RIGHT_STAIR", [1792, 0, 768, 480]],
+]);
+const cameraZones = layerObjects("CameraZones");
+const architecturalMass = layerObjects("ArchitecturalMass");
+check(cameraZones.length === expectedCameraZones.size, `expected ${expectedCameraZones.size} CameraZones, found ${cameraZones.length}`);
+check(architecturalMass.length === expectedCameraZones.size, `expected ${expectedCameraZones.size} ArchitecturalMass objects, found ${architecturalMass.length}`);
+for (const [cameraZoneId, bounds] of expectedCameraZones) {
+  const zone = cameraZones.find((item) => props(item).cameraZoneId === cameraZoneId);
+  const mass = architecturalMass.find((item) => props(item).cameraZoneId === cameraZoneId);
+  check(zone?.name === cameraZoneId && props(zone).floor === 1, `${cameraZoneId} metadata is invalid`);
+  check(JSON.stringify([zone?.x, zone?.y, zone?.width, zone?.height]) === JSON.stringify(bounds), `${cameraZoneId} bounds are invalid`);
+  check((zone?.width ?? 0) >= 960 / 1.3 && (zone?.height ?? 0) >= 540 / 1.3, `${cameraZoneId} is smaller than the 1.3x viewport`);
+  check(JSON.stringify([mass?.x, mass?.y, mass?.width, mass?.height]) === JSON.stringify(bounds), `${cameraZoneId} ArchitecturalMass coverage is invalid`);
+}
 
 const transitions = layerObjects("FloorTransitions");
 check(transitions.length === 2, `expected exactly two FloorTransitions, found ${transitions.length}`);
@@ -205,7 +243,7 @@ const tileCenterBlocked = (x, y) => collision.some((item) => {
   const centerY = (y + 0.5) * TILE;
   return centerX >= item.x && centerX < item.x + item.width && centerY >= item.y && centerY < item.y + item.height;
 });
-const walkable = (x, y) => x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT && ground[y * WIDTH + x] === 1 && !tileCenterBlocked(x, y);
+const walkable = (x, y) => x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT && walkableGids.has(ground[y * WIDTH + x]) && !tileCenterBlocked(x, y);
 const tileForObject = (item) => [Math.floor(item.x / TILE), Math.floor(item.y / TILE)];
 function shortestWalk(start, target) {
   const key = ([x, y]) => `${x},${y}`;
@@ -240,7 +278,7 @@ check(rightWalkTiles > leftWalkTiles, `RIGHT walk distance (${rightWalkTiles}) m
 const core = collision.find((item) => props(item).role === "CENTRAL_CORE");
 check(core?.x === 28 * TILE && core?.y === 10 * TILE && core?.width === 24 * TILE && core?.height === 21 * TILE, "Central Core collision must cover x=28..51, y=10..30");
 let coreGroundTiles = 0;
-for (let y = 10; y <= 30; y += 1) for (let x = 28; x <= 51; x += 1) coreGroundTiles += ground[y * WIDTH + x] === 1 ? 1 : 0;
+for (let y = 10; y <= 30; y += 1) for (let x = 28; x <= 51; x += 1) coreGroundTiles += walkableGids.has(ground[y * WIDTH + x]) ? 1 : 0;
 check(coreGroundTiles === 0, `Central Core contains ${coreGroundTiles} walkable Ground tiles`);
 const doors = collision.filter((item) => objectKind(item) === "LockedDoor");
 check(doors.length === 4, `Central Core must contain exactly four locked doors, found ${doors.length}`);
@@ -268,7 +306,7 @@ check(
 
 const stairCount = (x0, x1) => {
   let count = 0;
-  for (let y = 2; y <= 8; y += 1) for (let x = x0; x <= x1; x += 1) count += detail[y * WIDTH + x] === 6 ? 1 : 0;
+  for (let y = 2; y <= 8; y += 1) for (let x = x0; x <= x1; x += 1) count += stairGids.has(detail[y * WIDTH + x]) ? 1 : 0;
   return count;
 };
 check(stairCount(8, 15) === 56, "LEFT Stair tile footprint must be 8x7");

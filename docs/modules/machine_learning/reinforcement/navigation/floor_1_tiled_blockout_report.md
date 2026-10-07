@@ -169,12 +169,33 @@ Navigation revision 회귀 검증:
 
 ## 11. 남은 미확정 사항
 
-- 최종 Pixel Art와 최종 runtime floor background
+- 1F final visual tileset / 최종 art 적용
 - Encounter probability와 Runtime entity spawn 규칙
 - Action별 timeCost
-- Phaser / Learning Engine integration
+- Production Phaser / Learning Engine integration
 - 2F~5F Tiled map
+
+## 12. 후속 Phaser 수동 Playtest 상태
+
+`floor_1_phaser_playtest_report.md`의 debug route를 사용해 사용자가 직접 다음을 검증했다.
+
+- Spawn / Entrance → Lobby
+- LEFT Route / RIGHT Route 완주
+- LEFT ↔ `F1_ENTRY_SPLIT` ↔ RIGHT 전환
+- Reception / Waiting Area / Central Core / Locked Door collision
+- `WALL_45_1` / `WALL_45_2` collision
+- Citizen / Obstacle Encounter Zone detection
+- LEFT / RIGHT Stair transition trigger
+- Camera follow / world bounds / corner movement
+
+후속 상태:
+
+`STRUCTURE_PLAYTEST_APPROVED`
+
+현재 `.tmj` geometry / collision / navigation은 1F visual pass 동안 보호한다.
 
 ## 최종 판단
 
-`PASS_FOR_FLOOR1_NAVIGATION_REVISION`
+`STRUCTURE_PLAYTEST_APPROVED`
+
+이 보고서의 기존 Navigation revision 검증 결과 `PASS_FOR_FLOOR1_NAVIGATION_REVISION`도 그대로 유효하다.

@@ -1,34 +1,45 @@
 import * as Phaser from 'phaser';
-import { contains, decompressTileLayers, embedTileset, properties, TILE_LAYERS, validateFloor1Map, type TiledMapJson, type TiledObject } from './floor1Tiled';
+import { cameraCenterForTarget, contains, decompressTileLayers, embedTileset, properties, resolveCameraZone, TILE_LAYERS, validateFloor1Map, type TiledMapJson, type TiledObject } from './floor1Tiled';
 
 const MAP_JSON = 'reinforcement-floor1-json';
 const TILESET_JSON = 'reinforcement-floor1-tileset-json';
 const MAP = 'reinforcement-floor1';
 const TILES = 'reinforcement-floor1-tiles';
 const SPEED = 180;
+const USE_BLOCKOUT = new URLSearchParams(globalThis.location?.search ?? '').get('floor1Map') === 'blockout';
+const MAP_URL = USE_BLOCKOUT ? '/maps/reinforcement/floor_1_blockout.tmj' : '/maps/reinforcement/floor_1_artpass_v1.tmj';
+const TILESET_URL = USE_BLOCKOUT ? '/maps/reinforcement/floor1_visual_tileset.tsj' : '/maps/reinforcement/floor1_art_tileset_v1.tsj';
+const TILES_URL = USE_BLOCKOUT ? '/assets/environment/reinforcement/floor1/floor1_tileset.png' : '/assets/environment/reinforcement/floor1/floor1_art_modules_v1.png';
+const TILESET_NAME = USE_BLOCKOUT ? 'floor1_visual_tileset' : 'floor1_art_tileset_v1';
 
 export class ReinforcementFloor1DebugScene extends Phaser.Scene {
   private robot!: Phaser.Physics.Arcade.Sprite;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private keys!: Record<'C' | 'N' | 'E' | 'R', Phaser.Input.Keyboard.Key>;
+  private keys!: Record<'C' | 'N' | 'E' | 'R' | 'V', Phaser.Input.Keyboard.Key>;
   private collisionOverlay!: Phaser.GameObjects.Container;
   private navigationOverlay!: Phaser.GameObjects.Container;
   private encounterOverlay!: Phaser.GameObjects.Container;
+  private transitionOverlay!: Phaser.GameObjects.Container;
+  private cameraZoneOverlay!: Phaser.GameObjects.Container;
+  private cameraDebugGraphics!: Phaser.GameObjects.Graphics;
   private hud!: Phaser.GameObjects.Text;
   private spawn!: TiledObject;
   private encounters: TiledObject[] = [];
   private transitions: TiledObject[] = [];
   private currentEncounter: TiledObject | null = null;
   private currentTransition: TiledObject | null = null;
+  private cameraZones: TiledObject[] = [];
+  private activeCameraZone: TiledObject | null = null;
+  private cameraBlendFrames = 0;
   private previousTransitionName: string | null = null;
   private transitionCount = 0;
 
   constructor() { super('ReinforcementFloor1DebugScene'); }
 
   preload() {
-    this.load.json(MAP_JSON, '/maps/reinforcement/floor_1_blockout.tmj');
-    this.load.json(TILESET_JSON, '/maps/reinforcement/reinforcement_blockout_tileset.tsj');
-    this.load.image(TILES, '/assets/environment/reinforcement/blockout/reinforcement_blockout_tiles.png');
+    this.load.json(MAP_JSON, MAP_URL);
+    this.load.json(TILESET_JSON, TILESET_URL);
+    this.load.image(TILES, TILES_URL);
   }
 
   create() {
@@ -46,8 +57,10 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
 
     this.cache.tilemap.add(MAP, { format: Phaser.Tilemaps.Formats.TILED_JSON, data: embedTileset(await decompressTileLayers(source), tilesetJson) });
     const map = this.make.tilemap({ key: MAP });
-    const tileset = map.addTilesetImage('reinforcement_blockout_tileset', TILES);
-    if (!tileset) throw new Error('Floor 1 debug: Phaser could not bind reinforcement_blockout_tileset');
+    this.add.rectangle(map.widthInPixels / 2, map.heightInPixels / 2, map.widthInPixels, map.heightInPixels, 0x18252d).setDepth(-3);
+    this.createArchitecturalMass(data.architecturalMass);
+    const tileset = map.addTilesetImage(TILESET_NAME, TILES);
+    if (!tileset) throw new Error(`Floor 1 debug: Phaser could not bind ${TILESET_NAME}`);
 
     const depths: Record<(typeof TILE_LAYERS)[number], number> = { Ground: 0, FloorDetail: 1, Walls: 2, StaticProps: 3, WallTop: 5 };
     for (const name of TILE_LAYERS) {
@@ -59,22 +72,26 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
     this.spawn = data.spawn;
     this.encounters = data.encounters;
     this.transitions = data.transitions;
+    this.cameraZones = data.cameraZones;
+    this.activeCameraZone = resolveCameraZone(this.cameraZones, null, this.spawn.x, this.spawn.y);
     this.createRobot();
     this.createCollision(data.collision);
-    this.navigationOverlay = this.createNavigationOverlay(data.nodes, data.edges).setVisible(true);
+    this.navigationOverlay = this.createNavigationOverlay(data.nodes, data.edges).setVisible(false);
     this.encounterOverlay = this.createRectangleOverlay(data.encounters, 0xffa726, object => {
       const values = properties(object);
       return `${object.name}\n${values.encounterType} · ${values.route}`;
-    }).setVisible(true);
-    this.createRectangleOverlay(data.transitions, 0xab47bc, object => object.name).setVisible(true);
+    }).setVisible(false);
+    this.transitionOverlay = this.createRectangleOverlay(data.transitions, 0xab47bc, object => object.name).setVisible(false);
+    this.cameraZoneOverlay = this.createCameraZoneOverlay(data.cameraZones).setVisible(false);
 
     this.cursors = this.input.keyboard!.createCursorKeys();
-    this.keys = this.input.keyboard!.addKeys('C,N,E,R') as typeof this.keys;
-    this.input.keyboard!.addCapture(['UP', 'DOWN', 'LEFT', 'RIGHT', 'C', 'N', 'E', 'R']);
+    this.keys = this.input.keyboard!.addKeys('C,N,E,R,V') as typeof this.keys;
+    this.input.keyboard!.addCapture(['UP', 'DOWN', 'LEFT', 'RIGHT', 'C', 'N', 'E', 'R', 'V']);
     this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
-    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels).setZoom(1).startFollow(this.robot, true, 1, 1);
+    this.cameras.main.setZoom(1.3).setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.updateCameraZone();
 
-    const background = this.add.rectangle(8, 8, 348, 214, 0x071018, 0.88).setOrigin(0).setScrollFactor(0).setDepth(20);
+    const background = this.add.rectangle(8, 8, 348, 236, 0x071018, 0.88).setOrigin(0).setScrollFactor(0).setDepth(20);
     background.setStrokeStyle(1, 0x7dd3fc, 0.7);
     this.hud = this.add.text(20, 18, '', { fontFamily: 'monospace', fontSize: '14px', color: '#e5f6ff', lineSpacing: 3 }).setScrollFactor(0).setDepth(21);
     this.refreshHud();
@@ -90,7 +107,11 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.C)) this.collisionOverlay.setVisible(!this.collisionOverlay.visible);
     if (Phaser.Input.Keyboard.JustDown(this.keys.N)) this.navigationOverlay.setVisible(!this.navigationOverlay.visible);
-    if (Phaser.Input.Keyboard.JustDown(this.keys.E)) this.encounterOverlay.setVisible(!this.encounterOverlay.visible);
+    if (Phaser.Input.Keyboard.JustDown(this.keys.E)) {
+      this.encounterOverlay.setVisible(!this.encounterOverlay.visible);
+      this.transitionOverlay.setVisible(this.encounterOverlay.visible);
+    }
+    if (Phaser.Input.Keyboard.JustDown(this.keys.V)) this.cameraZoneOverlay.setVisible(!this.cameraZoneOverlay.visible);
     if (Phaser.Input.Keyboard.JustDown(this.keys.R)) this.resetRobot();
 
     this.currentEncounter = this.encounters.find(zone => contains(zone, this.robot.x, this.robot.y)) ?? null;
@@ -98,7 +119,43 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
     const transitionName = this.currentTransition?.name ?? null;
     if (transitionName && transitionName !== this.previousTransitionName) this.transitionCount += 1;
     this.previousTransitionName = transitionName;
+    this.updateCameraZone();
     this.refreshHud();
+  }
+
+  private updateCameraZone() {
+    const camera = this.cameras.main;
+    const nextZone = resolveCameraZone(this.cameraZones, this.activeCameraZone, this.robot.x, this.robot.y);
+    if (nextZone !== this.activeCameraZone) {
+      this.activeCameraZone = nextZone;
+      this.cameraBlendFrames = 6;
+    }
+    if (!this.activeCameraZone) return;
+    const desired = cameraCenterForTarget(this.robot.x, this.robot.y, camera.width, camera.height, camera.zoom, this.activeCameraZone);
+    const amount = this.cameraBlendFrames > 0 ? 0.4 : 1;
+    const blended = cameraCenterForTarget(
+      Phaser.Math.Linear(camera.midPoint.x, desired.x, amount),
+      Phaser.Math.Linear(camera.midPoint.y, desired.y, amount),
+      camera.width,
+      camera.height,
+      camera.zoom,
+      this.activeCameraZone,
+    );
+    camera.centerOn(blended.x, blended.y);
+    this.cameraBlendFrames = Math.max(0, this.cameraBlendFrames - 1);
+    this.refreshCameraDebug();
+  }
+
+  private createArchitecturalMass(objects: TiledObject[]) {
+    const graphics = this.add.graphics().setDepth(-2);
+    graphics.fillStyle(0x263640, 1);
+    for (const object of objects) graphics.fillRect(object.x, object.y, object.width, object.height);
+    graphics.lineStyle(1, 0x40535d, 0.55);
+    for (const object of objects) {
+      for (let x = object.x; x <= object.x + object.width; x += 64) graphics.lineBetween(x, object.y, x, object.y + object.height);
+      for (let y = object.y; y <= object.y + object.height; y += 64) graphics.lineBetween(object.x, y, object.x + object.width, y);
+      graphics.strokeRect(object.x, object.y, object.width, object.height);
+    }
   }
 
   private createRobot() {
@@ -125,7 +182,7 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
     for (const object of objects) graphics.fillRect(object.x, object.y, object.width, object.height).strokeRect(object.x, object.y, object.width, object.height);
     const labels = objects.filter(object => ['CENTRAL_CORE', 'RECEPTION_DESK', 'WALL_45_1', 'WALL_45_2'].includes(object.name))
       .map(object => this.debugLabel(object.x + 3, object.y + 3, object.name, '#ff8a80'));
-    this.collisionOverlay = this.add.container(0, 0, [graphics, ...labels]).setDepth(10).setVisible(true);
+    this.collisionOverlay = this.add.container(0, 0, [graphics, ...labels]).setDepth(10).setVisible(false);
   }
 
   private createNavigationOverlay(nodes: TiledObject[], edges: TiledObject[]) {
@@ -153,6 +210,28 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
     return this.add.container(0, 0, [graphics, ...objects.map(object => this.debugLabel(object.x + 4, object.y + 4, label(object), '#fff3e0'))]).setDepth(12);
   }
 
+  private createCameraZoneOverlay(zones: TiledObject[]) {
+    const graphics = this.add.graphics().lineStyle(2, 0x22d3ee, 0.85);
+    for (const zone of zones) graphics.strokeRect(zone.x, zone.y, zone.width, zone.height);
+    this.cameraDebugGraphics = this.add.graphics();
+    const labels = zones.map(zone => this.debugLabel(zone.x + 5, zone.y + 5, String(properties(zone).cameraZoneId), '#67e8f9'));
+    return this.add.container(0, 0, [graphics, this.cameraDebugGraphics, ...labels]).setDepth(13);
+  }
+
+  private refreshCameraDebug() {
+    if (!this.cameraDebugGraphics || !this.cameraZoneOverlay?.visible || !this.activeCameraZone) return;
+    const camera = this.cameras.main;
+    const halfVisibleWidth = camera.width / camera.zoom / 2;
+    const halfVisibleHeight = camera.height / camera.zoom / 2;
+    this.cameraDebugGraphics.clear()
+      .fillStyle(0xfacc15, 0.08)
+      .lineStyle(3, 0xfacc15, 1)
+      .fillRect(this.activeCameraZone.x, this.activeCameraZone.y, this.activeCameraZone.width, this.activeCameraZone.height)
+      .strokeRect(this.activeCameraZone.x, this.activeCameraZone.y, this.activeCameraZone.width, this.activeCameraZone.height)
+      .lineStyle(3, 0xffffff, 1)
+      .strokeRect(camera.midPoint.x - halfVisibleWidth, camera.midPoint.y - halfVisibleHeight, halfVisibleWidth * 2, halfVisibleHeight * 2);
+  }
+
   private debugLabel(x: number, y: number, text: string, color: string) {
     return this.add.text(x, y, text, { fontFamily: 'monospace', fontSize: '11px', color, backgroundColor: '#071018aa', padding: { x: 2, y: 1 } });
   }
@@ -162,6 +241,8 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
     this.currentEncounter = null;
     this.currentTransition = null;
     this.previousTransitionName = null;
+    this.activeCameraZone = resolveCameraZone(this.cameraZones, null, this.spawn.x, this.spawn.y);
+    this.cameraBlendFrames = 0;
   }
 
   private refreshHud() {
@@ -171,7 +252,7 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
     const transition = this.currentTransition;
     const transitionValues = transition ? properties(transition) : {};
     this.hud.setText([
-      'Floor: 1 · Map: 80x45 @ 32px',
+      `Floor: 1 · ${USE_BLOCKOUT ? 'BLOCKOUT' : 'ART PASS V1'} · 80x45 @ 32px`,
       `Position: ${this.robot.x.toFixed(1)}, ${this.robot.y.toFixed(1)}`,
       `Tile: ${Math.floor(this.robot.x / 32)}, ${Math.floor(this.robot.y / 32)}`,
       `Encounter: ${encounter?.name ?? 'NONE'}`,
@@ -181,6 +262,7 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
       `Collision Debug: ${this.collisionOverlay.visible ? 'ON' : 'OFF'} [C]`,
       `Navigation Debug: ${this.navigationOverlay.visible ? 'ON' : 'OFF'} [N]`,
       `Encounter Debug: ${this.encounterOverlay.visible ? 'ON' : 'OFF'} [E]`,
+      `Camera Zone: ${this.activeCameraZone?.name ?? 'NONE'} [V]`,
       'Move: Arrow Keys · Reset: R',
     ].filter(Boolean));
   }

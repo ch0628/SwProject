@@ -30,7 +30,17 @@ export type TiledMapJson = {
 };
 
 export const TILE_LAYERS = ['Ground', 'FloorDetail', 'Walls', 'WallTop', 'StaticProps'] as const;
-export const OBJECT_LAYERS = ['Collision', 'NavigationNodes', 'NavigationEdges', 'EncounterZones', 'FloorTransitions', 'SpawnPoints'] as const;
+export const OBJECT_LAYERS = ['Collision', 'NavigationNodes', 'NavigationEdges', 'EncounterZones', 'FloorTransitions', 'SpawnPoints', 'CameraZones', 'ArchitecturalMass'] as const;
+export const CAMERA_ZONE_IDS = [
+  'F1_CAM_LOBBY',
+  'F1_CAM_LEFT_HORIZONTAL',
+  'F1_CAM_LEFT_VERTICAL',
+  'F1_CAM_LEFT_STAIR',
+  'F1_CAM_RIGHT_LOWER',
+  'F1_CAM_RIGHT_MIDDLE',
+  'F1_CAM_RIGHT_UPPER',
+  'F1_CAM_RIGHT_STAIR',
+] as const;
 
 export function properties(object: TiledObject): Record<string, unknown> {
   return Object.fromEntries((object.properties ?? []).map(({ name, value }) => [name, value]));
@@ -58,6 +68,8 @@ export function validateFloor1Map(map: TiledMapJson) {
   const edges = objectLayer(map, 'NavigationEdges');
   const encounters = objectLayer(map, 'EncounterZones');
   const transitions = objectLayer(map, 'FloorTransitions');
+  const cameraZones = objectLayer(map, 'CameraZones');
+  const architecturalMass = objectLayer(map, 'ArchitecturalMass');
   const spawns = objectLayer(map, 'SpawnPoints').filter(object => object.name === 'F1_ROBOT_SPAWN');
   if (spawns.length !== 1) throw new Error(`Floor 1 debug: expected exactly one F1_ROBOT_SPAWN, found ${spawns.length}`);
   if (transitions.length !== 2) throw new Error(`Floor 1 debug: expected exactly two FloorTransitions, found ${transitions.length}`);
@@ -68,8 +80,14 @@ export function validateFloor1Map(map: TiledMapJson) {
   for (const wall of ['WALL_45_1', 'WALL_45_2']) {
     if (!collision.some(object => object.name === wall)) throw new Error(`Floor 1 debug: ${wall} is missing`);
   }
+  if (cameraZones.length !== CAMERA_ZONE_IDS.length) throw new Error(`Floor 1 debug: expected ${CAMERA_ZONE_IDS.length} CameraZones, found ${cameraZones.length}`);
+  for (const cameraZoneId of CAMERA_ZONE_IDS) {
+    const zone = cameraZones.find(object => properties(object).cameraZoneId === cameraZoneId);
+    if (!zone || properties(zone).floor !== 1) throw new Error(`Floor 1 debug: invalid CameraZone ${cameraZoneId}`);
+    if (!architecturalMass.some(object => properties(object).cameraZoneId === cameraZoneId)) throw new Error(`Floor 1 debug: missing ArchitecturalMass for ${cameraZoneId}`);
+  }
 
-  return { collision, nodes, edges, encounters, transitions, spawn: spawns[0] };
+  return { collision, nodes, edges, encounters, transitions, spawn: spawns[0], cameraZones, architecturalMass };
 }
 
 export function embedTileset(map: TiledMapJson, tileset: Record<string, unknown>): TiledMapJson {
@@ -98,4 +116,29 @@ export async function decompressTileLayers(map: TiledMapJson): Promise<TiledMapJ
 
 export function contains(object: TiledObject, x: number, y: number) {
   return x >= object.x && x <= object.x + object.width && y >= object.y && y <= object.y + object.height;
+}
+
+export function cameraCenterForTarget(targetX: number, targetY: number, viewportWidth: number, viewportHeight: number, zoom: number, bounds: Pick<TiledObject, 'x' | 'y' | 'width' | 'height'>) {
+  const halfVisibleWidth = viewportWidth / zoom / 2;
+  const halfVisibleHeight = viewportHeight / zoom / 2;
+  const minX = bounds.x + halfVisibleWidth;
+  const maxX = bounds.x + bounds.width - halfVisibleWidth;
+  const minY = bounds.y + halfVisibleHeight;
+  const maxY = bounds.y + bounds.height - halfVisibleHeight;
+  return {
+    x: minX <= maxX ? Math.min(Math.max(targetX, minX), maxX) : bounds.x + bounds.width / 2,
+    y: minY <= maxY ? Math.min(Math.max(targetY, minY), maxY) : bounds.y + bounds.height / 2,
+  };
+}
+
+export function resolveCameraZone(zones: TiledObject[], previous: TiledObject | null, x: number, y: number) {
+  const candidates = zones.filter(zone => contains(zone, x, y));
+  if (previous && candidates.includes(previous)) return previous;
+  const choices = candidates.length ? candidates : zones;
+  return choices.reduce<TiledObject | null>((nearest, zone) => {
+    if (!nearest) return zone;
+    const distance = (zone.x + zone.width / 2 - x) ** 2 + (zone.y + zone.height / 2 - y) ** 2;
+    const nearestDistance = (nearest.x + nearest.width / 2 - x) ** 2 + (nearest.y + nearest.height / 2 - y) ** 2;
+    return distance < nearestDistance ? zone : nearest;
+  }, null);
 }

@@ -1,0 +1,709 @@
+{
+  "columns": 0,
+  "grid": {
+    "height": 32,
+    "orientation": "orthogonal",
+    "width": 32
+  },
+  "margin": 0,
+  "name": "floor1_visual_modules",
+  "spacing": 0,
+  "tilecount": 12,
+  "tileheight": 224,
+  "tilewidth": 256,
+  "type": "tileset",
+  "version": "1.10",
+  "tiledversion": "1.12.2",
+  "properties": [
+    {
+      "name": "artDirection",
+      "type": "string",
+      "value": "clean-near-future-corporate"
+    },
+    {
+      "name": "deterministic",
+      "type": "bool",
+      "value": true
+    },
+    {
+      "name": "gameplayGridPx",
+      "type": "int",
+      "value": 32
+    },
+    {
+      "name": "palette",
+      "type": "string",
+      "value": "{\"publicFloor\":\"#E9DCC8\",\"publicHighlight\":\"#F4EBDD\",\"serviceFloor\":\"#D8D4CC\",\"wallFace\":\"#C9C6D2\",\"wallSide\":\"#9B97A8\",\"wallTop\":\"#DEE4EA\",\"baseTrim\":\"#30333B\",\"cyan\":\"#31CFE6\",\"doorFrame\":\"#3E4650\",\"doorPanel\":\"#7E8791\",\"glass\":\"#78AEBB\",\"shadow\":\"#2A2D34\",\"floor\":\"#E9DCC8\",\"floorAlt\":\"#F4EBDD\",\"floorGrout\":\"#9B97A8\",\"wallFaceAlt\":\"#9B97A8\",\"wallShade\":\"#9B97A8\",\"panelLine\":\"#7E8791\",\"panelLight\":\"#DEE4EA\",\"trim\":\"#30333B\",\"glassLight\":\"#DEE4EA\",\"warm\":\"#F4EBDD\",\"warmDark\":\"#3E4650\",\"locked\":\"#31CFE6\",\"white\":\"#F4EBDD\"}"
+    }
+  ],
+  "tiles": [
+    {
+      "id": 0,
+      "class": "F1_FLOOR_PUBLIC",
+      "image": "../../assets/environment/reinforcement/floor1/F1_FLOOR_PUBLIC.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_FLOOR_PUBLIC"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 16
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 16
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "class": "F1_FLOOR_SERVICE",
+      "image": "../../assets/environment/reinforcement/floor1/F1_FLOOR_SERVICE.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_FLOOR_SERVICE"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 96
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 16
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "class": "F1_WALL_H",
+      "image": "../../assets/environment/reinforcement/floor1/F1_WALL_H.png",
+      "imageheight": 72,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_H"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 176
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "wallHeightPx",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "topCapPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "facePx",
+          "type": "int",
+          "value": 48
+        },
+        {
+          "name": "baseTrimPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "cyanStripPx",
+          "type": "int",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "class": "F1_WALL_V",
+      "image": "../../assets/environment/reinforcement/floor1/F1_WALL_V.png",
+      "imageheight": 72,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_V"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 224
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "wallHeightPx",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "topCapPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "facePx",
+          "type": "int",
+          "value": 48
+        },
+        {
+          "name": "baseTrimPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "cyanStripPx",
+          "type": "int",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "class": "F1_WALL_CORNER_INNER",
+      "image": "../../assets/environment/reinforcement/floor1/F1_WALL_CORNER_INNER.png",
+      "imageheight": 72,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_CORNER_INNER"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 272
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "wallHeightPx",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "topCapPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "facePx",
+          "type": "int",
+          "value": 48
+        },
+        {
+          "name": "baseTrimPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "cyanStripPx",
+          "type": "int",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "class": "F1_WALL_CORNER_OUTER",
+      "image": "../../assets/environment/reinforcement/floor1/F1_WALL_CORNER_OUTER.png",
+      "imageheight": 72,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_CORNER_OUTER"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 320
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "wallHeightPx",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "topCapPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "facePx",
+          "type": "int",
+          "value": 48
+        },
+        {
+          "name": "baseTrimPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "cyanStripPx",
+          "type": "int",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "class": "F1_WALL_END_H",
+      "image": "../../assets/environment/reinforcement/floor1/F1_WALL_END_H.png",
+      "imageheight": 72,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_END_H"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 368
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "wallHeightPx",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "topCapPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "facePx",
+          "type": "int",
+          "value": 48
+        },
+        {
+          "name": "baseTrimPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "cyanStripPx",
+          "type": "int",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "class": "F1_WALL_END_V",
+      "image": "../../assets/environment/reinforcement/floor1/F1_WALL_END_V.png",
+      "imageheight": 72,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_END_V"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 416
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "wallHeightPx",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "topCapPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "facePx",
+          "type": "int",
+          "value": 48
+        },
+        {
+          "name": "baseTrimPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "cyanStripPx",
+          "type": "int",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "class": "F1_DOORWAY_OPEN",
+      "image": "../../assets/environment/reinforcement/floor1/F1_DOORWAY_OPEN.png",
+      "imageheight": 72,
+      "imagewidth": 64,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_DOORWAY_OPEN"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 464
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "wallHeightPx",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "topCapPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "facePx",
+          "type": "int",
+          "value": 48
+        },
+        {
+          "name": "baseTrimPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "cyanStripPx",
+          "type": "int",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "class": "F1_DOOR_STAFF_CLOSED",
+      "image": "../../assets/environment/reinforcement/floor1/F1_DOOR_STAFF_CLOSED.png",
+      "imageheight": 72,
+      "imagewidth": 64,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_DOOR_STAFF_CLOSED"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 544
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "wallHeightPx",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "topCapPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "facePx",
+          "type": "int",
+          "value": 48
+        },
+        {
+          "name": "baseTrimPx",
+          "type": "int",
+          "value": 8
+        },
+        {
+          "name": "cyanStripPx",
+          "type": "int",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "class": "F1_STAIR_STRAIGHT",
+      "image": "../../assets/environment/reinforcement/floor1/F1_STAIR_STRAIGHT.png",
+      "imageheight": 224,
+      "imagewidth": 256,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_STAIR_STRAIGHT"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 256
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 224
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 16
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 104
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "class": "F1_RECEPTION_DESK",
+      "image": "../../assets/environment/reinforcement/floor1/F1_RECEPTION_DESK.png",
+      "imageheight": 64,
+      "imagewidth": 256,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_RECEPTION_DESK"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 256
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "gridAligned",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "contactSheetX",
+          "type": "int",
+          "value": 304
+        },
+        {
+          "name": "contactSheetY",
+          "type": "int",
+          "value": 104
+        }
+      ]
+    }
+  ]
+}

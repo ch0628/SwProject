@@ -4,11 +4,10 @@
  "layers":[
         {
          "compression":"zlib",
-         "data":"eNrt1jEOACAIBDD8\/6cdHY0ugPYSZnIdlAiRuhmb0Y8fP378+PHjd9uDHz9+\/E52Bz9+\/Mp34MePHz9+f\/2\/\/Pjx48ePH7++9wU\/fhX9Mt8Ufvwq+t3s7eTXafjxe8HvV3N+\/Pix4MePHz9++e7Cj9\/KBOI3BB0=",
+         "data":"eNrt2U0SgyAMhmEsLaseskfzKD1aXbjqtPzEBA28mfnGlTJ5BgU1BMqyUgivXBDK2r2X7ZhLct5jqT\/88MMPP\/zm9ot\/gp9OH\/iV+7g1Bj\/8PPvlxva0duBn14Pl+jGD35lj44cffvjhN+b6m\/AT7\/\/www8\/\/EbyywU\/eeHn0y8Kgl\/9tx+L70Gj+EnSw6917kdnft89PbY897HuwmdCzf\/I0jle\/HpEMq4HP0\/R9tOYBzP67YZra6R+pfLop7UnwK\/dL1zkXpQEv377Tvyu\/0706zmHX73fGeuAZz\/tfeORa85Sy2DzCD\/8LOsD9BU5yA==",
          "encoding":"base64",
          "height":45,
          "id":1,
-         "locked":true,
          "name":"Ground",
          "opacity":1,
          "type":"tilelayer",
@@ -19,7 +18,7 @@
         }, 
         {
          "compression":"zlib",
-         "data":"eNrt1VEKABAQQMHNB\/e\/sSNsEi3Nq\/2kdlIipLr1ZOzHjx8\/fvz48au2X0vm9U7vx6\/W\/WNhds78+j6q+b0WP378+PHjx+9fc\/Fjwc\/\/wY8fP378+PHjx0+SJEmSJEn3mg+BDdU=",
+         "data":"eNrtwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB",
          "encoding":"base64",
          "height":45,
          "id":2,
@@ -34,7 +33,7 @@
         }, 
         {
          "compression":"zlib",
-         "data":"eNrt2FkOwCAIRVES9r\/n7qAmylOGa+Jf2+gJFdCMoRy+mOzv\/9sRz2S2U+4PP\/zwww+\/+n67+RU\/vQF+dfxcPCf4qdaezW\/1vovXgx9+3f3U9yMT\/F7lfvzww093\/uF3FmNZ80eV\/oP8i58Rf8QffqP9dusU\/O7vL7L3Pq1Lu\/sZ8dfOL\/KMy+p3u\/\/Imj+6D\/zwq+63e2bhR8zih9\/LusnwK\/lP4Icfa62d01R3W+o7s+71wuR+qKPfBz9vBJY=",
+         "data":"eNrtwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB",
          "encoding":"base64",
          "height":45,
          "id":3,
@@ -49,7 +48,7 @@
         }, 
         {
          "compression":"zlib",
-         "data":"eNrt11EKAEAEBUAf7n\/mPYJ82KKZcgBFvAgmZVH6AwC6dxYAAIDduU62AwDg5+\/pJ8VO3Jv7HC45FwAAAOCWB89sAT0=",
+         "data":"eNrtwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB",
          "encoding":"base64",
          "height":45,
          "id":4,
@@ -64,7 +63,7 @@
         }, 
         {
          "compression":"zlib",
-         "data":"eNrt17ERAEAEAEGJ\/ltWAxl2Z6QfXOBHBAAAAACX5NK39QMAAHB\/6Acw31vdAfi2C9HPTaCffrpqO\/8bANitAMSDANg=",
+         "data":"eNrtwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB",
          "encoding":"base64",
          "height":45,
          "id":5,
@@ -81,6 +80,7 @@
          "color":"#ef4444",
          "draworder":"topdown",
          "id":6,
+         "locked":true,
          "name":"Collision",
          "objects":[
                 {
@@ -4371,6 +4371,7 @@
          "color":"#06b6d4",
          "draworder":"topdown",
          "id":7,
+         "locked":true,
          "name":"NavigationNodes",
          "objects":[
                 {
@@ -4718,6 +4719,7 @@
          "color":"#f59e0b",
          "draworder":"topdown",
          "id":8,
+         "locked":true,
          "name":"NavigationEdges",
          "objects":[
                 {
@@ -5300,7 +5302,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
@@ -5693,9 +5695,403 @@
          "visible":false,
          "x":0,
          "y":0
+        }, 
+        {
+         "color":"#22d3ee",
+         "draworder":"topdown",
+         "id":13,
+         "locked":true,
+         "name":"CameraZones",
+         "objects":[
+                {
+                 "height":480,
+                 "id":188,
+                 "name":"F1_CAM_LOBBY",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_LOBBY"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"CameraZone",
+                 "visible":true,
+                 "width":1216,
+                 "x":672,
+                 "y":960
+                }, 
+                {
+                 "height":448,
+                 "id":189,
+                 "name":"F1_CAM_LEFT_HORIZONTAL",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_LEFT_HORIZONTAL"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"CameraZone",
+                 "visible":true,
+                 "width":768,
+                 "x":192,
+                 "y":736
+                }, 
+                {
+                 "height":672,
+                 "id":190,
+                 "name":"F1_CAM_LEFT_VERTICAL",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_LEFT_VERTICAL"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"CameraZone",
+                 "visible":true,
+                 "width":768,
+                 "x":0,
+                 "y":320
+                }, 
+                {
+                 "height":480,
+                 "id":191,
+                 "name":"F1_CAM_LEFT_STAIR",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_LEFT_STAIR"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"CameraZone",
+                 "visible":true,
+                 "width":768,
+                 "x":0,
+                 "y":0
+                }, 
+                {
+                 "height":448,
+                 "id":192,
+                 "name":"F1_CAM_RIGHT_LOWER",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_RIGHT_LOWER"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"CameraZone",
+                 "visible":true,
+                 "width":768,
+                 "x":1600,
+                 "y":800
+                }, 
+                {
+                 "height":480,
+                 "id":193,
+                 "name":"F1_CAM_RIGHT_MIDDLE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_RIGHT_MIDDLE"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"CameraZone",
+                 "visible":true,
+                 "width":768,
+                 "x":1792,
+                 "y":576
+                }, 
+                {
+                 "height":544,
+                 "id":194,
+                 "name":"F1_CAM_RIGHT_UPPER",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_RIGHT_UPPER"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"CameraZone",
+                 "visible":true,
+                 "width":768,
+                 "x":1792,
+                 "y":256
+                }, 
+                {
+                 "height":480,
+                 "id":195,
+                 "name":"F1_CAM_RIGHT_STAIR",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_RIGHT_STAIR"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"CameraZone",
+                 "visible":true,
+                 "width":768,
+                 "x":1792,
+                 "y":0
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":false,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "color":"#64748b",
+         "draworder":"topdown",
+         "id":14,
+         "locked":true,
+         "name":"ArchitecturalMass",
+         "objects":[
+                {
+                 "height":480,
+                 "id":196,
+                 "name":"F1_MASS_LOBBY",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_LOBBY"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":1216,
+                 "x":672,
+                 "y":960
+                }, 
+                {
+                 "height":448,
+                 "id":197,
+                 "name":"F1_MASS_LEFT_HORIZONTAL",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_LEFT_HORIZONTAL"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":768,
+                 "x":192,
+                 "y":736
+                }, 
+                {
+                 "height":672,
+                 "id":198,
+                 "name":"F1_MASS_LEFT_VERTICAL",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_LEFT_VERTICAL"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":768,
+                 "x":0,
+                 "y":320
+                }, 
+                {
+                 "height":480,
+                 "id":199,
+                 "name":"F1_MASS_LEFT_STAIR",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_LEFT_STAIR"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":768,
+                 "x":0,
+                 "y":0
+                }, 
+                {
+                 "height":448,
+                 "id":200,
+                 "name":"F1_MASS_RIGHT_LOWER",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_RIGHT_LOWER"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":768,
+                 "x":1600,
+                 "y":800
+                }, 
+                {
+                 "height":480,
+                 "id":201,
+                 "name":"F1_MASS_RIGHT_MIDDLE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_RIGHT_MIDDLE"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":768,
+                 "x":1792,
+                 "y":576
+                }, 
+                {
+                 "height":544,
+                 "id":202,
+                 "name":"F1_MASS_RIGHT_UPPER",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_RIGHT_UPPER"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":768,
+                 "x":1792,
+                 "y":256
+                }, 
+                {
+                 "height":480,
+                 "id":203,
+                 "name":"F1_MASS_RIGHT_STAIR",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"cameraZoneId",
+                         "type":"string",
+                         "value":"F1_CAM_RIGHT_STAIR"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":1
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":768,
+                 "x":1792,
+                 "y":0
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":false,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":13,
- "nextobjectid":188,
+ "nextlayerid":15,
+ "nextobjectid":204,
  "orientation":"orthogonal",
  "properties":[
         {
@@ -5724,7 +6120,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"reinforcement_blockout_tileset.tsj"
+         "source":"..\/..\/assets\/environment\/reinforcement\/floor1_room_shell_manual\/floor1_room_shell_manual.tsj"
         }],
  "tilewidth":32,
  "type":"map",

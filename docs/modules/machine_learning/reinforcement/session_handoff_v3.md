@@ -5,12 +5,17 @@
 - **Module ID:** `reinforcement-learning`
 - **전체 Module 상태:** `DESIGNING`
 - **Learning Engine 상태:** `v1.2 / APPROVED_FOR_INTEGRATION`
-- **Navigation Design 상태:** `v1 / APPROVED_FOR_BLOCKOUT`
+- **Navigation Design 상태:** `v1 / LOGIC_APPROVED`
+- **Navigation Graph 상태:** `navigation_graph_v1.json / GENERATED_AND_VALIDATED`
+- **Navigation v2 상태:** `REFERENCE_ONLY / SUPERSEDED_FOR_RUNTIME`
+- **Floor 1 Runtime Structure 상태:** `STRUCTURE_PLAYTEST_APPROVED`
+- **Floor 2~5 Tiled 상태:** `NOT_IMPLEMENTED`
 - Core Learning Algorithm은 기존 multi-seed validation에서 `PASS_CANDIDATE`를 받았고 실제 Map Integration의 Base Engine으로 사용한다.
 - 5층의 논리 Navigation, 계단 구조, 층별 역할, 일반 Villain 배치, 5F Boss Search / 고정 Control Room 구조를 `navigation_design_v1.md`에 확정했다.
-- 실제 `navigation_graph_v1.json`, 1F~5F SVG Blockout, 실제 Map/Phaser gameplay 연결은 아직 생성하지 않았다.
+- `navigation_graph_v1.json`과 1F~5F v1/v2 blockout reference는 생성/검증 완료했다.
+- 1F는 `floor_1_blockout.tmj`를 Runtime Spatial Source of Truth로 사용하며 Tiled/Collision/Navigation/Encounter/Transition 구조, Phaser debug route, 사용자 수동 playtest까지 통과했다.
 - 최신 Map Integration Extension으로 `VILLAIN_ENCOUNTER / BOSS_ENCOUNTER / ROBOT_DISABLED / Villain Mission Bonus`를 추가했다. 이 부분은 실제 Map Integration Validation 전이다.
-- **다음 핵심 작업은 Codex로 Navigation Graph + 1F~5F SVG Blockout을 생성하고 사람이 검토하는 것**이다.
+- **현재 핵심 작업은 1F visual implementation을 완료하고 final visual playtest를 거친 뒤, 같은 Tiled 제작 규칙을 2F~5F로 확장하는 것**이다.
 - Source of Truth:
   1. `docs/modules/machine_learning/reinforcement/module_spec_v3.md`
   2. `docs/modules/machine_learning/reinforcement/learning_engine_v1.md`
@@ -554,12 +559,14 @@ v1.2에서 SAFE/FAST 주요 행동 및 Route 방향과 Route saturation 수정�
 
 하지만 강화학습의 실제 경로/이동 로직에는 구조화된 공간 데이터가 별도로 필요하다.
 
-현재 우선 구조:
-- **Visual Background + Logic Navigation Graph 분리**
-- `navigation_design_v1.md` → `navigation_graph_v1.json` + 1F~5F SVG Blockout
-- Blockout 승인 후 층별 Pixel-art Background 제작
-
-Tiled는 실제 제작 과정에서 필요성이 확인될 경우 추가하며 현재 필수 조건은 아니다.
+현재 제작 구조:
+- `navigation_design_v1.md` = 5층 논리 Navigation Source of Truth
+- `navigation_graph_v1.json` = 논리 Node / Edge / Route Context graph
+- **Tiled = 실제 runtime geometry / collision / floor transition / encounter-zone Source of Truth**
+- 1F는 `public/maps/reinforcement/floor_1_blockout.tmj`를 사용하며 `STRUCTURE_PLAYTEST_APPROVED` 상태다.
+- structural visual asset(바닥/벽/코너/문/계단)은 가능한 한 32px grid 기반 deterministic tileset으로 제작한다.
+- Generative image tool은 전체 층 geometry를 결정하는 용도로 사용하지 않고, 필요한 decorative / hero asset 제작에 선택적으로 사용한다.
+- `navigation_v2`는 Scenario 구조 실험에서 만든 건축 reference/history로 보존하며 runtime source로 사용하지 않는다.
 
 ---
 
@@ -567,9 +574,9 @@ Tiled는 실제 제작 과정에서 필요성이 확인될 경우 추가하며 �
 
 1. 플레이어-facing 최종 제목
 2. 강화학습 module route
-3. `navigation_graph_v1.json`의 실제 Node / Edge / 좌표
-4. 1F~5F SVG Blockout의 최종 공간 배치
-5. Tiled 사용 여부
+3. 2F~5F Tiled의 실제 공간 배치 / x,y 좌표 / collision
+4. 1F final visual tileset과 최종 art 적용
+5. 2F~5F visual tileset / 층별 시각 차별화
 6. Route Trait 실제 numeric representation
 7. Action / Route 실제 `timeCost`
 8. Route별 Encounter 최종 발생 조건 / Environment Randomness 세기
@@ -593,6 +600,7 @@ Tiled는 실제 제작 과정에서 필요성이 확인될 경우 추가하며 �
 26. 실제 작전의 세부 Animation
 27. 효과음 목록 및 Asset 경로
 28. 완료 후 다음 모듈 연결 방식
+29. Floor 1 debug camera zoom `1.0 → 약 1.3` 적용
 
 ## 보호해야 할 기존 기능
 
@@ -645,61 +653,43 @@ Tiled는 실제 제작 과정에서 필요성이 확인될 경우 추가하며 �
 
 ## 다음 작업 순서
 
-### 1. Codex Navigation Blockout 생성 — 현재 다음 작업
+### 1. Floor 1 Visual Implementation — 현재 다음 작업
 
-`navigation_design_v1.md`는 `APPROVED_FOR_BLOCKOUT` 상태다.
+1F 구조는 이미 Tiled/Phaser 수동 playtest를 통과했다. 따라서 geometry를 다시 설계하지 않는다.
 
-Codex가 먼저 다음 산출물을 만든다.
+현재 원칙:
+- `floor_1_blockout.tmj` geometry / collision / navigation / encounter / transition은 보호한다.
+- structural art는 32px orthogonal grid 기반 deterministic tileset으로 제작한다.
+- 전체 floor 이미지를 생성형 모델에게 맡겨 geometry를 다시 해석시키지 않는다.
+- Generative image tool은 필요할 경우 Reception, 정보 패널, 특수 콘솔 등 decorative / hero asset에 선택적으로 사용한다.
 
+완료 조건:
+- visual wall/floor/door/stair가 기존 collision과 일치
+- Reception / static prop visual이 collision과 일치
+- tile seam / layer order 문제 없음
+- 약 1.3× camera zoom 적용 여부 확인
+- final visual playtest PASS
+
+### 2. Floor 2~5 Tiled Runtime Map 구현
+
+1F에서 확정한 Tiled 제작 규칙을 재사용한다.
+
+층별 순서:
 ```text
-navigation_graph_v1.json
-floor_1_blockout.svg
-floor_2_blockout.svg
-floor_3_blockout.svg
-floor_4_blockout.svg
-floor_5_blockout.svg
+논리 Navigation 확인
+→ Tiled geometry / collision / transition 구현
+→ validator
+→ Phaser debug playtest
+→ 사용자 수동 playtest
+→ STRUCTURE_PLAYTEST_APPROVED
+→ visual pass
 ```
 
-Blockout은 최종 Art가 아니다. 다음을 검토하기 위한 논리 / 시각 초안이다.
+`navigation_v2`의 spatial/clean 이미지는 건축 참고 자료로만 사용할 수 있으며 runtime geometry의 Source of Truth가 아니다.
 
-- Node 위치
-- Edge 연결
-- Route 분기 / 합류
-- 층간 계단 연결 일치
-- Encounter 배치 공간
-- 5F 네 Search Room + 고정 Control Room 구조
-- 2.5D 한 층 단위 화면 가독성
+### 3. Route Trait / Environment Parameter 설계
 
-### 2. Path Enumeration / Graph Sanity Validation
-
-Codex 또는 별도 script로 실제 Graph를 검사한다.
-
-확인:
-
-- START → GOAL 유효 Complete Path 수
-- 목표 `20~25+` 충족 여부
-- trivial one-side path 존재 여부
-- unreachable Node / accidental dead end
-- dominated Route
-- 층간 Stair 연결 일치
-- 5F Search Room 재방문 방지 가능 여부
-- stable Route Decision Context key 유일성 / 일관성
-
-### 3. 사람 검토 후 Blockout 수정
-
-SVG 5장을 직접 읽고 다음을 검토한다.
-
-- 각 층의 목적이 시각적으로 전달되는가
-- 좌/우 Route의 Trade-off가 실제 공간으로 납득되는가
-- 시민 / 장애물 / Ambiguous / Villain Encounter 위치가 억지스럽지 않은가
-- 5F Boss Search 동선이 지나치게 반복적이지 않은가
-
-문제가 있으면 이 단계에서 `navigation_design_v1.md` 또는 Graph를 수정한다.
-
-### 4. Route Trait / Environment Parameter 설계
-
-Blockout 승인 후 실제 Graph의 Edge에:
-
+실제 Tiled 공간과 Graph를 기준으로:
 - `timeCost`
 - `citizenExposure`
 - `obstacleChance`
@@ -707,11 +697,11 @@ Blockout 승인 후 실제 Graph의 Edge에:
 - `narrowness`
 - Encounter 위치 / 발생 조건
 
-등을 구체화한다.
+을 구체화한다.
 
-### 5. Learning Engine v1.2 Integration Validation
+### 4. Learning Engine v1.2 Integration Validation
 
-Navigation Graph를 Learning Engine과 연결한 뒤:
+실제 Navigation / Environment Parameter를 연결한 뒤:
 
 ```text
 5 Robots × 20 Rounds
@@ -719,10 +709,9 @@ Navigation Graph를 Learning Engine과 연결한 뒤:
 = 20 Central Policy Updates
 ```
 
-를 실제 Map 기준으로 실행한다.
+를 실행한다.
 
 추가 검증:
-
 - `VILLAIN_ENCOUNTER`
 - `BOSS_ENCOUNTER`
 - `ROBOT_DISABLED`
@@ -731,11 +720,16 @@ Navigation Graph를 Learning Engine과 연결한 뒤:
 - Villain Mission Bonus `0` vs `max +1`
 - SAFE / FAST Trade-off 유지
 
-### 6. 실제 Gameplay / Pixel-art Map 구현
+### 5. Production Gameplay / Training UI Integration
 
-Blockout과 Integration 결과가 통과한 뒤 최종 층별 Pixel-art Map과 Phaser gameplay를 연결한다.
+- Main View 1 + Sub View 4
+- 실제 Simulation state/action과 map movement 연결
+- Event / Micro Cutscene
+- Round Result
+- Training Report
+- 실전 투입
 
-### 7. Browser / Regression 검증
+### 6. Browser / Regression 검증
 
 - Browser Smoke Test
 - AI Basics 회귀 확인
@@ -783,7 +777,16 @@ Learning Engine v1.2
 = APPROVED_FOR_INTEGRATION
 
 Navigation Design v1
-= APPROVED_FOR_BLOCKOUT
+= LOGIC_APPROVED
+
+navigation_graph_v1.json
+= GENERATED_AND_VALIDATED
+
+Floor 1 Runtime Structure
+= STRUCTURE_PLAYTEST_APPROVED
+
+navigation_v2
+= REFERENCE_ONLY / SUPERSEDED_FOR_RUNTIME
 ```
 
 먼저 다음 문서를 읽는다.
@@ -799,14 +802,12 @@ validation/learning_engine_validation_v1_2.md
 그 다음 바로:
 
 ```text
-Codex Blockout 생성
-→ navigation_graph_v1.json
-→ floor_1_blockout.svg ~ floor_5_blockout.svg
-→ path enumeration / graph sanity check
-→ 사람 검토
-→ 수정 / Blockout 승인
+1F visual implementation
+→ 1F final visual playtest
+→ 2F~5F Tiled structure + Phaser playtest
 → Route Trait / Encounter 수치화
 → 실제 Map 100-Experience Integration Validation
+→ Production Training UI / Gameplay 연결
 ```
 
 순서로 진행한다.

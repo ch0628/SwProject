@@ -1,0 +1,817 @@
+{
+  "columns": 8,
+  "image": "../../assets/environment/reinforcement/floor1/floor1_tileset.png",
+  "imagewidth": 256,
+  "imageheight": 192,
+  "margin": 0,
+  "spacing": 0,
+  "name": "floor1_visual_tileset",
+  "tilecount": 48,
+  "tilewidth": 32,
+  "tileheight": 32,
+  "type": "tileset",
+  "version": "1.10",
+  "tiledversion": "1.12.2",
+  "properties": [
+    {
+      "name": "artDirection",
+      "type": "string",
+      "value": "clean-near-future-corporate"
+    },
+    {
+      "name": "deterministic",
+      "type": "bool",
+      "value": true
+    },
+    {
+      "name": "moduleTileset",
+      "type": "string",
+      "value": "floor1_visual_modules.tsj"
+    },
+    {
+      "name": "palette",
+      "type": "string",
+      "value": "{\"publicFloor\":\"#E9DCC8\",\"publicHighlight\":\"#F4EBDD\",\"serviceFloor\":\"#D8D4CC\",\"wallFace\":\"#C9C6D2\",\"wallSide\":\"#9B97A8\",\"wallTop\":\"#DEE4EA\",\"baseTrim\":\"#30333B\",\"cyan\":\"#31CFE6\",\"doorFrame\":\"#3E4650\",\"doorPanel\":\"#7E8791\",\"glass\":\"#78AEBB\",\"shadow\":\"#2A2D34\",\"floor\":\"#E9DCC8\",\"floorAlt\":\"#F4EBDD\",\"floorGrout\":\"#9B97A8\",\"wallFaceAlt\":\"#9B97A8\",\"wallShade\":\"#9B97A8\",\"panelLine\":\"#7E8791\",\"panelLight\":\"#DEE4EA\",\"trim\":\"#30333B\",\"glassLight\":\"#DEE4EA\",\"warm\":\"#F4EBDD\",\"warmDark\":\"#3E4650\",\"locked\":\"#31CFE6\",\"white\":\"#F4EBDD\"}"
+    }
+  ],
+  "tiles": [
+    {
+      "id": 0,
+      "class": "LobbyFloor",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "LobbyFloor"
+        },
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "class": "PublicCorridorFloor",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "PublicCorridorFloor"
+        },
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "class": "ServiceCorridorFloor",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "ServiceCorridorFloor"
+        },
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "class": "FloorVariation",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "FloorVariation"
+        },
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "class": "WallHorizontal",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "WallHorizontal"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "class": "WallVertical",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "WallVertical"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "class": "OuterCornerNW",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "OuterCornerNW"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "class": "OuterCornerNE",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "OuterCornerNE"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "class": "OuterCornerSE",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "OuterCornerSE"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "class": "OuterCornerSW",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "OuterCornerSW"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "class": "InnerCornerNW",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "InnerCornerNW"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "class": "InnerCornerNE",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "InnerCornerNE"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "class": "InnerCornerSE",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "InnerCornerSE"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "class": "InnerCornerSW",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "InnerCornerSW"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "class": "HorizontalCapW",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "HorizontalCapW"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "class": "HorizontalCapE",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "HorizontalCapE"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "class": "VerticalCapN",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "VerticalCapN"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "class": "VerticalCapS",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "VerticalCapS"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "class": "TJunctionN",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "TJunctionN"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "class": "TJunctionE",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "TJunctionE"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "class": "TJunctionS",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "TJunctionS"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "class": "TJunctionW",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "TJunctionW"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "class": "DoorwayWallHorizontal",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "DoorwayWallHorizontal"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "class": "DoorwayWallVertical",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "DoorwayWallVertical"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "class": "OfficeDoor",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "OfficeDoor"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "class": "LockedDoorHorizontal",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "LockedDoorHorizontal"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "class": "LockedDoorVertical",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "LockedDoorVertical"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "class": "GlassWallHorizontal",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "GlassWallHorizontal"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "class": "GlassWallVertical",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "GlassWallVertical"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "class": "GlassEntranceDoor",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "GlassEntranceDoor"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "class": "StairTread",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "StairTread"
+        },
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "stair",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "class": "StairLanding",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "StairLanding"
+        },
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        },
+        {
+          "name": "stair",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "class": "ReceptionDesk",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "ReceptionDesk"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "class": "WaitingSofaHorizontal",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "WaitingSofaHorizontal"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "class": "WaitingSofaVertical",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "WaitingSofaVertical"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "class": "LowTable",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "LowTable"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "class": "CompanyDisplay",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "CompanyDisplay"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "class": "WallTopHorizontal",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "WallTopHorizontal"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "class": "WallTopVertical",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "WallTopVertical"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "class": "LockedRoomFloor",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "LockedRoomFloor"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "class": "ServiceAccent",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "ServiceAccent"
+        },
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "class": "LobbyAccent",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "LobbyAccent"
+        },
+        {
+          "name": "walkable",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "class": "DoorFrameHorizontal",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "DoorFrameHorizontal"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "class": "DoorFrameVertical",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "DoorFrameVertical"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "class": "WallCross",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "WallCross"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "class": "ReceptionDeskEnd",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "ReceptionDeskEnd"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "class": "WaitingSofaEnd",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "WaitingSofaEnd"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "class": "TechPanel",
+      "properties": [
+        {
+          "name": "module",
+          "type": "string",
+          "value": "TechPanel"
+        },
+        {
+          "name": "visualSolid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    }
+  ]
+}

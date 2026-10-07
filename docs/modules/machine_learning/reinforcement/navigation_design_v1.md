@@ -2,11 +2,12 @@
 
 ## Status
 
-- **State:** `APPROVED_FOR_BLOCKOUT`
+- **State:** `LOGIC_APPROVED`
 - **Purpose:** 강화학습 모듈의 5층 제어 센터 Navigation 구조, 층간 연결, Route Decision Context, Encounter 배치의 기준 문서
 - **Scope:** 1F~5F 논리 Layout, 계단 연결, Route 성격, 일반 악당/Boss 배치, 5F Boss 탐색 구조
-- **Non-goal:** 최종 x/y 좌표, 정확한 방 크기, 최종 Pixel Art, Collision Polygon, Action 성공 확률의 수치 확정
-- **Next step:** 본 문서를 기준으로 `navigation_graph_v1.json`과 1F~5F SVG Blockout을 생성하고 검토한다.
+- **Runtime implementation:** `navigation_graph_v1.json` 생성/검증 완료. 1F Tiled/Phaser 구조는 `STRUCTURE_PLAYTEST_APPROVED`, 2F~5F Tiled는 미구현.
+- **Non-goal:** 2F~5F 최종 x/y 좌표, 최종 Pixel Art, Action 성공 확률의 수치 확정
+- **Next step:** 1F visual implementation과 final visual playtest 후 1F에서 확정한 Tiled 제작 규칙을 2F~5F에 확장한다.
 
 ---
 
@@ -230,6 +231,36 @@ RIGHT
 → 시민 적음
 → 장애물/시설물 많음
 ```
+
+## 5.4 1F Runtime Spatial Implementation
+
+1F의 실제 runtime 공간은 다음 Tiled map이 Source of Truth다.
+
+`public/maps/reinforcement/floor_1_blockout.tmj`
+
+규격:
+- Orthogonal `32 × 32 px`
+- `80 × 45 tiles`
+- `2560 × 1440 px`
+- Tile layer: `Ground / FloorDetail / Walls / WallTop / StaticProps`
+- Object layer: `Collision / NavigationNodes / NavigationEdges / EncounterZones / FloorTransitions / SpawnPoints / Debug`
+
+현재 승인된 Lobby Navigation:
+```text
+F1_START
+├─→ F1_LEFT_ROUTE_A
+└─→ F1_RIGHT_ROUTE_A
+
+F1_LEFT_ROUTE_A  ↔ F1_ENTRY_SPLIT ↔ F1_RIGHT_ROUTE_A
+```
+
+- `F1_ENTRY_SPLIT = (1274, 1042)` — Tiled object 좌표
+- Route switching은 Lobby의 `F1_ENTRY_SPLIT`에서만 허용한다.
+- Route B 이후 LEFT/RIGHT direct cross-edge는 없다.
+- Central Core가 실제 collision으로 좌우 직접 횡단을 차단한다.
+- 사용자 수동 Collision `WALL_45_1` Object ID `185`, `WALL_45_2` Object ID `186`을 유지한다.
+- LEFT/RIGHT Stair, Encounter Zone, Collision, Floor Transition, Navigation overlay를 Phaser debug route에서 검증했다.
+- 사용자 수동 playtest까지 통과했으며 현재 1F 상태는 `STRUCTURE_PLAYTEST_APPROVED`다.
 
 ---
 
@@ -776,78 +807,76 @@ Blockout에서 확인:
 
 ---
 
-# 21. Visual Map Asset Decisions
+# 21. Runtime Map / Visual Asset Decisions
 
-### Runtime Asset Path
+## Source of Truth 분리
 
-Final floor backgrounds:
+- `navigation_design_v1.md` = 5층 논리 Navigation 기준
+- `navigation_graph_v1.json` = 논리 Node / Edge / Route Context graph
+- **Tiled map = 실제 runtime geometry / collision / floor transition / encounter-zone 기준**
+- 1F runtime map = `public/maps/reinforcement/floor_1_blockout.tmj`
 
-`public/assets/environment/reinforcement/floors/`
+`navigation_v2/`의 architectural blockout은 Scenario 구조 실험에서 만든 reference/history다. 실제 runtime collider/navmesh나 floor geometry를 대체하지 않는다.
 
-Naming:
+## Visual 제작 전략
 
-- `floor_1.png`
-- `floor_2.png`
-- `floor_3.png`
-- `floor_4.png`
-- `floor_5.png`
+전체 층을 하나의 생성형 이미지로 만든 뒤 Graph와 맞추는 방식은 현재 production pipeline에서 중단한다.
 
-Scenario/intermediate outputs are stored under:
+현재 우선순위:
+1. 바닥 / 벽 / 코너 / 문 / 계단 등 **구조성 asset은 32px orthogonal grid에 맞춘 deterministic tileset**으로 제작한다.
+2. Visual asset은 기존 Tiled geometry와 collision을 변경하지 않고 적용한다.
+3. Generative image tool은 Reception, 정보 패널, 특수 콘솔 등 선택적 decorative / hero asset에 사용할 수 있다.
+4. 시민 / Villain / Boss / temporary obstacle은 background에 bake하지 않고 runtime entity로 유지한다.
 
-`docs/modules/machine_learning/reinforcement/navigation/visual/`
+## Floor 1
 
-### Floor 1
+상태:
+- `STRUCTURE_PLAYTEST_APPROVED`
+- Final visual implementation: `PENDING`
 
-Status: `SCENARIO_BASE_APPROVED`
-
-Approved base:
-`visual/floor_1_scenario_base.png`
-
-Visual direction:
+시각 방향:
 - bright corporate lobby / reception
 - public entrance floor
-- left/right routes remain physically separated
-- one straight stair at upper-left
-- one straight stair at upper-right
-- runtime obstacles, citizens and villains are not baked into the background
+- left public route / right service route 차별화
+- clean near-future corporate control-center
+- gray neutral + restrained cyan accent
+- child-friendly
+- industrial / military 과다 표현 금지
 
-Known acceptable deviation:
-- minor decorative interior doors may remain if they do not alter navigation topology
+기존 `visual/floor_1_scenario_base.png`와 `navigation_v2` 이미지는 스타일/과거 실험 reference로 보존할 수 있으나 runtime geometry의 기준은 아니다.
 
-Final runtime asset will be created after pixel-art conversion.
+---
 
-# 22. Blockout 이후 순서
+# 22. 현재 제작 순서
 
 ```text
-navigation_design_v1.md
-→ navigation_graph_v1.json
-→ 1F~5F SVG Blockout
-→ 검토
-→ Navigation 수정
-→ Blockout 승인
-→ AI 기반 층별 Pixel-art Map 생성
-→ Graph + Background 연결
+1F Tiled Structure / Manual Playtest = APPROVED
+→ 1F deterministic visual tileset 적용
+→ 1F final visual playtest
+→ 2F Tiled structure + Phaser playtest
+→ 3F~5F 반복
+→ Route Trait / Encounter 수치화
 → Learning Engine v1.2 Integration Validation
-→ Gameplay 구현
+→ Production Gameplay / Training UI 구현
 ```
 
 ---
 
 # 23. 아직 미확정
 
-- 정확한 x/y 좌표
-- 방 크기 / 복도 폭
-- 최종 Pixel Art
+- 1F final visual tileset / 최종 art
+- 1F debug camera zoom `1.0 → 약 1.3` 적용
+- 2F~5F Tiled x/y 좌표, 방 크기, 복도 폭, collision
+- 2F~5F final visual assets
 - `SUBDUE` 성공률
 - `DISTRACT` 성공률
 - Villain 수에 따른 정확한 위험도
-- Action별 정확한 timeCost
+- Action별 정확한 `timeCost`
 - Encounter probability
 - Boss Encounter 세부 Action Pool
 - Boss 성공 확률
 - Villain Mission Bonus 세부식
 - Episode timeLimit
-- Collision Polygon
 
 ---
 

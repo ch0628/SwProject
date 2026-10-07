@@ -1,0 +1,66 @@
+{
+  "columns": 8,
+  "image": "../../assets/environment/reinforcement/floor1_visual_shell_v1/floor1_visual_shell_v1.png",
+  "imagewidth": 256,
+  "imageheight": 64,
+  "margin": 0,
+  "spacing": 0,
+  "name": "floor1_visual_shell_v1",
+  "tilecount": 8,
+  "tilewidth": 32,
+  "tileheight": 64,
+  "type": "tileset",
+  "version": "1.10",
+  "tiledversion": "1.12.2",
+  "properties": [
+    {
+      "name": "prototypeOnly",
+      "type": "bool",
+      "value": true
+    },
+    {
+      "name": "gameplayGridPx",
+      "type": "int",
+      "value": 32
+    },
+    {
+      "name": "authoringModel",
+      "type": "string",
+      "value": "room-shell"
+    }
+  ],
+  "tiles": [
+    {
+      "id": 0,
+      "class": "FLOOR_PUBLIC"
+    },
+    {
+      "id": 1,
+      "class": "FLOOR_SERVICE"
+    },
+    {
+      "id": 2,
+      "class": "BACK_WALL"
+    },
+    {
+      "id": 3,
+      "class": "SIDE_LEFT"
+    },
+    {
+      "id": 4,
+      "class": "SIDE_RIGHT"
+    },
+    {
+      "id": 5,
+      "class": "SOUTH_TRIM"
+    },
+    {
+      "id": 6,
+      "class": "DOOR_LEFT"
+    },
+    {
+      "id": 7,
+      "class": "DOOR_RIGHT"
+    }
+  ]
+}

@@ -1,0 +1,305 @@
+{
+  "columns": 0,
+  "grid": {
+    "height": 32,
+    "orientation": "orthogonal",
+    "width": 32
+  },
+  "name": "floor1_topdown_prototype",
+  "tilecount": 9,
+  "tileheight": 64,
+  "tilewidth": 64,
+  "tiledversion": "1.12.2",
+  "type": "tileset",
+  "version": "1.10",
+  "properties": [
+    {
+      "name": "camera",
+      "type": "string",
+      "value": "orthographic-3/4-top-down"
+    },
+    {
+      "name": "gameplayGridPx",
+      "type": "int",
+      "value": 32
+    },
+    {
+      "name": "prototypeOnly",
+      "type": "bool",
+      "value": true
+    },
+    {
+      "name": "spriteOrigin",
+      "type": "string",
+      "value": "bottom-left (0,1)"
+    },
+    {
+      "name": "depthBaseline",
+      "type": "string",
+      "value": "footprint-south-edge"
+    }
+  ],
+  "tiles": [
+    {
+      "id": 0,
+      "class": "F1_FLOOR_PUBLIC",
+      "image": "../../assets/environment/reinforcement/floor1_topdown_prototype/F1_FLOOR_PUBLIC.png",
+      "imageheight": 64,
+      "imagewidth": 64,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_FLOOR_PUBLIC"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "northOverhangPx",
+          "type": "int",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "class": "F1_FLOOR_SERVICE",
+      "image": "../../assets/environment/reinforcement/floor1_topdown_prototype/F1_FLOOR_SERVICE.png",
+      "imageheight": 64,
+      "imagewidth": 64,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_FLOOR_SERVICE"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "northOverhangPx",
+          "type": "int",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "class": "F1_WALL_H_BODY",
+      "image": "../../assets/environment/reinforcement/floor1_topdown_prototype/F1_WALL_H_BODY.png",
+      "imageheight": 64,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_H_BODY"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "northOverhangPx",
+          "type": "int",
+          "value": 32
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "class": "F1_WALL_V_TOP",
+      "image": "../../assets/environment/reinforcement/floor1_topdown_prototype/F1_WALL_V_TOP.png",
+      "imageheight": 48,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_V_TOP"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "northOverhangPx",
+          "type": "int",
+          "value": 16
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "class": "F1_WALL_V_BODY",
+      "image": "../../assets/environment/reinforcement/floor1_topdown_prototype/F1_WALL_V_BODY.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_V_BODY"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "northOverhangPx",
+          "type": "int",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "class": "F1_WALL_V_BOTTOM",
+      "image": "../../assets/environment/reinforcement/floor1_topdown_prototype/F1_WALL_V_BOTTOM.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_WALL_V_BOTTOM"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "northOverhangPx",
+          "type": "int",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "class": "F1_CORNER_INNER",
+      "image": "../../assets/environment/reinforcement/floor1_topdown_prototype/F1_CORNER_INNER.png",
+      "imageheight": 64,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_CORNER_INNER"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "northOverhangPx",
+          "type": "int",
+          "value": 32
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "class": "F1_CORNER_OUTER",
+      "image": "../../assets/environment/reinforcement/floor1_topdown_prototype/F1_CORNER_OUTER.png",
+      "imageheight": 64,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_CORNER_OUTER"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "northOverhangPx",
+          "type": "int",
+          "value": 32
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "class": "F1_DOOR_H",
+      "image": "../../assets/environment/reinforcement/floor1_topdown_prototype/F1_DOOR_H.png",
+      "imageheight": 64,
+      "imagewidth": 64,
+      "properties": [
+        {
+          "name": "assetId",
+          "type": "string",
+          "value": "F1_DOOR_H"
+        },
+        {
+          "name": "footprintWidth",
+          "type": "int",
+          "value": 64
+        },
+        {
+          "name": "footprintHeight",
+          "type": "int",
+          "value": 32
+        },
+        {
+          "name": "northOverhangPx",
+          "type": "int",
+          "value": 32
+        }
+      ]
+    }
+  ]
+}

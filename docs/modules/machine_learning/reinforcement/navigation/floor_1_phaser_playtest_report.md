@@ -2,9 +2,9 @@
 
 ## 상태
 
-`READY_FOR_MANUAL_FLOOR1_PLAYTEST`
+`STRUCTURE_PLAYTEST_APPROVED`
 
-자동 검증과 브라우저 smoke까지만 완료했다. 아래 수동 checklist는 사용자가 직접 조작하기 전까지 승인하지 않는다.
+자동 검증과 브라우저 smoke 이후 사용자가 직접 debug route에서 수동 playtest를 완료했다. LEFT/RIGHT 완주, Lobby route switching, collision, Encounter Zone, Stair Transition, camera follow/world bounds를 실제 조작으로 확인했다.
 
 ## 1. 생성/수정 파일
 
@@ -66,6 +66,7 @@ Collision overlay는 반투명 red rectangle이며 `C`로 토글한다. Central 
 - world bounds collision
 - camera bounds 2560×1440
 - zoom 1.0, 즉시 follow
+- 사용자 요청: 약 1.3× 가까운 camera zoom 적용 예정 (`PENDING`)
 - `SpawnPoints/F1_ROBOT_SPAWN` 좌표 사용
 
 ## 7. Controls
@@ -118,31 +119,36 @@ Repository에 Playwright/Cypress/Puppeteer infrastructure가 없으므로 새 de
 
 ## 13. Manual playtest checklist
 
-- [ ] Spawn 위치 정상
-- [ ] Entrance → Lobby 이동 가능
-- [ ] Reception collision 정상
-- [ ] Waiting Area collision 정상
-- [ ] LEFT Route 완주 가능
-- [ ] LEFT Stair trigger 정상
-- [ ] RIGHT Route 완주 가능
-- [ ] RIGHT Stair trigger 정상
-- [ ] LEFT → ENTRY_SPLIT → RIGHT 이동 가능
-- [ ] RIGHT → ENTRY_SPLIT → LEFT 이동 가능
-- [ ] Central Core 관통 불가
-- [ ] Locked Door 관통 불가
-- [ ] WALL_45_1 collision 정상
-- [ ] WALL_45_2 collision 정상
-- [ ] Citizen Zone detection 정상
-- [ ] Obstacle Zone detection 정상
-- [ ] Camera follow 정상
-- [ ] Map 밖으로 이동 불가
+- [x] Spawn 위치 정상
+- [x] Entrance → Lobby 이동 가능
+- [x] Reception collision 정상
+- [x] Waiting Area collision 정상
+- [x] LEFT Route 완주 가능
+- [x] LEFT Stair trigger 정상
+- [x] RIGHT Route 완주 가능
+- [x] RIGHT Stair trigger 정상
+- [x] LEFT → ENTRY_SPLIT → RIGHT 이동 가능
+- [x] RIGHT → ENTRY_SPLIT → LEFT 이동 가능
+- [x] Central Core 관통 불가
+- [x] Locked Door 관통 불가
+- [x] WALL_45_1 collision 정상
+- [x] WALL_45_2 collision 정상
+- [x] Citizen Zone detection 정상
+- [x] Obstacle Zone detection 정상
+- [x] Camera follow 정상
+- [x] Map 밖으로 이동 불가
 
-## 14. 발견된 문제
+## 14. 수동 Playtest 결과 / 발견된 문제
 
 - Map 자체 문제는 자동 검증과 browser smoke에서 발견되지 않았다.
 - Phaser 기본 Tiled parser의 external TSJ 및 zlib layer 제한은 runtime 변환으로 해결했다.
-- 실제 corridor 통과성, corner 걸림, collision 체감, route switching은 사용자 수동 조작 전까지 미확정이다.
+- 사용자가 실제로 LEFT/RIGHT Route, 양방향 Lobby switching, corridor/corner movement, Reception/Waiting/Core/Locked Door/수동 Wall collision, Encounter Zone, Stair Transition, camera follow/world bounds를 확인했다.
+- 구조/충돌/이동 관련 blocker는 발견되지 않았다.
+- 시각적 요청으로 camera를 현재보다 약 1.3× 가깝게 조정하는 작업만 남아 있다.
 
 ## 15. 다음 단계
 
-사용자가 debug URL에서 checklist를 직접 완료한다. 전 항목 확인 후에만 상태를 `STRUCTURE_PLAYTEST_APPROVED`로 승격한다.
+1. Floor 1 구조는 `STRUCTURE_PLAYTEST_APPROVED`로 잠근다.
+2. geometry / collision / navigation / encounter / transition을 변경하지 않고 1F visual implementation을 진행한다.
+3. camera zoom을 현재 1.0에서 약 1.3으로 조정한다.
+4. visual asset 적용 후 final visual playtest를 다시 수행한다.

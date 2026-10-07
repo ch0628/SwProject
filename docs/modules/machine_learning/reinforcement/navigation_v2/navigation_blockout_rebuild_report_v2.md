@@ -6,6 +6,16 @@
 
 산출물은 최종 pixel art가 아니라 단일 층 top-down/2.5D 제작을 위한 구조 참조다. 시민, 악당, 장애물 등 runtime entity는 포함하지 않는다.
 
+### 현재 disposition
+
+`REFERENCE_ONLY / SUPERSEDED_FOR_RUNTIME`
+
+- 이 v2 세트는 Scenario 구조 실험과 건축형 spatial reference의 기록으로 보존한다.
+- 실제 runtime map / collider / navigation의 Source of Truth로 사용하지 않는다.
+- 1F는 이후 Tiled 기반 `floor_1_blockout.tmj`로 구현되어 Phaser 수동 playtest까지 통과했으며 `STRUCTURE_PLAYTEST_APPROVED` 상태다.
+- full-floor Scenario generation은 현재 production pipeline에서 중단했다.
+- 현재 structural visual asset은 deterministic 32px orthogonal tileset을 우선하고, generative image tool은 decorative / hero asset에 선택적으로 사용한다.
+
 ## 2. v1의 문제
 
 기존 v1은 navigation 선택지를 빠르게 확인하는 도식으로는 유효했지만 Scenario 구조 참조로는 다음 문제가 있었다.
@@ -94,15 +104,21 @@ walkableContinuity=PASS routeConvergence=PASS searchRooms=4 controlRooms=1
 
 기존 navigation graph validator도 별도로 실행해 graph contract가 변경되지 않았음을 확인한다.
 
-## 8. 남은 미확정 사항
+## 8. 현재 활용 범위
 
-- v2는 Scenario용 구조 참조이므로 실제 runtime collider/navmesh 좌표와의 1:1 pixel mapping은 아직 정의하지 않았다.
-- 문 폭, corridor 폭, 캐릭터 footprint, 카메라 crop은 최종 Scenario 시안과 실제 플레이 해상도에서 재확인해야 한다.
-- 보안 gate와 계단 tread는 건축 단서일 뿐 별도 runtime obstacle/entity가 아니다.
-- 첫 Scenario 재생성 결과에서 cutaway나 void 해석이 다시 나타나면 팔레트 대비와 wall mass 두께를 조정해야 한다. topology 변경은 필요하지 않다.
+- v2의 spatial/clean SVG·PNG는 2F~5F의 공간 아이디어와 건축 zoning을 검토할 때 참고할 수 있다.
+- 실제 runtime collider/navmesh 좌표의 1:1 source로 사용하지 않는다.
+- 문 폭, corridor 폭, 캐릭터 footprint, camera crop은 각 층 Tiled 구현과 실제 playtest에서 확정한다.
+- 보안 gate와 계단 tread는 reference 상의 건축 단서이며 runtime obstacle/entity 여부는 해당 층 Tiled 설계에서 별도로 결정한다.
 
 ## 9. 판단
 
+Historical result:
+
 **PASS_FOR_SCENARIO_RETRY**
 
-v2는 기존 navigation semantics를 유지하면서 v1의 추상 도식성을 줄이고, 각 층을 연속된 건물 envelope 안의 방·복도·벽·landing 구조로 재구성했다. 다음 단계는 clean v2 PNG를 structure reference로 사용한 Scenario 재시도와 결과 비교다.
+Current disposition:
+
+**REFERENCE_ONLY / SUPERSEDED_FOR_RUNTIME**
+
+v2는 기존 navigation semantics를 유지하면서 v1의 추상 도식성을 줄인 유효한 제작 참고 자료다. 다만 clean v2 PNG를 이용한 full-floor Scenario 재생성은 더 이상 현재 다음 단계가 아니다. Runtime map은 Tiled로 구현하며 1F에서 이 방식이 검증되었다.
