@@ -1,489 +1,649 @@
-{
-  "columns": 0,
-  "grid": {
-    "height": 32,
-    "orientation": "orthogonal",
-    "width": 32
-  },
-  "margin": 0,
-  "name": "floor1_room_shell_manual",
-  "objectalignment": "bottomleft",
-  "spacing": 0,
-  "tilecount": 13,
-  "tileheight": 64,
-  "tileoffset": {
-    "x": 0,
-    "y": 0
-  },
-  "tilewidth": 64,
-  "transformations": {
-    "hflip": false,
-    "vflip": false,
-    "rotate": false,
-    "preferuntransformed": true
-  },
-  "type": "tileset",
-  "version": "1.10",
-  "tiledversion": "1.12.2",
-  "properties": [
+{ "columns":0,
+ "grid":
     {
-      "name": "gameplayGridPx",
-      "type": "int",
-      "value": 32
+     "height":32,
+     "orientation":"orthogonal",
+     "width":32
     },
+ "margin":0,
+ "name":"floor1_room_shell_manual",
+ "objectalignment":"bottomleft",
+ "properties":[
+        {
+         "name":"authoringMode",
+         "type":"string",
+         "value":"manual-placement"
+        }, 
+        {
+         "name":"gameplayGridPx",
+         "type":"int",
+         "value":32
+        }, 
+        {
+         "name":"masterSource",
+         "type":"string",
+         "value":"\ubbf8\ub798\ud615 \ubcf5\ub3c4 \ud0c0\uc77c \uc138\ud2b8.png"
+        }],
+ "spacing":0,
+ "tilecount":31,
+ "tiledversion":"1.12.2",
+ "tileheight":64,
+ "tiles":[
+        {
+         "id":0,
+         "image":"F1_FLOOR_PUBLIC.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_FLOOR_PUBLIC"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"public 2x2 floor panel at (47,1081,200,200)"
+                }],
+         "type":"F1_FLOOR_PUBLIC"
+        }, 
+        {
+         "id":1,
+         "image":"F1_FLOOR_SERVICE.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_FLOOR_SERVICE"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"service 2x2 floor panel at (297,1081,200,200)"
+                }],
+         "type":"F1_FLOOR_SERVICE"
+        }, 
+        {
+         "id":2,
+         "image":"F1_BACK_WALL_PLAIN.png",
+         "imageheight":64,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_BACK_WALL_PLAIN"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"plain upper wall panel at (471,101,176,352)"
+                }],
+         "type":"F1_BACK_WALL_PLAIN"
+        }, 
+        {
+         "id":3,
+         "image":"F1_BACK_WALL_VARIANT_A.png",
+         "imageheight":64,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_BACK_WALL_VARIANT_A"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"cyan console wall panel at (692,101,176,352)"
+                }],
+         "type":"F1_BACK_WALL_VARIANT_A"
+        }, 
+        {
+         "id":4,
+         "image":"F1_BACK_WALL_VARIANT_B.png",
+         "imageheight":64,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_BACK_WALL_VARIANT_B"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"three-control wall panel at (912,101,176,352)"
+                }],
+         "type":"F1_BACK_WALL_VARIANT_B"
+        }, 
+        {
+         "id":5,
+         "image":"F1_SIDE_WALL_LEFT.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_SIDE_WALL_LEFT"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"left isolated vertical shell at (868,1088,64,192)"
+                }],
+         "type":"F1_SIDE_WALL_LEFT"
+        }, 
+        {
+         "id":6,
+         "image":"F1_SIDE_WALL_RIGHT.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_SIDE_WALL_RIGHT"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"right isolated vertical shell at (1021,1088,64,192)"
+                }],
+         "type":"F1_SIDE_WALL_RIGHT"
+        }, 
+        {
+         "id":7,
+         "image":"F1_SIDE_END_TOP.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_SIDE_END_TOP"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"capped pillar top at (720,1080,70,68)"
+                }],
+         "type":"F1_SIDE_END_TOP"
+        }, 
+        {
+         "id":8,
+         "image":"F1_SIDE_END_BOTTOM.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_SIDE_END_BOTTOM"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"capped pillar base at (720,1220,70,70)"
+                }],
+         "type":"F1_SIDE_END_BOTTOM"
+        }, 
+        {
+         "id":9,
+         "image":"F1_BACK_CORNER_LEFT.png",
+         "imageheight":64,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_BACK_CORNER_LEFT"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"left wall-to-side corner at (34,101,169,338)"
+                }],
+         "type":"F1_BACK_CORNER_LEFT"
+        }, 
+        {
+         "id":10,
+         "image":"F1_BACK_CORNER_RIGHT.png",
+         "imageheight":64,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_BACK_CORNER_RIGHT"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"right wall-to-side corner at (236,101,169,338)"
+                }],
+         "type":"F1_BACK_CORNER_RIGHT"
+        }, 
+        {
+         "id":11,
+         "image":"F1_DOOR_H_CLOSED.png",
+         "imageheight":64,
+         "imagewidth":64,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_DOOR_H_CLOSED"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":64
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"large closed double door at (49,550,474,435)"
+                }],
+         "type":"F1_DOOR_H_CLOSED"
+        }, 
+        {
+         "id":12,
+         "image":"F1_DOOR_H_OPEN.png",
+         "imageheight":64,
+         "imagewidth":64,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_DOOR_H_OPEN"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":64
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"large open double door at (602,550,471,435)"
+                }],
+         "type":"F1_DOOR_H_OPEN"
+        }, 
+        {
+         "id":13,
+         "image":"F1_WALL_CORNER_L.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_WALL_CORNER_L"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"generated from approved corner reference and Floor 1 room-shell palette"
+                }],
+         "type":"F1_WALL_CORNER_L"
+        }, 
+        {
+         "id":14,
+         "image":"F1_STAIR_SEAMLESS.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "properties":[
+                {
+                 "name":"anchor",
+                 "type":"string",
+                 "value":"bottom-left"
+                }, 
+                {
+                 "name":"assetId",
+                 "type":"string",
+                 "value":"F1_STAIR_SEAMLESS"
+                }, 
+                {
+                 "name":"logicalFootprintHeight",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"logicalFootprintWidth",
+                 "type":"int",
+                 "value":32
+                }, 
+                {
+                 "name":"sourceRegion",
+                 "type":"string",
+                 "value":"generated from approved stair reference and Floor 1 room-shell palette"
+                }],
+         "type":"F1_STAIR_SEAMLESS"
+        }, 
+        {
+         "id":15,
+         "image":"F1_BACKGROUND.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_BACKGROUND"
+        }, 
+        {
+         "id":16,
+         "image":"F1_STAIR_LEFT.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_STAIR_LEFT"
+        }, 
+        {
+         "id":17,
+         "image":"F1_STAIR_CENTER.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_STAIR_CENTER"
+        }, 
+        {
+         "id":18,
+         "image":"F1_STAIR_RIGHT.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_STAIR_RIGHT"
+        }, 
+        {
+         "id":26,
+         "image":"F1_COUNTER_CENTER.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_COUNTER_CENTER"
+        }, 
+        {
+         "id":27,
+         "image":"F1_COUNTER_LEFT.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_COUNTER_LEFT"
+        }, 
+        {
+         "id":28,
+         "image":"F1_COUNTER_RIGHT.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_COUNTER_RIGHT"
+        }, 
+        {
+         "id":29,
+         "image":"F1_COUNTER_TOP.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_COUNTER_TOP"
+        }, 
+        {
+         "id":30,
+         "image":"F1_WALL_CORNER_COR.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_WALL_CORNER_COR"
+        }, 
+        {
+         "id":31,
+         "image":"F1_COUNTER_MID.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_COUNTER_MID"
+        }, 
+        {
+         "id":32,
+         "image":"F1_COUCH_CENTER.png",
+         "imageheight":64,
+         "imagewidth":32,
+         "type":"F1_COUCH_CENTER"
+        }, 
+        {
+         "id":33,
+         "image":"F1_COUCH_LEFT.png",
+         "imageheight":64,
+         "imagewidth":32,
+         "type":"F1_COUCH_LEFT"
+        }, 
+        {
+         "id":34,
+         "image":"F1_COUCH_RIGHT.png",
+         "imageheight":64,
+         "imagewidth":32,
+         "type":"F1_COUCH_RIGHT"
+        }, 
+        {
+         "id":38,
+         "image":"F1_COUCH_BACK_CENTER.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_COUCH_BACK_CENTER"
+        }, 
+        {
+         "id":39,
+         "image":"F1_COUCH_BACK_LEFT.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_COUCH_BACK_LEFT"
+        }, 
+        {
+         "id":40,
+         "image":"F1_COUCH_BACK_RIGHT.png",
+         "imageheight":32,
+         "imagewidth":32,
+         "type":"F1_COUCH_BACK_RIGHT"
+        }],
+ "tilewidth":64,
+ "transformations":
     {
-      "name": "authoringMode",
-      "type": "string",
-      "value": "manual-placement"
+     "hflip":false,
+     "preferuntransformed":true,
+     "rotate":false,
+     "vflip":false
     },
-    {
-      "name": "masterSource",
-      "type": "string",
-      "value": "미래형 복도 타일 세트.png"
-    }
-  ],
-  "tiles": [
-    {
-      "id": 0,
-      "class": "F1_FLOOR_PUBLIC",
-      "image": "F1_FLOOR_PUBLIC.png",
-      "imagewidth": 32,
-      "imageheight": 32,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_FLOOR_PUBLIC"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "public 2x2 floor panel at (47,1081,200,200)"
-        }
-      ]
-    },
-    {
-      "id": 1,
-      "class": "F1_FLOOR_SERVICE",
-      "image": "F1_FLOOR_SERVICE.png",
-      "imagewidth": 32,
-      "imageheight": 32,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_FLOOR_SERVICE"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "service 2x2 floor panel at (297,1081,200,200)"
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "class": "F1_BACK_WALL_PLAIN",
-      "image": "F1_BACK_WALL_PLAIN.png",
-      "imagewidth": 32,
-      "imageheight": 64,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_BACK_WALL_PLAIN"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "plain upper wall panel at (471,101,176,352)"
-        }
-      ]
-    },
-    {
-      "id": 3,
-      "class": "F1_BACK_WALL_VARIANT_A",
-      "image": "F1_BACK_WALL_VARIANT_A.png",
-      "imagewidth": 32,
-      "imageheight": 64,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_BACK_WALL_VARIANT_A"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "cyan console wall panel at (692,101,176,352)"
-        }
-      ]
-    },
-    {
-      "id": 4,
-      "class": "F1_BACK_WALL_VARIANT_B",
-      "image": "F1_BACK_WALL_VARIANT_B.png",
-      "imagewidth": 32,
-      "imageheight": 64,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_BACK_WALL_VARIANT_B"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "three-control wall panel at (912,101,176,352)"
-        }
-      ]
-    },
-    {
-      "id": 5,
-      "class": "F1_SIDE_WALL_LEFT",
-      "image": "F1_SIDE_WALL_LEFT.png",
-      "imagewidth": 32,
-      "imageheight": 32,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_SIDE_WALL_LEFT"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "left isolated vertical shell at (868,1088,64,192)"
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "class": "F1_SIDE_WALL_RIGHT",
-      "image": "F1_SIDE_WALL_RIGHT.png",
-      "imagewidth": 32,
-      "imageheight": 32,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_SIDE_WALL_RIGHT"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "right isolated vertical shell at (1021,1088,64,192)"
-        }
-      ]
-    },
-    {
-      "id": 7,
-      "class": "F1_SIDE_END_TOP",
-      "image": "F1_SIDE_END_TOP.png",
-      "imagewidth": 32,
-      "imageheight": 32,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_SIDE_END_TOP"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "capped pillar top at (720,1080,70,68)"
-        }
-      ]
-    },
-    {
-      "id": 8,
-      "class": "F1_SIDE_END_BOTTOM",
-      "image": "F1_SIDE_END_BOTTOM.png",
-      "imagewidth": 32,
-      "imageheight": 32,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_SIDE_END_BOTTOM"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "capped pillar base at (720,1220,70,70)"
-        }
-      ]
-    },
-    {
-      "id": 9,
-      "class": "F1_BACK_CORNER_LEFT",
-      "image": "F1_BACK_CORNER_LEFT.png",
-      "imagewidth": 32,
-      "imageheight": 64,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_BACK_CORNER_LEFT"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "left wall-to-side corner at (34,101,169,338)"
-        }
-      ]
-    },
-    {
-      "id": 10,
-      "class": "F1_BACK_CORNER_RIGHT",
-      "image": "F1_BACK_CORNER_RIGHT.png",
-      "imagewidth": 32,
-      "imageheight": 64,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_BACK_CORNER_RIGHT"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "right wall-to-side corner at (236,101,169,338)"
-        }
-      ]
-    },
-    {
-      "id": 11,
-      "class": "F1_DOOR_H_CLOSED",
-      "image": "F1_DOOR_H_CLOSED.png",
-      "imagewidth": 64,
-      "imageheight": 64,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_DOOR_H_CLOSED"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 64
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "large closed double door at (49,550,474,435)"
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "class": "F1_DOOR_H_OPEN",
-      "image": "F1_DOOR_H_OPEN.png",
-      "imagewidth": 64,
-      "imageheight": 64,
-      "properties": [
-        {
-          "name": "assetId",
-          "type": "string",
-          "value": "F1_DOOR_H_OPEN"
-        },
-        {
-          "name": "logicalFootprintWidth",
-          "type": "int",
-          "value": 64
-        },
-        {
-          "name": "logicalFootprintHeight",
-          "type": "int",
-          "value": 32
-        },
-        {
-          "name": "anchor",
-          "type": "string",
-          "value": "bottom-left"
-        },
-        {
-          "name": "sourceRegion",
-          "type": "string",
-          "value": "large open double door at (602,550,471,435)"
-        }
-      ]
-    }
-  ]
+ "type":"tileset",
+ "version":"1.10"
 }

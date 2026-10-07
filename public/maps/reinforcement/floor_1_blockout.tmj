@@ -4,7 +4,7 @@
  "layers":[
         {
          "compression":"zlib",
-         "data":"eNrt2U0SgyAMhmEsLaseskfzKD1aXbjqtPzEBA28mfnGlTJ5BgU1BMqyUgivXBDK2r2X7ZhLct5jqT\/88MMPP\/zm9ot\/gp9OH\/iV+7g1Bj\/8PPvlxva0duBn14Pl+jGD35lj44cffvjhN+b6m\/AT7\/\/www8\/\/EbyywU\/eeHn0y8Kgl\/9tx+L70Gj+EnSw6917kdnft89PbY897HuwmdCzf\/I0jle\/HpEMq4HP0\/R9tOYBzP67YZra6R+pfLop7UnwK\/dL1zkXpQEv377Tvyu\/0706zmHX73fGeuAZz\/tfeORa85Sy2DzCD\/8LOsD9BU5yA==",
+         "data":"eNrtmUtOwzAQhqdpMRtkFVjyMLQL4BYcpUfJUXqUHKVHYSwHqULxI06M7eSv9CmLOo\/5NPFM7D0R7UESFFEriE4uVN3xnW6Jzi54zCX2+uynu+fjg4VHM6Zaf+yHfPHxmA7+4A\/+4K9Wf9pTYwH+wuLY8nEI+AuLY8PHGErz5+u3prJkf3oekqYnP6dAWuJdkj+mTVknSvLH3y6ddFxb5xKP+Ya\/uLlXxMUHfxP8icR93lh\/0qwhWFGWmgR\/8+TX2t9f+IO\/zPNf51g7hb8J9VfAH\/zBH\/zBH\/wV6E\/Xft\/+8DXS9AX\/7k+ZHmXw+0xmzr9mJDn8+c7J5W8bQWp\/rndCFeYvcj0oqT9X7g+51XNKTf6G4vr9NTPgyn3bvWvy9zemG+auj2MXOSdcM+bevnNK9FcT8Ad\/tftTpmaN3oeNfeZX5s0C\/9fW5m9qzh6Y955jwDM\/M08WXirMvzW\/8\/AXvk+ZYu9yDn+fzEfPV0Z\/qfeJlp5\/8Ad\/8JeuZwztG2PqQM5aUFreioU7WJu\/H5D1Rzc=",
          "encoding":"base64",
          "height":45,
          "id":1,
@@ -112,7 +112,7 @@
                  "y":320
                 }, 
                 {
-                 "height":64,
+                 "height":33,
                  "id":2,
                  "name":"RECEPTION_DESK",
                  "opacity":1,
@@ -142,10 +142,10 @@
                  "visible":true,
                  "width":256,
                  "x":1152,
-                 "y":1088
+                 "y":1119
                 }, 
                 {
-                 "height":96,
+                 "height":63.3333333333335,
                  "id":3,
                  "name":"WAITING_SOFA_WEST",
                  "opacity":1,
@@ -165,12 +165,12 @@
                          "type":"string",
                          "value":"STATIC_PROP"
                         }],
-                 "rotation":0,
+                 "rotation":-90,
                  "type":"Collision",
                  "visible":true,
                  "width":32,
-                 "x":768,
-                 "y":1152
+                 "x":799.333333333333,
+                 "y":1201.33333333333
                 }, 
                 {
                  "height":32,
@@ -196,12 +196,12 @@
                  "rotation":0,
                  "type":"Collision",
                  "visible":true,
-                 "width":96,
-                 "x":864,
-                 "y":1280
+                 "width":124.666666666667,
+                 "x":770.666666666667,
+                 "y":1214.66666666667
                 }, 
                 {
-                 "height":32,
+                 "height":61.3333333333335,
                  "id":5,
                  "name":"WAITING_LOW_TABLE",
                  "opacity":1,
@@ -224,9 +224,9 @@
                  "rotation":0,
                  "type":"Collision",
                  "visible":true,
-                 "width":64,
-                 "x":960,
-                 "y":1248
+                 "width":126,
+                 "x":770,
+                 "y":1089.33333333333
                 }, 
                 {
                  "height":64,
@@ -4360,6 +4360,42 @@
                  "width":198,
                  "x":1664,
                  "y":928
+                }, 
+                {
+                 "height":30,
+                 "id":204,
+                 "name":"WALL_45_3",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":9.66666666666674,
+                 "x":1152.83333333333,
+                 "y":1088.5
+                }, 
+                {
+                 "height":30.3333333333333,
+                 "id":205,
+                 "name":"WALL_45_4",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":12,
+                 "x":1394.83333333333,
+                 "y":1088
+                }, 
+                {
+                 "height":11.3333333333335,
+                 "id":206,
+                 "name":"WALL_45_5",
+                 "opacity":1,
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":232.666666666667,
+                 "x":1163.33333333333,
+                 "y":1105.33333333333
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -5697,203 +5733,6 @@
          "y":0
         }, 
         {
-         "color":"#22d3ee",
-         "draworder":"topdown",
-         "id":13,
-         "locked":true,
-         "name":"CameraZones",
-         "objects":[
-                {
-                 "height":480,
-                 "id":188,
-                 "name":"F1_CAM_LOBBY",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_LOBBY"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":1
-                        }],
-                 "rotation":0,
-                 "type":"CameraZone",
-                 "visible":true,
-                 "width":1216,
-                 "x":672,
-                 "y":960
-                }, 
-                {
-                 "height":448,
-                 "id":189,
-                 "name":"F1_CAM_LEFT_HORIZONTAL",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_LEFT_HORIZONTAL"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":1
-                        }],
-                 "rotation":0,
-                 "type":"CameraZone",
-                 "visible":true,
-                 "width":768,
-                 "x":192,
-                 "y":736
-                }, 
-                {
-                 "height":672,
-                 "id":190,
-                 "name":"F1_CAM_LEFT_VERTICAL",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_LEFT_VERTICAL"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":1
-                        }],
-                 "rotation":0,
-                 "type":"CameraZone",
-                 "visible":true,
-                 "width":768,
-                 "x":0,
-                 "y":320
-                }, 
-                {
-                 "height":480,
-                 "id":191,
-                 "name":"F1_CAM_LEFT_STAIR",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_LEFT_STAIR"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":1
-                        }],
-                 "rotation":0,
-                 "type":"CameraZone",
-                 "visible":true,
-                 "width":768,
-                 "x":0,
-                 "y":0
-                }, 
-                {
-                 "height":448,
-                 "id":192,
-                 "name":"F1_CAM_RIGHT_LOWER",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_RIGHT_LOWER"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":1
-                        }],
-                 "rotation":0,
-                 "type":"CameraZone",
-                 "visible":true,
-                 "width":768,
-                 "x":1600,
-                 "y":800
-                }, 
-                {
-                 "height":480,
-                 "id":193,
-                 "name":"F1_CAM_RIGHT_MIDDLE",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_RIGHT_MIDDLE"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":1
-                        }],
-                 "rotation":0,
-                 "type":"CameraZone",
-                 "visible":true,
-                 "width":768,
-                 "x":1792,
-                 "y":576
-                }, 
-                {
-                 "height":544,
-                 "id":194,
-                 "name":"F1_CAM_RIGHT_UPPER",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_RIGHT_UPPER"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":1
-                        }],
-                 "rotation":0,
-                 "type":"CameraZone",
-                 "visible":true,
-                 "width":768,
-                 "x":1792,
-                 "y":256
-                }, 
-                {
-                 "height":480,
-                 "id":195,
-                 "name":"F1_CAM_RIGHT_STAIR",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_RIGHT_STAIR"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":1
-                        }],
-                 "rotation":0,
-                 "type":"CameraZone",
-                 "visible":true,
-                 "width":768,
-                 "x":1792,
-                 "y":0
-                }],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":false,
-         "x":0,
-         "y":0
-        }, 
-        {
          "color":"#64748b",
          "draworder":"topdown",
          "id":14,
@@ -5906,11 +5745,6 @@
                  "name":"F1_MASS_LOBBY",
                  "opacity":1,
                  "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_LOBBY"
-                        }, 
                         {
                          "name":"floor",
                          "type":"int",
@@ -5930,11 +5764,6 @@
                  "opacity":1,
                  "properties":[
                         {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_LEFT_HORIZONTAL"
-                        }, 
-                        {
                          "name":"floor",
                          "type":"int",
                          "value":1
@@ -5952,11 +5781,6 @@
                  "name":"F1_MASS_LEFT_VERTICAL",
                  "opacity":1,
                  "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_LEFT_VERTICAL"
-                        }, 
                         {
                          "name":"floor",
                          "type":"int",
@@ -5976,11 +5800,6 @@
                  "opacity":1,
                  "properties":[
                         {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_LEFT_STAIR"
-                        }, 
-                        {
                          "name":"floor",
                          "type":"int",
                          "value":1
@@ -5998,11 +5817,6 @@
                  "name":"F1_MASS_RIGHT_LOWER",
                  "opacity":1,
                  "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_RIGHT_LOWER"
-                        }, 
                         {
                          "name":"floor",
                          "type":"int",
@@ -6022,11 +5836,6 @@
                  "opacity":1,
                  "properties":[
                         {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_RIGHT_MIDDLE"
-                        }, 
-                        {
                          "name":"floor",
                          "type":"int",
                          "value":1
@@ -6044,11 +5853,6 @@
                  "name":"F1_MASS_RIGHT_UPPER",
                  "opacity":1,
                  "properties":[
-                        {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_RIGHT_UPPER"
-                        }, 
                         {
                          "name":"floor",
                          "type":"int",
@@ -6068,11 +5872,6 @@
                  "opacity":1,
                  "properties":[
                         {
-                         "name":"cameraZoneId",
-                         "type":"string",
-                         "value":"F1_CAM_RIGHT_STAIR"
-                        }, 
-                        {
                          "name":"floor",
                          "type":"int",
                          "value":1
@@ -6091,7 +5890,7 @@
          "y":0
         }],
  "nextlayerid":15,
- "nextobjectid":204,
+ "nextobjectid":208,
  "orientation":"orthogonal",
  "properties":[
         {

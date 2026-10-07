@@ -9,10 +9,6 @@
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "generate:floor1-artpass": "node scripts/reinforcement/generateFloor1ArtpassV1.mjs",
-    "generate:floor1-visual-prototype": "node scripts/reinforcement/generateFloor1TopdownPrototype.mjs",
-    "generate:floor1-visual-shell": "node scripts/reinforcement/generateFloor1VisualShellV1.mjs",
-    "validate:floor1-visual": "node scripts/reinforcement/validateFloor1VisualKit.mjs",
     "validate:reinforcement": "node --experimental-strip-types scripts/reinforcement/runThreeRoundValidation.ts"
   },
   "dependencies": { "phaser": "4.2.1", "react": "^19.1.1", "react-dom": "^19.1.1" },
