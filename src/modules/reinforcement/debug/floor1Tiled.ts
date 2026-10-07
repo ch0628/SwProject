@@ -7,6 +7,7 @@ export type TiledObject = {
   y: number;
   width: number;
   height: number;
+  rotation?: number;
   polyline?: { x: number; y: number }[];
   properties?: TiledProperty[];
 };
@@ -95,4 +96,18 @@ export async function decompressTileLayers(map: TiledMapJson): Promise<TiledMapJ
 
 export function contains(object: TiledObject, x: number, y: number) {
   return x >= object.x && x <= object.x + object.width && y >= object.y && y <= object.y + object.height;
+}
+
+export function axisAlignedBounds(object: Pick<TiledObject, 'x' | 'y' | 'width' | 'height' | 'rotation'>) {
+  const angle = (object.rotation ?? 0) * Math.PI / 180;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const corners = [[0, 0], [object.width, 0], [object.width, object.height], [0, object.height]]
+    .map(([x, y]) => ({ x: object.x + x * cos - y * sin, y: object.y + x * sin + y * cos }));
+  const xs = corners.map(point => point.x);
+  const ys = corners.map(point => point.y);
+  const round = (value: number) => Math.round(value * 1e6) / 1e6;
+  const x = Math.min(...xs);
+  const y = Math.min(...ys);
+  return { x: round(x), y: round(y), width: round(Math.max(...xs) - x), height: round(Math.max(...ys) - y) };
 }

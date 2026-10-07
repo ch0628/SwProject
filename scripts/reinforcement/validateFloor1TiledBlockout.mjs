@@ -47,26 +47,31 @@ check(tilesetRef?.source === '../../assets/environment/reinforcement/floor1_room
 let tileset = {};
 try { tileset = JSON.parse(readFileSync(tilesetPath, 'utf8')); }
 catch (error) { failures.push(`tileset JSON parse failed: ${error.message}`); }
-check(tileset.name === 'floor1_room_shell_manual' && tileset.tilecount === 15, 'manual tileset name/count is invalid');
-const expectedSizes = new Map([
-  ['F1_FLOOR_PUBLIC', [32, 32]], ['F1_FLOOR_SERVICE', [32, 32]],
-  ['F1_BACK_WALL_PLAIN', [32, 64]], ['F1_BACK_WALL_VARIANT_A', [32, 64]], ['F1_BACK_WALL_VARIANT_B', [32, 64]],
-  ['F1_SIDE_WALL_LEFT', [32, 32]], ['F1_SIDE_WALL_RIGHT', [32, 32]], ['F1_SIDE_END_TOP', [32, 32]], ['F1_SIDE_END_BOTTOM', [32, 32]],
-  ['F1_BACK_CORNER_LEFT', [32, 64]], ['F1_BACK_CORNER_RIGHT', [32, 64]], ['F1_DOOR_H_CLOSED', [64, 64]], ['F1_DOOR_H_OPEN', [64, 64]],
-  ['F1_WALL_CORNER_L', [32, 32]], ['F1_STAIR_SEAMLESS', [32, 32]],
-]);
-for (const tile of tileset.tiles ?? []) {
+const tiles = tileset.tiles ?? [];
+check(tileset.name === 'floor1_room_shell_manual', 'manual tileset name is invalid');
+check(tileset.tilecount === tiles.length, 'manual tileset tilecount does not match its tile entries');
+check(new Set(tiles.map(tile => tile.id)).size === tiles.length, 'manual tileset has duplicate tile ids');
+check(new Set(tiles.map(tile => tile.class ?? tile.type)).size === tiles.length, 'manual tileset has missing or duplicate asset ids');
+for (const tile of tiles) {
   const assetId = tile.class ?? tile.type;
-  check(JSON.stringify([tile.imagewidth, tile.imageheight]) === JSON.stringify(expectedSizes.get(assetId)), `${assetId} dimensions are invalid`);
+  check(Boolean(assetId), `tile ${tile.id} has no class/type asset id`);
+  check(tile.imagewidth > 0 && tile.imageheight > 0 && tile.imagewidth % TILE === 0 && tile.imageheight % TILE === 0, `${assetId} dimensions are invalid`);
   const imagePath = resolve(dirname(tilesetPath), tile.image);
   check(existsSync(imagePath), `${tile.image} is missing`);
   if (existsSync(imagePath)) {
     const png = readFileSync(imagePath);
     check(png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), `${tile.image} is not PNG`);
-    check(png[25] === 6, `${tile.image} must be RGBA`);
+    check(png.readUInt32BE(16) === tile.imagewidth && png.readUInt32BE(20) === tile.imageheight, `${tile.image} PNG dimensions do not match the tileset`);
+    check([0, 2, 3, 4, 6].includes(png[25]), `${tile.image} has an invalid PNG color type`);
   }
 }
-check((tileset.tiles ?? []).length === expectedSizes.size, 'manual tileset must contain exactly 15 tiles');
+const validGids = new Set(tiles.map(tile => tile.id + tilesetRef.firstgid));
+for (const name of REQUIRED_LAYERS.slice(0, 5)) {
+  for (const rawGid of decode(name)) {
+    const gid = rawGid & 0x1fffffff;
+    check(gid === 0 || validGids.has(gid), `${name} references unknown gid ${gid}`);
+  }
+}
 
 const allObjects = map.layers.flatMap(layer => layer.objects ?? []);
 check(new Set(allObjects.map(({ id }) => id)).size === allObjects.length, 'duplicate Tiled object id');

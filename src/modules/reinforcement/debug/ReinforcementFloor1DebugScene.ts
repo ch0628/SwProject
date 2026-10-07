@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { contains, decompressTileLayers, properties, TILE_LAYERS, validateFloor1Map, type TiledMapJson, type TiledObject } from './floor1Tiled';
+import { axisAlignedBounds, contains, decompressTileLayers, properties, TILE_LAYERS, validateFloor1Map, type TiledMapJson, type TiledObject } from './floor1Tiled';
 
 const MAP_JSON = 'reinforcement-floor1-json';
 const TILESET_JSON = 'reinforcement-floor1-tileset-json';
@@ -15,6 +15,7 @@ const ASSET_IDS = [
   'F1_WALL_CORNER_L', 'F1_STAIR_SEAMLESS', 'F1_BACKGROUND', 'F1_STAIR_LEFT', 'F1_STAIR_CENTER', 'F1_STAIR_RIGHT',
   'F1_COUNTER_CENTER', 'F1_COUNTER_LEFT', 'F1_COUNTER_RIGHT','F1_COUNTER_TOP', 'F1_COUNTER_MID',
   'F1_COUCH_LEFT', 'F1_COUCH_CENTER', 'F1_COUCH_RIGHT', 'F1_COUCH_BACK_RIGHT', 'F1_COUCH_BACK_CENTER','F1_COUCH_BACK_LEFT',
+  'F1_TABLE_LEFT', 'F1_TABLE_RIGHT',
 ] as const;
 type ManualTileset = { tiles: { id: number; class?: string; type?: string; image: string; imagewidth: number; imageheight: number }[] };
 
@@ -131,7 +132,6 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
     for (const name of TILE_LAYERS) {
       const layer = map.layers.find(candidate => candidate.name === name && candidate.type === 'tilelayer');
       if (!layer || !Array.isArray(layer.data)) throw new Error(`Floor 1 debug: tile layer "${name}" is unavailable`);
-      if (layer.visible === false) continue;
       for (let cell = 0; cell < layer.data.length; cell += 1) {
         const rawGid = layer.data[cell];
         if (!rawGid) continue;
@@ -162,16 +162,23 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
     const group = this.physics.add.staticGroup();
     for (const object of objects) {
       if (object.width <= 0 || object.height <= 0 || properties(object).blocksRobot === false) continue;
-      const collider = group.create(object.x + object.width / 2, object.y + object.height / 2, 'reinforcement-debug-collider') as Phaser.Physics.Arcade.Image;
-      collider.setDisplaySize(object.width, object.height).setVisible(false).refreshBody();
+      const bounds = axisAlignedBounds(object);
+      const collider = group.create(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2, 'reinforcement-debug-collider') as Phaser.Physics.Arcade.Image;
+      collider.setDisplaySize(bounds.width, bounds.height).setVisible(false).refreshBody();
     }
     this.physics.add.collider(this.robot, group);
 
     const graphics = this.add.graphics().setDepth(10);
     graphics.lineStyle(1, 0xff3b30, 0.9).fillStyle(0xff3b30, 0.16);
-    for (const object of objects) graphics.fillRect(object.x, object.y, object.width, object.height).strokeRect(object.x, object.y, object.width, object.height);
+    for (const object of objects) {
+      const bounds = axisAlignedBounds(object);
+      graphics.fillRect(bounds.x, bounds.y, bounds.width, bounds.height).strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
     const labels = objects.filter(object => ['CENTRAL_CORE', 'RECEPTION_DESK', 'WALL_45_1', 'WALL_45_2'].includes(object.name))
-      .map(object => this.debugLabel(object.x + 3, object.y + 3, object.name, '#ff8a80'));
+      .map(object => {
+        const bounds = axisAlignedBounds(object);
+        return this.debugLabel(bounds.x + 3, bounds.y + 3, object.name, '#ff8a80');
+      });
     this.collisionOverlay = this.add.container(0, 0, [graphics, ...labels]).setDepth(10).setVisible(false);
   }
 

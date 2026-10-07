@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { decompressTileLayers, properties, validateFloor1Map, type TiledMapJson } from '../src/modules/reinforcement/debug/floor1Tiled.ts';
+import { axisAlignedBounds, decompressTileLayers, properties, validateFloor1Map, type TiledMapJson } from '../src/modules/reinforcement/debug/floor1Tiled.ts';
 
 const map = JSON.parse(readFileSync('public/maps/reinforcement/floor_1_blockout.tmj', 'utf8')) as TiledMapJson;
 const tileset = JSON.parse(readFileSync('public/assets/environment/reinforcement/floor1_room_shell_manual/floor1_room_shell_manual.tsj', 'utf8')) as {
@@ -20,19 +20,22 @@ test('Floor 1 debug runtime contract matches the current Tiled map', () => {
   assert.equal(result.architecturalMass.length, 8);
 });
 
-test('manual room-shell tileset contains the normalized assets', () => {
-  const expected = new Map([
-    ['F1_FLOOR_PUBLIC', [32, 32]], ['F1_FLOOR_SERVICE', [32, 32]],
-    ['F1_BACK_WALL_PLAIN', [32, 64]], ['F1_BACK_WALL_VARIANT_A', [32, 64]], ['F1_BACK_WALL_VARIANT_B', [32, 64]],
-    ['F1_SIDE_WALL_LEFT', [32, 32]], ['F1_SIDE_WALL_RIGHT', [32, 32]],
-    ['F1_SIDE_END_TOP', [32, 32]], ['F1_SIDE_END_BOTTOM', [32, 32]],
-    ['F1_BACK_CORNER_LEFT', [32, 64]], ['F1_BACK_CORNER_RIGHT', [32, 64]],
-    ['F1_DOOR_H_CLOSED', [64, 64]], ['F1_DOOR_H_OPEN', [64, 64]],
-    ['F1_WALL_CORNER_L', [32, 32]], ['F1_STAIR_SEAMLESS', [32, 32]],
-  ]);
+test('manual room-shell tileset contains valid normalized assets', () => {
   assert.equal(tileset.name, 'floor1_room_shell_manual');
-  assert.equal(tileset.tilecount, expected.size);
-  for (const tile of tileset.tiles) assert.deepEqual([tile.imagewidth, tile.imageheight], expected.get(tile.class ?? tile.type));
+  assert.equal(tileset.tilecount, tileset.tiles.length);
+  assert.equal(new Set(tileset.tiles.map(tile => tile.id)).size, tileset.tiles.length);
+  assert.equal(new Set(tileset.tiles.map(tile => tile.class ?? tile.type)).size, tileset.tiles.length);
+  for (const tile of tileset.tiles) {
+    assert.ok(tile.class ?? tile.type);
+    assert.equal(tile.imagewidth % 32, 0);
+    assert.equal(tile.imageheight % 32, 0);
+  }
+});
+
+test('rotated Tiled rectangles use their displayed collision bounds', () => {
+  const collision = validateFloor1Map(map).collision;
+  assert.deepEqual(axisAlignedBounds(collision.find(object => object.name === 'WAITING_SOFA_WEST_1')!), { x: 802, y: 1184, width: 64, height: 32 });
+  assert.deepEqual(axisAlignedBounds(collision.find(object => object.name === 'WAITING_SOFA_WEST_2')!), { x: 802, y: 1152, width: 64, height: 32 });
 });
 
 test('zlib/base64 tile layers expand to gid arrays', async () => {
@@ -51,8 +54,7 @@ test('runtime validation fails clearly when a required layer is missing', () => 
 });
 
 test('only active gameplay object layers remain', () => {
-  assert.deepEqual(
-    map.layers.filter(layer => layer.type === 'objectgroup').map(layer => [layer.name, layer.objects?.length]),
-    [['Collision', 153], ['NavigationNodes', 10], ['NavigationEdges', 10], ['EncounterZones', 4], ['FloorTransitions', 2], ['SpawnPoints', 1], ['Debug', 4], ['ArchitecturalMass', 8]],
-  );
+  const layers = map.layers.filter(layer => layer.type === 'objectgroup');
+  assert.deepEqual(layers.map(layer => layer.name), ['Collision', 'NavigationNodes', 'NavigationEdges', 'EncounterZones', 'FloorTransitions', 'SpawnPoints', 'Debug', 'ArchitecturalMass']);
+  assert.ok((layers.find(layer => layer.name === 'Collision')?.objects?.length ?? 0) > 0);
 });

@@ -4,14 +4,14 @@
  "layers":[
         {
          "compression":"zlib",
-         "data":"eNrtmUtOwzAQhqdpMRtkFVjyMLQL4BYcpUfJUXqUHKVHYSwHqULxI06M7eSv9CmLOo\/5NPFM7D0R7UESFFEriE4uVN3xnW6Jzi54zCX2+uynu+fjg4VHM6Zaf+yHfPHxmA7+4A\/+4K9Wf9pTYwH+wuLY8nEI+AuLY8PHGErz5+u3prJkf3oekqYnP6dAWuJdkj+mTVknSvLH3y6ddFxb5xKP+Ya\/uLlXxMUHfxP8icR93lh\/0qwhWFGWmgR\/8+TX2t9f+IO\/zPNf51g7hb8J9VfAH\/zBH\/zBH\/wV6E\/Xft\/+8DXS9AX\/7k+ZHmXw+0xmzr9mJDn8+c7J5W8bQWp\/rndCFeYvcj0oqT9X7g+51XNKTf6G4vr9NTPgyn3bvWvy9zemG+auj2MXOSdcM+bevnNK9FcT8Ad\/tftTpmaN3oeNfeZX5s0C\/9fW5m9qzh6Y955jwDM\/M08WXirMvzW\/8\/AXvk+ZYu9yDn+fzEfPV0Z\/qfeJlp5\/8Ad\/8JeuZwztG2PqQM5aUFreioU7WJu\/H5D1Rzc=",
+         "data":"eNrtm0tuwyAQhqdO62wqlLbLtqGPRR+5RI+So\/goOQpH6VE6CFeKKgM2hgL2H+mTF8aP+TQw2Dg7ItqBJEiiriU6upB1x3fcEp1ccJvv0POzH3XD21sLd6ZNtf7YD\/ni4zYK\/uAP\/uCvVn\/aU2MB\/sbFseHtEPA3Lo4L3oZQmj\/ffGsuS\/anxyFh5uSnFAhLvEvyx3Qp60RJ\/vjZRQnHuXUucZsv+Asbe9uw+OBvhr828Txvqj9h3iFYkZaaBH9x8mvt\/Rf+4C\/z+Kcc707hb0b9beEP\/uAP\/uAP\/gr0p2u\/b334HGHmBf\/uT5o5yuDzmcicf81EcvjzHZPL3yaA1P5cfUIW5i\/wfVBSf67cH3Krx5Sa\/A3F9ftrIuDKfdu1a\/L3N6Yr5rqP4zJwTDhnyrV9x5TorybgD\/5q9ydNzZq8Dht6z3vmyQLv62rzNzdnX5jnntcR9\/zA3Ft4rDD\/YvT5A+fNYaX9N4a\/T0OX04VvnTLF2mUMf+\/MW89HRn+p14lK+V4M\/uAP\/rL\/L0WFfr+Xog7krAWl5W27cAdr8\/cDa9BI3Q==",
          "encoding":"base64",
          "height":45,
          "id":1,
          "name":"Ground",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":80,
          "x":0,
          "y":0
@@ -26,7 +26,7 @@
          "name":"FloorDetail",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":80,
          "x":0,
          "y":0
@@ -41,7 +41,7 @@
          "name":"Walls",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":80,
          "x":0,
          "y":0
@@ -56,7 +56,7 @@
          "name":"WallTop",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":80,
          "x":0,
          "y":0
@@ -71,7 +71,7 @@
          "name":"StaticProps",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":80,
          "x":0,
          "y":0
@@ -80,7 +80,6 @@
          "color":"#ef4444",
          "draworder":"topdown",
          "id":6,
-         "locked":true,
          "name":"Collision",
          "objects":[
                 {
@@ -145,9 +144,9 @@
                  "y":1119
                 }, 
                 {
-                 "height":63.3333333333335,
+                 "height":64,
                  "id":3,
-                 "name":"WAITING_SOFA_WEST",
+                 "name":"WAITING_SOFA_WEST_1",
                  "opacity":1,
                  "properties":[
                         {
@@ -158,7 +157,7 @@
                         {
                          "name":"collisionId",
                          "type":"string",
-                         "value":"WAITING_SOFA_WEST"
+                         "value":"WAITING_SOFA_WEST_1"
                         }, 
                         {
                          "name":"role",
@@ -169,8 +168,8 @@
                  "type":"Collision",
                  "visible":true,
                  "width":32,
-                 "x":799.333333333333,
-                 "y":1201.33333333333
+                 "x":802,
+                 "y":1216
                 }, 
                 {
                  "height":32,
@@ -196,12 +195,12 @@
                  "rotation":0,
                  "type":"Collision",
                  "visible":true,
-                 "width":124.666666666667,
-                 "x":770.666666666667,
-                 "y":1214.66666666667
+                 "width":128,
+                 "x":770,
+                 "y":1216
                 }, 
                 {
-                 "height":61.3333333333335,
+                 "height":64,
                  "id":5,
                  "name":"WAITING_LOW_TABLE",
                  "opacity":1,
@@ -224,9 +223,9 @@
                  "rotation":0,
                  "type":"Collision",
                  "visible":true,
-                 "width":126,
+                 "width":128,
                  "x":770,
-                 "y":1089.33333333333
+                 "y":1088
                 }, 
                 {
                  "height":64,
@@ -4396,6 +4395,34 @@
                  "width":232.666666666667,
                  "x":1163.33333333333,
                  "y":1105.33333333333
+                }, 
+                {
+                 "height":64,
+                 "id":208,
+                 "name":"WAITING_SOFA_WEST_2",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"WAITING_SOFA_WEST_2"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"STATIC_PROP"
+                        }],
+                 "rotation":-90,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":32,
+                 "x":802,
+                 "y":1184
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -4747,7 +4774,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
@@ -5890,7 +5917,7 @@
          "y":0
         }],
  "nextlayerid":15,
- "nextobjectid":208,
+ "nextobjectid":209,
  "orientation":"orthogonal",
  "properties":[
         {
