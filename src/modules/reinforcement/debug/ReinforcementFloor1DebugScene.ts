@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { BuildingTransitionGate, type BuildingSceneData } from './buildingTransitions';
 import { axisAlignedBounds, contains, decompressTileLayers, properties, TILE_LAYERS, validateFloor1Map, type TiledMapJson, type TiledObject } from './floor1Tiled';
 
 const MAP_JSON = 'reinforcement-floor1-json';
@@ -35,8 +36,15 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
   private currentTransition: TiledObject | null = null;
   private previousTransitionName: string | null = null;
   private transitionCount = 0;
+  private buildingData: BuildingSceneData = {};
+  private buildingTransitionGate = new BuildingTransitionGate();
 
   constructor() { super('ReinforcementFloor1DebugScene'); }
+
+  init(data: BuildingSceneData = {}) {
+    this.buildingData = data;
+    this.buildingTransitionGate.reset();
+  }
 
   preload() {
     this.load.json(MAP_JSON, MAP_URL);
@@ -86,6 +94,7 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
     this.hud = this.add.text(20, 18, '', { fontFamily: 'monospace', fontSize: '14px', color: '#e5f6ff', lineSpacing: 3 }).setScrollFactor(0).setDepth(21);
     this.refreshHud();
     this.game.events.emit('reinforcement-floor1-debug-ready');
+    if (this.buildingData.buildingMode) this.game.events.emit('reinforcement-building-floor-ready', 1, 'F1_ROBOT_SPAWN', this.buildingData.lastTransition);
   }
 
   update() {
@@ -106,10 +115,21 @@ export class ReinforcementFloor1DebugScene extends Phaser.Scene {
 
     this.currentEncounter = this.encounters.find(zone => contains(zone, this.robot.x, this.robot.y)) ?? null;
     this.currentTransition = this.transitions.find(zone => contains(zone, this.robot.x, this.robot.y)) ?? null;
+    if (this.handleBuildingTransition()) return;
     const transitionName = this.currentTransition?.name ?? null;
     if (transitionName && transitionName !== this.previousTransitionName) this.transitionCount += 1;
     this.previousTransitionName = transitionName;
     this.refreshHud();
+  }
+
+  private handleBuildingTransition() {
+    if (!this.buildingData.buildingMode) return false;
+    const destination = this.buildingTransitionGate.consume(this.currentTransition);
+    if (!destination) return false;
+    this.robot.setVelocity(0, 0);
+    this.game.events.emit('reinforcement-building-transition', 1, destination.targetFloor, destination.targetSpawn);
+    this.scene.start(destination.sceneKey, destination.sceneData);
+    return true;
   }
 
   private createArchitecturalMass(objects: TiledObject[]) {

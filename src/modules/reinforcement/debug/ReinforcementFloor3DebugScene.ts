@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { BuildingTransitionGate, resolveBuildingSpawn, type BuildingSceneData } from './buildingTransitions';
 import { axisAlignedBounds, contains, decompressTileLayers, properties, TILE_LAYERS, type TiledMapJson, type TiledObject } from './floor1Tiled';
 import { floor3RoutePoints, floor3TileDepth, missingFloor3TextureMessage, validateFloor3Map, type Floor3RouteId, type Floor3StairSide } from './floor3Tiled';
 
@@ -45,8 +46,15 @@ export class ReinforcementFloor3DebugScene extends Phaser.Scene {
   private probeName = 'NONE';
   private probeTarget = 'NONE';
   private probeSpeed = PROBE_SPEED;
+  private buildingData: BuildingSceneData = {};
+  private buildingTransitionGate = new BuildingTransitionGate();
 
   constructor() { super('ReinforcementFloor3DebugScene'); }
+
+  init(data: BuildingSceneData = {}) {
+    this.buildingData = data;
+    this.buildingTransitionGate.reset();
+  }
 
   preload() {
     this.load.json(MAP_JSON, MAP_URL);
@@ -75,7 +83,7 @@ export class ReinforcementFloor3DebugScene extends Phaser.Scene {
     this.add.rectangle(worldWidth / 2, worldHeight / 2, worldWidth, worldHeight, 0x171c21).setDepth(-3);
     this.createTileLayers(map, new Map([[BLOCKOUT_TILESET_SOURCE, blockoutTileset], [FLOOR3_TILESET_SOURCE, floor3Tileset]]));
 
-    this.spawn = data.spawn;
+    this.spawn = resolveBuildingSpawn([data.spawn], this.buildingData, 3, data.spawn);
     this.encounters = data.encounters;
     this.transitions = data.transitions;
     this.navigationEdges = data.edges;
@@ -109,6 +117,7 @@ export class ReinforcementFloor3DebugScene extends Phaser.Scene {
       this.game.events.off('reinforcement-floor3-run-room', this.startRoomProbe, this);
     });
     this.game.events.emit('reinforcement-floor3-debug-ready');
+    if (this.buildingData.buildingMode) this.game.events.emit('reinforcement-building-floor-ready', 3, properties(this.spawn).spawnId, this.buildingData.lastTransition);
   }
 
   update(_time: number, delta: number) {
@@ -136,7 +145,18 @@ export class ReinforcementFloor3DebugScene extends Phaser.Scene {
 
     this.currentEncounter = this.encounters.find(object => contains(object, this.robot.x, this.robot.y)) ?? null;
     this.currentTransition = this.transitions.find(object => contains(object, this.robot.x, this.robot.y)) ?? null;
+    if (this.handleBuildingTransition()) return;
     this.refreshHud();
+  }
+
+  private handleBuildingTransition() {
+    if (!this.buildingData.buildingMode) return false;
+    const destination = this.buildingTransitionGate.consume(this.currentTransition);
+    if (!destination) return false;
+    this.robot.setVelocity(0, 0);
+    this.game.events.emit('reinforcement-building-transition', 3, destination.targetFloor, destination.targetSpawn);
+    this.scene.start(destination.sceneKey, destination.sceneData);
+    return true;
   }
 
   private createTileLayers(map: TiledMapJson, tilesetsBySource: Map<string, ManualTileset>) {

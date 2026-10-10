@@ -2064,7 +2064,7 @@
          "name":"FloorTransitions",
          "objects":[
                 {
-                 "height":64,
+                 "height":32,
                  "id":63,
                  "name":"F2_CENTER_STAIR_TRANSITION",
                  "opacity":1,
@@ -2099,7 +2099,7 @@
                  "visible":true,
                  "width":288,
                  "x":1136,
-                 "y":272
+                 "y":144
                 }],
          "opacity":1,
          "type":"objectgroup",

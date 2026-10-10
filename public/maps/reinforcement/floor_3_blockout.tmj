@@ -1637,7 +1637,7 @@
          "name":"FloorTransitions",
          "objects":[
                 {
-                 "height":96,
+                 "height":32,
                  "id":39,
                  "name":"F3_LEFT_STAIR_TRANSITION",
                  "opacity":1,
@@ -1672,10 +1672,10 @@
                  "visible":true,
                  "width":96,
                  "x":592,
-                 "y":144
+                 "y":176
                 }, 
                 {
-                 "height":96,
+                 "height":32,
                  "id":40,
                  "name":"F3_RIGHT_STAIR_TRANSITION",
                  "opacity":1,
@@ -1710,7 +1710,7 @@
                  "visible":true,
                  "width":96,
                  "x":2128,
-                 "y":144
+                 "y":176
                 }],
          "opacity":1,
          "type":"objectgroup",
