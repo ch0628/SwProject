@@ -4,7 +4,7 @@
  "layers":[
         {
          "compression":"zlib",
-         "data":"eJztmO1xwyAMhhmhI3iBfvxo7aZtWneTjuJRMlpGKVwhR1UEEsJ2XOu902HHIF49Z5KAMaq19GzMuWLMV3snl9ynijFdeyfkuc+9v37ybQ9a+Pnc\/Cr8dHP5Kcnxu7MtJxy\/mnHEvKeKcd0scAhSfjKlODxEz5VfXvr+ySTld4\/kTY0r9d0jP33\/lJ9Uwce7ofl1moufIfa1XqfYz5oK\/0OP0XXwFu5H67cH4zK1VfGL\/Xx4P4ONT+Bn+Hn2x8\/acmvn1rapSK0RuC9wdYW6MUajrTv0heOlftZWK7+5tc3Z+y3NT7r3rvGLzVlao5gHmJvip9WZg3TvXcsvXr\/w+xNGqm8Lfi3OHKS\/\/bX8Gvzuormp\/FrMqfyUn\/JTfspP+W2Fn0nkzO0\/UoFpL\/yk+zdMe+HH8cHNsyQ\/p5socuNDnxq\/lLqX5Gd8bs65D6Z4DWFnUe48aLTraBD4LdW9ND9X09G3LoZoznAGNjLOvA6ZuTEeW+ZX6s+pIZxH5HJh4vbHxF03rfyUaqYwdPyGQq7wHj\/6NtyX+sNzDHgf8mH84HylfFw\/uZoHQ+eXy7PnUH7KT\/ltN5Sf8rt2fp7h7HFoWJfNNVV4mLhBYbeUWr7nnH3Jf5Hyk0n5yaT85Iq\/m1\/t\/Qsx3sDYVcxfmbj8VL+l\/GTaKr9vHvrWqA==",
+         "data":"eJztmAFOwzAMRXMEjrALMBCClgGFchOO0qPsaDsKiZQgE8WJHaftuvpLUdrVcb6fmm2JMaq19GrMpWLMT3snf7nPFWMO7Z2Q5750\/vrF913Ux5\/Pza\/Cz2EuPyU5fkfbc5rjVzOOmPdcMe4wCxyCWvB78rlSsZxnt8LvETzX9y8vXb8ySflhSo0rxe6R3wNjXCl2j\/z2vn4N8PFpaH6d5uJniLHW6wT9rKnwP3QA105HcD9av\/BZeI7UVsUP+vnyfnrbvkFM5z8bEn7Wlls797ZPtdQaifcFrq5QN8ZotHWH2Hi81M\/aauU3t7Y5e7+l+Un33jV+sTlLaxTzEOem+Gl15iDde9fyg+s3XGP8UrEt+LU4c5D+9tfya\/C7i+am8msxp\/JTfspP+Sk\/5bcVfiaRM7f\/SDVMe+En3b9h2gs\/jg9uniX5Od2BlhsfYmr8Uupekp\/xuTnnPpjgGor3UuHenQeNdh31Ar+lupfm52oafO9aD+YMZ2Aj48zrlJkb47FlfqV4Tg3hPCKXCxM3HhN33bTyU6qZwtDx6wu5wnv87PtwX4qPzzHi+5AP4xfPV8rH9ZOruTd0frk8e27KT\/kpv+025af8rp2fZzh7OzWsy+aaKjxM3EZht5RavuecfcmtSPnJpPxkUn5ywe\/md3v\/Rmwf0dhVzF+ZuPxU\/6X8ZNoqv1+9jNWg",
          "encoding":"base64",
          "height":45,
          "id":1,
@@ -22,6 +22,7 @@
          "encoding":"base64",
          "height":45,
          "id":2,
+         "locked":true,
          "name":"FloorDetail",
          "opacity":1,
          "type":"tilelayer",
@@ -36,6 +37,7 @@
          "encoding":"base64",
          "height":45,
          "id":3,
+         "locked":true,
          "name":"Walls",
          "opacity":1,
          "type":"tilelayer",
@@ -50,6 +52,7 @@
          "encoding":"base64",
          "height":45,
          "id":4,
+         "locked":true,
          "name":"WallTop",
          "opacity":1,
          "type":"tilelayer",
@@ -64,6 +67,7 @@
          "encoding":"base64",
          "height":45,
          "id":5,
+         "locked":true,
          "name":"StaticProps",
          "opacity":1,
          "type":"tilelayer",
@@ -75,6 +79,7 @@
         {
          "draworder":"topdown",
          "id":6,
+         "locked":true,
          "name":"Collision",
          "objects":[
                 {
@@ -644,6 +649,402 @@
                  "width":192,
                  "x":1184,
                  "y":448
+                },
+                {
+                 "height":32,
+                 "id":83,
+                 "name":"F5_L1_DOOR_WALL_WEST",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorSide",
+                         "type":"string",
+                         "value":"WEST"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L1"
+                        }],
+                 "rotation":0,
+                 "type":"DoorWall",
+                 "visible":true,
+                 "width":160,
+                 "x":96,
+                 "y":832
+                },
+                {
+                 "height":32,
+                 "id":84,
+                 "name":"F5_L1_DOOR_BARRIER",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorId",
+                         "type":"string",
+                         "value":"F5_L1_DOOR"
+                        },
+                        {
+                         "name":"dynamicDoor",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"guardNodeId",
+                         "type":"string",
+                         "value":"F5_L1_GUARD"
+                        },
+                        {
+                         "name":"requiresState",
+                         "type":"string",
+                         "value":"VILLAIN_NEUTRALIZED"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L1"
+                        }],
+                 "rotation":0,
+                 "type":"DynamicDoor",
+                 "visible":true,
+                 "width":64,
+                 "x":256,
+                 "y":832
+                },
+                {
+                 "height":32,
+                 "id":85,
+                 "name":"F5_L1_DOOR_WALL_EAST",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorSide",
+                         "type":"string",
+                         "value":"EAST"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L1"
+                        }],
+                 "rotation":0,
+                 "type":"DoorWall",
+                 "visible":true,
+                 "width":160,
+                 "x":320,
+                 "y":832
+                },
+                {
+                 "height":32,
+                 "id":86,
+                 "name":"F5_L2_DOOR_WALL_WEST",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorSide",
+                         "type":"string",
+                         "value":"WEST"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L2"
+                        }],
+                 "rotation":0,
+                 "type":"DoorWall",
+                 "visible":true,
+                 "width":160,
+                 "x":512,
+                 "y":352
+                },
+                {
+                 "height":32,
+                 "id":87,
+                 "name":"F5_L2_DOOR_BARRIER",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorId",
+                         "type":"string",
+                         "value":"F5_L2_DOOR"
+                        },
+                        {
+                         "name":"dynamicDoor",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"guardNodeId",
+                         "type":"string",
+                         "value":"F5_L2_GUARD"
+                        },
+                        {
+                         "name":"requiresState",
+                         "type":"string",
+                         "value":"VILLAIN_NEUTRALIZED"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L2"
+                        }],
+                 "rotation":0,
+                 "type":"DynamicDoor",
+                 "visible":true,
+                 "width":64,
+                 "x":672,
+                 "y":352
+                },
+                {
+                 "height":32,
+                 "id":88,
+                 "name":"F5_L2_DOOR_WALL_EAST",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorSide",
+                         "type":"string",
+                         "value":"EAST"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L2"
+                        }],
+                 "rotation":0,
+                 "type":"DoorWall",
+                 "visible":true,
+                 "width":160,
+                 "x":736,
+                 "y":352
+                },
+                {
+                 "height":32,
+                 "id":89,
+                 "name":"F5_R2_DOOR_WALL_WEST",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorSide",
+                         "type":"string",
+                         "value":"WEST"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R2"
+                        }],
+                 "rotation":0,
+                 "type":"DoorWall",
+                 "visible":true,
+                 "width":160,
+                 "x":1664,
+                 "y":352
+                },
+                {
+                 "height":32,
+                 "id":90,
+                 "name":"F5_R2_DOOR_BARRIER",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorId",
+                         "type":"string",
+                         "value":"F5_R2_DOOR"
+                        },
+                        {
+                         "name":"dynamicDoor",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"guardNodeId",
+                         "type":"string",
+                         "value":"F5_R2_GUARD"
+                        },
+                        {
+                         "name":"requiresState",
+                         "type":"string",
+                         "value":"VILLAIN_NEUTRALIZED"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R2"
+                        }],
+                 "rotation":0,
+                 "type":"DynamicDoor",
+                 "visible":true,
+                 "width":64,
+                 "x":1824,
+                 "y":352
+                },
+                {
+                 "height":32,
+                 "id":91,
+                 "name":"F5_R2_DOOR_WALL_EAST",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorSide",
+                         "type":"string",
+                         "value":"EAST"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R2"
+                        }],
+                 "rotation":0,
+                 "type":"DoorWall",
+                 "visible":true,
+                 "width":160,
+                 "x":1888,
+                 "y":352
+                },
+                {
+                 "height":32,
+                 "id":92,
+                 "name":"F5_R1_DOOR_WALL_WEST",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorSide",
+                         "type":"string",
+                         "value":"WEST"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R1"
+                        }],
+                 "rotation":0,
+                 "type":"DoorWall",
+                 "visible":true,
+                 "width":160,
+                 "x":2080,
+                 "y":832
+                },
+                {
+                 "height":32,
+                 "id":93,
+                 "name":"F5_R1_DOOR_BARRIER",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorId",
+                         "type":"string",
+                         "value":"F5_R1_DOOR"
+                        },
+                        {
+                         "name":"dynamicDoor",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"guardNodeId",
+                         "type":"string",
+                         "value":"F5_R1_GUARD"
+                        },
+                        {
+                         "name":"requiresState",
+                         "type":"string",
+                         "value":"VILLAIN_NEUTRALIZED"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R1"
+                        }],
+                 "rotation":0,
+                 "type":"DynamicDoor",
+                 "visible":true,
+                 "width":64,
+                 "x":2240,
+                 "y":832
+                },
+                {
+                 "height":32,
+                 "id":94,
+                 "name":"F5_R1_DOOR_WALL_EAST",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        },
+                        {
+                         "name":"doorSide",
+                         "type":"string",
+                         "value":"EAST"
+                        },
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R1"
+                        }],
+                 "rotation":0,
+                 "type":"DoorWall",
+                 "visible":true,
+                 "width":160,
+                 "x":2304,
+                 "y":832
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -707,7 +1108,7 @@
                  "visible":true,
                  "width":0,
                  "x":704,
-                 "y":976
+                 "y":992
                 }, 
                 {
                  "height":0,
@@ -730,7 +1131,7 @@
                  "type":"ENCOUNTER",
                  "visible":true,
                  "width":0,
-                 "x":304,
+                 "x":288,
                  "y":928
                 }, 
                 {
@@ -759,7 +1160,7 @@
                  "type":"SEARCH_ROOM",
                  "visible":true,
                  "width":0,
-                 "x":304,
+                 "x":288,
                  "y":640
                 }, 
                 {
@@ -837,7 +1238,7 @@
                  "visible":true,
                  "width":0,
                  "x":1856,
-                 "y":976
+                 "y":992
                 }, 
                 {
                  "height":0,
@@ -860,7 +1261,7 @@
                  "type":"ENCOUNTER",
                  "visible":true,
                  "width":0,
-                 "x":2256,
+                 "x":2272,
                  "y":928
                 }, 
                 {
@@ -889,7 +1290,7 @@
                  "type":"SEARCH_ROOM",
                  "visible":true,
                  "width":0,
-                 "x":2256,
+                 "x":2272,
                  "y":640
                 }, 
                 {
@@ -1072,7 +1473,7 @@
                         }, 
                         {
                          "x":-576,
-                         "y":-224
+                         "y":-208
                         }],
                  "properties":[
                         {
@@ -1097,8 +1498,8 @@
                         }, 
                         {
                          "name":"lengthTiles",
-                         "type":"int",
-                         "value":25
+                         "type":"float",
+                         "value":24.5
                         }, 
                         {
                          "name":"to",
@@ -1128,12 +1529,12 @@
                          "y":0
                         }, 
                         {
-                         "x":-400,
+                         "x":-416,
                          "y":0
                         }, 
                         {
-                         "x":-400,
-                         "y":-48
+                         "x":-416,
+                         "y":-64
                         }],
                  "properties":[
                         {
@@ -1159,7 +1560,7 @@
                         {
                          "name":"lengthTiles",
                          "type":"int",
-                         "value":14
+                         "value":15
                         }, 
                         {
                          "name":"to",
@@ -1176,7 +1577,7 @@
                  "visible":true,
                  "width":0,
                  "x":704,
-                 "y":976
+                 "y":992
                 }, 
                 {
                  "height":0,
@@ -1232,7 +1633,7 @@
                  "type":"NavigationEdge",
                  "visible":true,
                  "width":0,
-                 "x":304,
+                 "x":288,
                  "y":928
                 }, 
                 {
@@ -1247,7 +1648,7 @@
                         }, 
                         {
                          "x":0,
-                         "y":-496
+                         "y":-512
                         }],
                  "properties":[
                         {
@@ -1273,7 +1674,7 @@
                         {
                          "name":"lengthTiles",
                          "type":"float",
-                         "value":15.5
+                         "value":16
                         }, 
                         {
                          "name":"to",
@@ -1290,7 +1691,7 @@
                  "visible":true,
                  "width":0,
                  "x":704,
-                 "y":976
+                 "y":992
                 }, 
                 {
                  "height":0,
@@ -1369,7 +1770,7 @@
                         }, 
                         {
                          "x":576,
-                         "y":-224
+                         "y":-208
                         }],
                  "properties":[
                         {
@@ -1394,8 +1795,8 @@
                         }, 
                         {
                          "name":"lengthTiles",
-                         "type":"int",
-                         "value":25
+                         "type":"float",
+                         "value":24.5
                         }, 
                         {
                          "name":"to",
@@ -1425,12 +1826,12 @@
                          "y":0
                         }, 
                         {
-                         "x":400,
+                         "x":416,
                          "y":0
                         }, 
                         {
-                         "x":400,
-                         "y":-48
+                         "x":416,
+                         "y":-64
                         }],
                  "properties":[
                         {
@@ -1456,7 +1857,7 @@
                         {
                          "name":"lengthTiles",
                          "type":"int",
-                         "value":14
+                         "value":15
                         }, 
                         {
                          "name":"to",
@@ -1473,7 +1874,7 @@
                  "visible":true,
                  "width":0,
                  "x":1856,
-                 "y":976
+                 "y":992
                 }, 
                 {
                  "height":0,
@@ -1529,7 +1930,7 @@
                  "type":"NavigationEdge",
                  "visible":true,
                  "width":0,
-                 "x":2256,
+                 "x":2272,
                  "y":928
                 }, 
                 {
@@ -1544,7 +1945,7 @@
                         }, 
                         {
                          "x":0,
-                         "y":-496
+                         "y":-512
                         }],
                  "properties":[
                         {
@@ -1570,7 +1971,7 @@
                         {
                          "name":"lengthTiles",
                          "type":"float",
-                         "value":15.5
+                         "value":16
                         }, 
                         {
                          "name":"to",
@@ -1587,7 +1988,7 @@
                  "visible":true,
                  "width":0,
                  "x":1856,
-                 "y":976
+                 "y":992
                 }, 
                 {
                  "height":0,
@@ -1662,22 +2063,22 @@
                         }, 
                         {
                          "x":0,
-                         "y":336
+                         "y":352
                         }, 
                         {
-                         "x":400,
-                         "y":336
+                         "x":416,
+                         "y":352
                         }, 
                         {
-                         "x":400,
+                         "x":416,
                          "y":400
                         }, 
                         {
-                         "x":976,
+                         "x":992,
                          "y":400
                         }, 
                         {
-                         "x":976,
+                         "x":992,
                          "y":560
                         }],
                  "properties":[
@@ -1703,8 +2104,8 @@
                         }, 
                         {
                          "name":"lengthTiles",
-                         "type":"int",
-                         "value":48
+                         "type":"float",
+                         "value":48.5
                         }, 
                         {
                          "name":"to",
@@ -1720,7 +2121,7 @@
                  "type":"NavigationEdge",
                  "visible":true,
                  "width":0,
-                 "x":304,
+                 "x":288,
                  "y":640
                 }, 
                 {
@@ -1739,7 +2140,7 @@
                         }, 
                         {
                          "x":0,
-                         "y":752
+                         "y":768
                         }, 
                         {
                          "x":0,
@@ -1812,22 +2213,22 @@
                         }, 
                         {
                          "x":0,
-                         "y":336
+                         "y":352
                         }, 
                         {
-                         "x":-400,
-                         "y":336
+                         "x":-416,
+                         "y":352
                         }, 
                         {
-                         "x":-400,
+                         "x":-416,
                          "y":400
                         }, 
                         {
-                         "x":-976,
+                         "x":-992,
                          "y":400
                         }, 
                         {
-                         "x":-976,
+                         "x":-992,
                          "y":560
                         }],
                  "properties":[
@@ -1853,8 +2254,8 @@
                         }, 
                         {
                          "name":"lengthTiles",
-                         "type":"int",
-                         "value":48
+                         "type":"float",
+                         "value":48.5
                         }, 
                         {
                          "name":"to",
@@ -1870,7 +2271,7 @@
                  "type":"NavigationEdge",
                  "visible":true,
                  "width":0,
-                 "x":2256,
+                 "x":2272,
                  "y":640
                 }, 
                 {
@@ -1889,7 +2290,7 @@
                         }, 
                         {
                          "x":0,
-                         "y":752
+                         "y":768
                         }, 
                         {
                          "x":0,
@@ -1962,14 +2363,14 @@
                         }, 
                         {
                          "x":0,
-                         "y":336
+                         "y":352
                         }, 
                         {
-                         "x":976,
-                         "y":336
+                         "x":992,
+                         "y":352
                         }, 
                         {
-                         "x":976,
+                         "x":992,
                          "y":-16
                         }],
                  "properties":[
@@ -1995,8 +2396,8 @@
                         }, 
                         {
                          "name":"lengthTiles",
-                         "type":"int",
-                         "value":52
+                         "type":"float",
+                         "value":53.5
                         }, 
                         {
                          "name":"to",
@@ -2012,7 +2413,7 @@
                  "type":"NavigationEdge",
                  "visible":true,
                  "width":0,
-                 "x":304,
+                 "x":288,
                  "y":640
                 }, 
                 {
@@ -2031,11 +2432,11 @@
                         }, 
                         {
                          "x":0,
-                         "y":752
+                         "y":768
                         }, 
                         {
                          "x":576,
-                         "y":752
+                         "y":768
                         }, 
                         {
                          "x":576,
@@ -2065,7 +2466,7 @@
                         {
                          "name":"lengthTiles",
                          "type":"float",
-                         "value":52.5
+                         "value":53.5
                         }, 
                         {
                          "name":"to",
@@ -2100,14 +2501,14 @@
                         }, 
                         {
                          "x":0,
-                         "y":336
+                         "y":352
                         }, 
                         {
-                         "x":-976,
-                         "y":336
+                         "x":-992,
+                         "y":352
                         }, 
                         {
-                         "x":-976,
+                         "x":-992,
                          "y":-16
                         }],
                  "properties":[
@@ -2133,8 +2534,8 @@
                         }, 
                         {
                          "name":"lengthTiles",
-                         "type":"int",
-                         "value":52
+                         "type":"float",
+                         "value":53.5
                         }, 
                         {
                          "name":"to",
@@ -2150,7 +2551,7 @@
                  "type":"NavigationEdge",
                  "visible":true,
                  "width":0,
-                 "x":2256,
+                 "x":2272,
                  "y":640
                 }, 
                 {
@@ -2169,11 +2570,11 @@
                         }, 
                         {
                          "x":0,
-                         "y":752
+                         "y":768
                         }, 
                         {
                          "x":-576,
-                         "y":752
+                         "y":768
                         }, 
                         {
                          "x":-576,
@@ -2203,7 +2604,7 @@
                         {
                          "name":"lengthTiles",
                          "type":"float",
-                         "value":52.5
+                         "value":53.5
                         }, 
                         {
                          "name":"to",
@@ -2402,6 +2803,7 @@
         {
          "draworder":"topdown",
          "id":9,
+         "locked":true,
          "name":"EncounterZones",
          "objects":[
                 {
@@ -2454,7 +2856,7 @@
                  "type":"GuardEncounter",
                  "visible":true,
                  "width":224,
-                 "x":192,
+                 "x":176,
                  "y":896
                 }, 
                 {
@@ -2560,7 +2962,7 @@
                  "type":"GuardEncounter",
                  "visible":true,
                  "width":224,
-                 "x":2144,
+                 "x":2160,
                  "y":896
                 }, 
                 {
@@ -2625,6 +3027,7 @@
         {
          "draworder":"topdown",
          "id":10,
+         "locked":true,
          "name":"FloorTransitions",
          "objects":[],
          "opacity":1,
@@ -2945,7 +3348,7 @@
          "y":0
         }],
  "nextlayerid":13,
- "nextobjectid":82,
+ "nextobjectid":95,
  "orientation":"orthogonal",
  "properties":[
         {

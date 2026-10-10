@@ -25,7 +25,7 @@
          "value":"filename stem = Class = ASSET_IDS entry"
         }],
  "spacing":0,
- "tilecount":20,
+ "tilecount":22,
  "tiledversion":"1.12.2",
  "tileheight":96,
  "tiles":[
@@ -52,63 +52,63 @@
         }, 
         {
          "id":4,
-         "image":"F5_CHAIR_2.PNG",
+         "image":"F5_CHAIR_2.png",
          "imageheight":96,
          "imagewidth":96,
-         "type":"F2_CHAIR_2"
+         "type":"F5_CHAIR_2"
         }, 
         {
          "id":6,
-         "image":"F5_CORE.PNG",
+         "image":"F5_CORE.png",
          "imageheight":64,
          "imagewidth":64,
          "type":"F5_CORE"
         }, 
         {
          "id":7,
-         "image":"F5_CORE_2.PNG",
+         "image":"F5_CORE_2.png",
          "imageheight":64,
          "imagewidth":64,
          "type":"F5_CORE_2"
         }, 
         {
          "id":8,
-         "image":"F5_WALL_BASE.PNG",
+         "image":"F5_WALL_BASE.png",
          "imageheight":64,
          "imagewidth":64,
          "type":"F5_WALL_BASE"
         }, 
         {
          "id":9,
-         "image":"F5_WALL_BASE_2.PNG",
+         "image":"F5_WALL_BASE_2.png",
          "imageheight":64,
          "imagewidth":64,
          "type":"F5_WALL_BASE_2"
         }, 
         {
          "id":10,
-         "image":"F5_WALL_BASE_3.PNG",
+         "image":"F5_WALL_BASE_3.png",
          "imageheight":64,
          "imagewidth":64,
          "type":"F5_WALL_BASE_3"
         }, 
         {
          "id":11,
-         "image":"F5_WALL_BASE_HALF.PNG",
+         "image":"F5_WALL_BASE_HALF.png",
          "imageheight":64,
          "imagewidth":32,
          "type":"F5_WALL_BASE_HALF"
         }, 
         {
          "id":12,
-         "image":"F5_WALL_TOP.PNG",
+         "image":"F5_WALL_TOP.png",
          "imageheight":32,
          "imagewidth":32,
          "type":"F5_WALL_TOP"
         }, 
         {
          "id":13,
-         "image":"F5_WALL_TOP_CORNER.PNG",
+         "image":"F5_WALL_CORNER.png",
          "imageheight":32,
          "imagewidth":32,
          "type":"F5_WALL_CORNER"
@@ -131,42 +131,57 @@
          "id":16,
          "image":"F5_STAIR_RIGHT.png",
          "imageheight":32,
-         "imagewidth":32
+         "imagewidth":32,
+         "type":"F5_STAIR_RIGHT"
         }, 
         {
          "id":17,
-         "image":"F5_WALL_TOP_2.PNG",
+         "image":"F5_WALL_TOP_2.png",
          "imageheight":32,
          "imagewidth":32,
          "type":"F5_WALL_TOP_2"
         }, 
         {
          "id":18,
-         "image":"F5_WALL_TOP_3.PNG",
+         "image":"F5_WALL_TOP_3.png",
          "imageheight":32,
          "imagewidth":32,
          "type":"F5_WALL_TOP_3"
         }, 
         {
          "id":19,
-         "image":"F5_WALL_BASE_4.PNG",
+         "image":"F5_WALL_BASE_4.png",
          "imageheight":64,
          "imagewidth":64,
          "type":"F5_WALL_BASE_4"
         }, 
         {
          "id":20,
-         "image":"F5_WALL_BASE_5.PNG",
+         "image":"F5_WALL_BASE_5.png",
          "imageheight":64,
          "imagewidth":64,
          "type":"F5_WALL_BASE_5"
         }, 
         {
          "id":21,
-         "image":"F5_WALL_BASE_6.PNG",
+         "image":"F5_WALL_BASE_6.png",
          "imageheight":64,
          "imagewidth":32,
          "type":"F5_WALL_BASE_6"
+        }, 
+        {
+         "id":22,
+         "image":"F5_DOOR_CLOSE.png",
+         "imageheight":64,
+         "imagewidth":64,
+         "type":"F5_DOOR_CLOSE"
+        }, 
+        {
+         "id":23,
+         "image":"F5_DOOR_OPEN.png",
+         "imageheight":64,
+         "imagewidth":64,
+         "type":"F5_DOOR_OPEN"
         }],
  "tilewidth":192,
  "transformations":

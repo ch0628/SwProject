@@ -14,11 +14,12 @@ const BLOCKOUT_ASSET_ROOT = '/assets/environment/reinforcement/floor1_room_shell
 const ASSET_ROOT = '/assets/environment/reinforcement/floor5_room_shell_manual';
 const BLOCKOUT_ASSET_IDS = ['F1_FLOOR_PUBLIC', 'F1_BACKGROUND', 'F1_STAIR_CENTER'] as const;
 const ASSET_IDS = [
-  'F5_HALL_FLOOR', 'F5_ROOM_FLOOR', 'F5_CONTROL', 'F2_CHAIR_2',
+  'F5_HALL_FLOOR', 'F5_ROOM_FLOOR', 'F5_CONTROL', 'F5_CHAIR_2',
   'F5_CORE', 'F5_CORE_2', 'F5_WALL_BASE', 'F5_WALL_BASE_2', 'F5_WALL_BASE_3',
   'F5_WALL_BASE_HALF', 'F5_WALL_TOP', 'F5_WALL_CORNER', 'F5_STAIR_CENTER',
   'F5_STAIR_LEFT', 'F5_STAIR_RIGHT','F5_WALL_TOP_2','F5_WALL_TOP_3',
-  'F5_WALL_BASE_4', 'F5_WALL_BASE_5','F5_WALL_BASE_6'
+  'F5_WALL_BASE_4', 'F5_WALL_BASE_5','F5_WALL_BASE_6',
+  'F5_DOOR_CLOSE', 'F5_DOOR_OPEN',
 ] as const;
 const SPEED = 180;
 const PROBE_SPEED = 1800;
@@ -40,6 +41,9 @@ export class ReinforcementFloor5DebugScene extends Phaser.Scene {
   private navigationEdges: TiledObject[] = [];
   private currentEncounter: TiledObject | null = null;
   private securityLockCollider!: Phaser.Physics.Arcade.Image;
+  private doorColliders = {} as Record<Floor5RoomId, Phaser.Physics.Arcade.Image>;
+  private doorVisuals = {} as Record<Floor5RoomId, Phaser.GameObjects.Rectangle>;
+  private guardNodes = {} as Record<Floor5RoomId, TiledObject>;
   private bossNeutralized = false;
   private systemRestored = false;
   private lastRoom: Floor5RoomId = 'L1';
@@ -80,8 +84,9 @@ export class ReinforcementFloor5DebugScene extends Phaser.Scene {
     this.spawn = data.spawn;
     this.encounters = data.encounters;
     this.navigationEdges = data.edges;
+    this.guardNodes = Object.fromEntries((['L1', 'L2', 'R1', 'R2'] as const).map(room => [room, data.nodes.find(node => properties(node).nodeId === `F5_${room}_GUARD`)!])) as Record<Floor5RoomId, TiledObject>;
     this.createRobot();
-    this.createCollision(data.collision, data.securityLock);
+    this.createCollision(data.collision, data.securityLock, data.doors);
     this.navigationOverlay = this.createNavigationOverlay(data.nodes, data.edges).setVisible(false);
     this.encounterOverlay = this.createRectangleOverlay(data.encounters, 0xffa726, object => `${object.name}\nVILLAIN ×${properties(object).villainCount}`).setVisible(false);
 
@@ -169,22 +174,28 @@ export class ReinforcementFloor5DebugScene extends Phaser.Scene {
     this.robot.body!.setSize(24, 24);
   }
 
-  private createCollision(objects: TiledObject[], securityLock: TiledObject) {
+  private createCollision(objects: TiledObject[], securityLock: TiledObject, doors: Record<Floor5RoomId, TiledObject>) {
     const texture = this.make.graphics({ x: 0, y: 0 }, false);
     texture.fillStyle(0xffffff).fillRect(0, 0, 1, 1).generateTexture('reinforcement-floor5-debug-collider', 1, 1).destroy();
     const permanent = this.physics.add.staticGroup();
-    const lock = this.physics.add.staticGroup();
+    const dynamic = this.physics.add.staticGroup();
     const graphics = this.add.graphics().setDepth(10).lineStyle(1, 0xff5252, 0.85).fillStyle(0xff1744, 0.08);
     for (const object of objects) {
       const bounds = axisAlignedBounds(object);
-      const group = object === securityLock ? lock : permanent;
+      const room = (['L1', 'L2', 'R1', 'R2'] as const).find(candidate => doors[candidate] === object);
+      const group = object === securityLock || room ? dynamic : permanent;
       const collider = group.create(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2, 'reinforcement-floor5-debug-collider') as Phaser.Physics.Arcade.Image;
       collider.setDisplaySize(bounds.width, bounds.height).refreshBody().setVisible(false);
       if (object === securityLock) this.securityLockCollider = collider;
+      if (room) {
+        this.doorColliders[room] = collider;
+        this.doorVisuals[room] = this.add.rectangle(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2, bounds.width, bounds.height, 0x263640)
+          .setStrokeStyle(2, 0x59d7ff).setDepth(7);
+      }
       graphics.fillRect(bounds.x, bounds.y, bounds.width, bounds.height).strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
     this.physics.add.collider(this.robot, permanent);
-    this.physics.add.collider(this.robot, lock);
+    this.physics.add.collider(this.robot, dynamic);
     this.collisionOverlay = this.add.container(0, 0, [graphics]).setDepth(10).setVisible(false);
   }
 
@@ -213,8 +224,10 @@ export class ReinforcementFloor5DebugScene extends Phaser.Scene {
 
   private startProbe(room: Floor5RoomId, kind: Floor5ProbeKind) {
     this.lastRoom = room;
+    this.closeAllDoors();
     if (kind === 'POST_BOSS') this.setBossNeutralized(true);
     else this.setBossNeutralized(false);
+    if (kind !== 'SEARCH') this.setDoorOpen(room, true);
     const points = floor5ProbePoints(this.navigationEdges, room, kind);
     this.probePoints = points.map(point => new Phaser.Math.Vector2(point.x, point.y));
     this.probeIndex = 1;
@@ -230,8 +243,18 @@ export class ReinforcementFloor5DebugScene extends Phaser.Scene {
     this.securityLockCollider.body!.enable = !value;
   }
 
+  private setDoorOpen(room: Floor5RoomId, open: boolean) {
+    this.doorColliders[room].body!.enable = !open;
+    this.doorVisuals[room].setVisible(!open);
+  }
+
+  private closeAllDoors() {
+    for (const room of ['L1', 'L2', 'R1', 'R2'] as const) this.setDoorOpen(room, false);
+  }
+
   private resetToHub() {
     this.setBossNeutralized(false);
+    this.closeAllDoors();
     this.robot.setPosition(this.spawn.x, this.spawn.y).setVelocity(0, 0);
     this.currentEncounter = null;
     this.probePoints = [];
@@ -258,6 +281,8 @@ export class ReinforcementFloor5DebugScene extends Phaser.Scene {
     const direction = target.clone().subtract(this.robot);
     if (direction.length() <= PROBE_SPEED * delta / 1000 + 2) {
       this.robot.setPosition(target.x, target.y);
+      const guard = this.guardNodes[this.lastRoom];
+      if (this.probeName === `SEARCH:${this.lastRoom}` && target.x === guard.x && target.y === guard.y) this.setDoorOpen(this.lastRoom, true);
       this.probeIndex += 1;
       return;
     }
