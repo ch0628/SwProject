@@ -5532,7 +5532,7 @@
          "name":"FloorTransitions",
          "objects":[
                 {
-                 "height":64,
+                 "height":32,
                  "id":175,
                  "name":"F1_LEFT_STAIR_TRANSITION",
                  "opacity":1,
@@ -5570,7 +5570,7 @@
                  "y":64
                 }, 
                 {
-                 "height":64,
+                 "height":32,
                  "id":176,
                  "name":"F1_RIGHT_STAIR_TRANSITION",
                  "opacity":1,

@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser';
+import { resolveBuildingSpawn, type BuildingSceneData } from './buildingTransitions';
 import { axisAlignedBounds, contains, decompressTileLayers, properties, TILE_LAYERS, type TiledMapJson, type TiledObject } from './floor1Tiled';
 import { floor5ProbePoints, floor5TileDepth, missingFloor5PngMessage, missingFloor5TextureMessage, validateFloor5Map, type Floor5ProbeKind, type Floor5RoomId } from './floor5Tiled';
 
@@ -51,8 +52,11 @@ export class ReinforcementFloor5DebugScene extends Phaser.Scene {
   private probeIndex = 0;
   private probeName = 'NONE';
   private probeTarget = 'F5_SEARCH_HUB';
+  private buildingData: BuildingSceneData = {};
 
   constructor() { super('ReinforcementFloor5DebugScene'); }
+
+  init(data: BuildingSceneData = {}) { this.buildingData = data; }
 
   preload() {
     this.load.json(MAP_JSON, MAP_URL);
@@ -81,7 +85,7 @@ export class ReinforcementFloor5DebugScene extends Phaser.Scene {
     this.add.rectangle(worldWidth / 2, worldHeight / 2, worldWidth, worldHeight, 0x171c21).setDepth(-3);
     this.createTileLayers(map, new Map([[BLOCKOUT_TILESET_SOURCE, blockoutTileset], [FLOOR5_TILESET_SOURCE, floor5Tileset]]));
 
-    this.spawn = data.spawn;
+    this.spawn = resolveBuildingSpawn([data.spawn], this.buildingData, 5, data.spawn);
     this.encounters = data.encounters;
     this.navigationEdges = data.edges;
     this.guardNodes = Object.fromEntries((['L1', 'L2', 'R1', 'R2'] as const).map(room => [room, data.nodes.find(node => properties(node).nodeId === `F5_${room}_GUARD`)!])) as Record<Floor5RoomId, TiledObject>;
@@ -109,6 +113,7 @@ export class ReinforcementFloor5DebugScene extends Phaser.Scene {
       this.game.events.off('reinforcement-floor5-reset', this.resetToHub, this);
     });
     this.game.events.emit('reinforcement-floor5-debug-ready');
+    if (this.buildingData.buildingMode) this.game.events.emit('reinforcement-building-floor-ready', 5, properties(this.spawn).spawnId, this.buildingData.lastTransition);
   }
 
   update(_time: number, delta: number) {
