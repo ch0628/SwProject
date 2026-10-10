@@ -1,0 +1,1406 @@
+{
+  "version": "v1",
+  "status": "BLOCKOUT_REVIEW",
+  "coordinateSystem": {
+    "viewBox": "0 0 1600 900",
+    "unit": "blockout-pixel"
+  },
+  "designLevels": [
+    "LOW",
+    "MEDIUM",
+    "HIGH"
+  ],
+  "missionRules": {
+    "allGeneralVillainsRequired": false,
+    "bossNeutralizationRequired": true,
+    "villainEncounterState": "VILLAIN_ENCOUNTER",
+    "bossEncounterState": "BOSS_ENCOUNTER",
+    "goalState": "GOAL_REACHED"
+  },
+  "floors": [
+    {
+      "floor": 1,
+      "name": "Entrance / Evacuation",
+      "nodes": [
+        {
+          "id": "F1_START",
+          "floor": 1,
+          "type": "DECISION",
+          "label": "Central Entrance / START",
+          "x": 800,
+          "y": 740,
+          "routeContextId": "F1_ENTRY_SPLIT"
+        },
+        {
+          "id": "F1_LEFT_EVAC_ZONE",
+          "floor": 1,
+          "type": "ZONE",
+          "label": "Left Evacuation Zone",
+          "x": 460,
+          "y": 460
+        },
+        {
+          "id": "F1_LEFT_STAIR",
+          "floor": 1,
+          "type": "STAIR_UP",
+          "label": "Left Stair to 2F",
+          "x": 220,
+          "y": 190
+        },
+        {
+          "id": "F1_RIGHT_SERVICE_ZONE",
+          "floor": 1,
+          "type": "ZONE",
+          "label": "Right Service / Obstacle Zone",
+          "x": 1140,
+          "y": 500
+        },
+        {
+          "id": "F1_RIGHT_STAIR",
+          "floor": 1,
+          "type": "STAIR_UP",
+          "label": "Right Stair to 2F",
+          "x": 1380,
+          "y": 190
+        }
+      ],
+      "edges": [
+        {
+          "id": "E_F1_START_LEFT",
+          "from": "F1_START",
+          "to": "F1_LEFT_EVAC_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F1_LEFT_EVAC_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "HIGH",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": [
+            "CITIZEN_NEARBY"
+          ]
+        },
+        {
+          "id": "E_F1_LEFT_STAIR",
+          "from": "F1_LEFT_EVAC_ZONE",
+          "to": "F1_LEFT_STAIR",
+          "bidirectional": true,
+          "visualRouteId": "F1_LEFT_EVAC_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "HIGH",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": [
+            "CITIZEN_NEARBY"
+          ]
+        },
+        {
+          "id": "E_F1_START_RIGHT",
+          "from": "F1_START",
+          "to": "F1_RIGHT_SERVICE_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F1_RIGHT_SERVICE_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "HIGH",
+            "facilityRisk": "HIGH",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "OBSTACLE"
+          ]
+        },
+        {
+          "id": "E_F1_RIGHT_STAIR",
+          "from": "F1_RIGHT_SERVICE_ZONE",
+          "to": "F1_RIGHT_STAIR",
+          "bidirectional": true,
+          "visualRouteId": "F1_RIGHT_SERVICE_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "HIGH",
+            "facilityRisk": "HIGH",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "OBSTACLE"
+          ]
+        }
+      ]
+    },
+    {
+      "floor": 2,
+      "name": "Convergence / First Villain Floor",
+      "nodes": [
+        {
+          "id": "F2_LEFT_ARRIVAL",
+          "floor": 2,
+          "type": "DECISION",
+          "label": "Left Arrival",
+          "x": 220,
+          "y": 710,
+          "routeContextId": "F2_LEFT_APPROACH"
+        },
+        {
+          "id": "F2_LEFT_DIRECT_ZONE",
+          "floor": 2,
+          "type": "ZONE",
+          "label": "Direct Office",
+          "x": 470,
+          "y": 520
+        },
+        {
+          "id": "F2_LEFT_OUTER_ZONE",
+          "floor": 2,
+          "type": "ZONE",
+          "label": "Outer Corridor",
+          "x": 420,
+          "y": 250
+        },
+        {
+          "id": "F2_RIGHT_ARRIVAL",
+          "floor": 2,
+          "type": "DECISION",
+          "label": "Right Arrival",
+          "x": 1380,
+          "y": 710,
+          "routeContextId": "F2_RIGHT_APPROACH"
+        },
+        {
+          "id": "F2_RIGHT_INNER_ZONE",
+          "floor": 2,
+          "type": "ZONE",
+          "label": "Inner Hall",
+          "x": 1130,
+          "y": 520
+        },
+        {
+          "id": "F2_RIGHT_SERVICE_ZONE",
+          "floor": 2,
+          "type": "ZONE",
+          "label": "Service Detour",
+          "x": 1180,
+          "y": 250
+        },
+        {
+          "id": "F2_CENTER_GUARD",
+          "floor": 2,
+          "type": "ENCOUNTER",
+          "label": "Center Stair Guard",
+          "x": 800,
+          "y": 360,
+          "encounter": {
+            "state": "VILLAIN_ENCOUNTER",
+            "villainCount": 2,
+            "bypassAvailable": false
+          }
+        },
+        {
+          "id": "F2_CENTER_STAIR",
+          "floor": 2,
+          "type": "STAIR_UP",
+          "label": "Center Stair to 3F",
+          "x": 800,
+          "y": 150
+        }
+      ],
+      "edges": [
+        {
+          "id": "E_F2_LEFT_DIRECT_A",
+          "from": "F2_LEFT_ARRIVAL",
+          "to": "F2_LEFT_DIRECT_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F2_DIRECT_OFFICE_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "MEDIUM",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "CITIZEN_NEARBY",
+            "AMBIGUOUS_PERSON"
+          ]
+        },
+        {
+          "id": "E_F2_LEFT_DIRECT_B",
+          "from": "F2_LEFT_DIRECT_ZONE",
+          "to": "F2_CENTER_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F2_DIRECT_OFFICE_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "MEDIUM",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "AMBIGUOUS_PERSON"
+          ]
+        },
+        {
+          "id": "E_F2_LEFT_OUTER_A",
+          "from": "F2_LEFT_ARRIVAL",
+          "to": "F2_LEFT_OUTER_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F2_OUTER_CORRIDOR_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F2_LEFT_OUTER_B",
+          "from": "F2_LEFT_OUTER_ZONE",
+          "to": "F2_CENTER_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F2_OUTER_CORRIDOR_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F2_RIGHT_INNER_A",
+          "from": "F2_RIGHT_ARRIVAL",
+          "to": "F2_RIGHT_INNER_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F2_INNER_HALL_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "MEDIUM",
+            "narrowness": "HIGH"
+          },
+          "encounterCandidates": [
+            "AMBIGUOUS_PERSON"
+          ]
+        },
+        {
+          "id": "E_F2_RIGHT_INNER_B",
+          "from": "F2_RIGHT_INNER_ZONE",
+          "to": "F2_CENTER_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F2_INNER_HALL_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "MEDIUM",
+            "narrowness": "HIGH"
+          },
+          "encounterCandidates": [
+            "AMBIGUOUS_PERSON"
+          ]
+        },
+        {
+          "id": "E_F2_RIGHT_SERVICE_A",
+          "from": "F2_RIGHT_ARRIVAL",
+          "to": "F2_RIGHT_SERVICE_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F2_SERVICE_DETOUR_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "MEDIUM",
+            "facilityRisk": "MEDIUM",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "OBSTACLE"
+          ]
+        },
+        {
+          "id": "E_F2_RIGHT_SERVICE_B",
+          "from": "F2_RIGHT_SERVICE_ZONE",
+          "to": "F2_CENTER_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F2_SERVICE_DETOUR_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "MEDIUM",
+            "facilityRisk": "MEDIUM",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "OBSTACLE"
+          ]
+        },
+        {
+          "id": "E_F2_GUARD_STAIR",
+          "from": "F2_CENTER_GUARD",
+          "to": "F2_CENTER_STAIR",
+          "bidirectional": true,
+          "visualRouteId": "F2_CENTER_STAIR_PASS",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "VILLAIN_ENCOUNTER"
+          ]
+        }
+      ]
+    },
+    {
+      "floor": 3,
+      "name": "Facility / Split Floor",
+      "nodes": [
+        {
+          "id": "F3_CENTER_ARRIVAL",
+          "floor": 3,
+          "type": "DECISION",
+          "label": "Center Arrival",
+          "x": 800,
+          "y": 720,
+          "routeContextId": "F3_STAIR_SPLIT"
+        },
+        {
+          "id": "F3_LEFT_MAINT_ZONE",
+          "floor": 3,
+          "type": "ZONE",
+          "label": "Maintenance Route",
+          "x": 450,
+          "y": 470
+        },
+        {
+          "id": "F3_LEFT_GUARD",
+          "floor": 3,
+          "type": "ENCOUNTER",
+          "label": "Left Stair Guard",
+          "x": 260,
+          "y": 300,
+          "encounter": {
+            "state": "VILLAIN_ENCOUNTER",
+            "villainCount": 2,
+            "bypassAvailable": false
+          }
+        },
+        {
+          "id": "F3_LEFT_STAIR",
+          "floor": 3,
+          "type": "STAIR_UP",
+          "label": "Left Stair to 4F",
+          "x": 180,
+          "y": 150
+        },
+        {
+          "id": "F3_RIGHT_PERIMETER_ZONE",
+          "floor": 3,
+          "type": "ZONE",
+          "label": "Perimeter Route",
+          "x": 1150,
+          "y": 430
+        },
+        {
+          "id": "F3_RIGHT_GUARD",
+          "floor": 3,
+          "type": "ENCOUNTER",
+          "label": "Right Stair Guard",
+          "x": 1340,
+          "y": 300,
+          "encounter": {
+            "state": "VILLAIN_ENCOUNTER",
+            "villainCount": 2,
+            "bypassAvailable": false
+          }
+        },
+        {
+          "id": "F3_RIGHT_STAIR",
+          "floor": 3,
+          "type": "STAIR_UP",
+          "label": "Right Stair to 4F",
+          "x": 1420,
+          "y": 150
+        }
+      ],
+      "edges": [
+        {
+          "id": "E_F3_LEFT_A",
+          "from": "F3_CENTER_ARRIVAL",
+          "to": "F3_LEFT_MAINT_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F3_LEFT_MAINTENANCE_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "HIGH",
+            "facilityRisk": "HIGH",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "OBSTACLE"
+          ]
+        },
+        {
+          "id": "E_F3_LEFT_B",
+          "from": "F3_LEFT_MAINT_ZONE",
+          "to": "F3_LEFT_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F3_LEFT_MAINTENANCE_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "HIGH",
+            "facilityRisk": "HIGH",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "OBSTACLE"
+          ]
+        },
+        {
+          "id": "E_F3_LEFT_C",
+          "from": "F3_LEFT_GUARD",
+          "to": "F3_LEFT_STAIR",
+          "bidirectional": true,
+          "visualRouteId": "F3_LEFT_MAINTENANCE_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "HIGH",
+            "facilityRisk": "HIGH",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "VILLAIN_ENCOUNTER"
+          ]
+        },
+        {
+          "id": "E_F3_RIGHT_A",
+          "from": "F3_CENTER_ARRIVAL",
+          "to": "F3_RIGHT_PERIMETER_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F3_RIGHT_PERIMETER_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F3_RIGHT_B",
+          "from": "F3_RIGHT_PERIMETER_ZONE",
+          "to": "F3_RIGHT_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F3_RIGHT_PERIMETER_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F3_RIGHT_C",
+          "from": "F3_RIGHT_GUARD",
+          "to": "F3_RIGHT_STAIR",
+          "bidirectional": true,
+          "visualRouteId": "F3_RIGHT_PERIMETER_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": [
+            "VILLAIN_ENCOUNTER"
+          ]
+        }
+      ]
+    },
+    {
+      "floor": 4,
+      "name": "Security / Convergence",
+      "nodes": [
+        {
+          "id": "F4_LEFT_ARRIVAL",
+          "floor": 4,
+          "type": "DECISION",
+          "label": "Left Arrival",
+          "x": 220,
+          "y": 710,
+          "routeContextId": "F4_LEFT_APPROACH"
+        },
+        {
+          "id": "F4_LEFT_SECURITY_ZONE",
+          "floor": 4,
+          "type": "ZONE",
+          "label": "Security Hall",
+          "x": 470,
+          "y": 520
+        },
+        {
+          "id": "F4_LEFT_PERIMETER_ZONE",
+          "floor": 4,
+          "type": "ZONE",
+          "label": "Perimeter Detour",
+          "x": 420,
+          "y": 250
+        },
+        {
+          "id": "F4_RIGHT_ARRIVAL",
+          "floor": 4,
+          "type": "DECISION",
+          "label": "Right Arrival",
+          "x": 1380,
+          "y": 710,
+          "routeContextId": "F4_RIGHT_APPROACH"
+        },
+        {
+          "id": "F4_RIGHT_INNER_ZONE",
+          "floor": 4,
+          "type": "ZONE",
+          "label": "Inner Security",
+          "x": 1130,
+          "y": 520
+        },
+        {
+          "id": "F4_RIGHT_SERVICE_ZONE",
+          "floor": 4,
+          "type": "ZONE",
+          "label": "Service Route",
+          "x": 1180,
+          "y": 250
+        },
+        {
+          "id": "F4_CENTER_GUARD",
+          "floor": 4,
+          "type": "ENCOUNTER",
+          "label": "Center Stair Guard",
+          "x": 800,
+          "y": 360,
+          "encounter": {
+            "state": "VILLAIN_ENCOUNTER",
+            "villainCount": 2,
+            "bypassAvailable": false
+          }
+        },
+        {
+          "id": "F4_CENTER_STAIR",
+          "floor": 4,
+          "type": "STAIR_UP",
+          "label": "Center Stair to 5F",
+          "x": 800,
+          "y": 150
+        }
+      ],
+      "edges": [
+        {
+          "id": "E_F4_LEFT_SECURITY_A",
+          "from": "F4_LEFT_ARRIVAL",
+          "to": "F4_LEFT_SECURITY_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F4_SECURITY_HALL_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "HIGH",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "AMBIGUOUS_PERSON"
+          ]
+        },
+        {
+          "id": "E_F4_LEFT_SECURITY_B",
+          "from": "F4_LEFT_SECURITY_ZONE",
+          "to": "F4_CENTER_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F4_SECURITY_HALL_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "HIGH",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "AMBIGUOUS_PERSON"
+          ]
+        },
+        {
+          "id": "E_F4_LEFT_PERIMETER_A",
+          "from": "F4_LEFT_ARRIVAL",
+          "to": "F4_LEFT_PERIMETER_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F4_PERIMETER_DETOUR_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F4_LEFT_PERIMETER_B",
+          "from": "F4_LEFT_PERIMETER_ZONE",
+          "to": "F4_CENTER_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F4_PERIMETER_DETOUR_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F4_RIGHT_INNER_A",
+          "from": "F4_RIGHT_ARRIVAL",
+          "to": "F4_RIGHT_INNER_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F4_INNER_SECURITY_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "MEDIUM",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "AMBIGUOUS_PERSON"
+          ]
+        },
+        {
+          "id": "E_F4_RIGHT_INNER_B",
+          "from": "F4_RIGHT_INNER_ZONE",
+          "to": "F4_CENTER_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F4_INNER_SECURITY_ROUTE",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "MEDIUM",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "AMBIGUOUS_PERSON"
+          ]
+        },
+        {
+          "id": "E_F4_RIGHT_SERVICE_A",
+          "from": "F4_RIGHT_ARRIVAL",
+          "to": "F4_RIGHT_SERVICE_ZONE",
+          "bidirectional": true,
+          "visualRouteId": "F4_SERVICE_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "MEDIUM",
+            "facilityRisk": "MEDIUM",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "OBSTACLE"
+          ]
+        },
+        {
+          "id": "E_F4_RIGHT_SERVICE_B",
+          "from": "F4_RIGHT_SERVICE_ZONE",
+          "to": "F4_CENTER_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F4_SERVICE_ROUTE",
+          "traits": {
+            "distance": "HIGH",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "MEDIUM",
+            "facilityRisk": "MEDIUM",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "OBSTACLE"
+          ]
+        },
+        {
+          "id": "E_F4_GUARD_STAIR",
+          "from": "F4_CENTER_GUARD",
+          "to": "F4_CENTER_STAIR",
+          "bidirectional": true,
+          "visualRouteId": "F4_CENTER_STAIR_PASS",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "VILLAIN_ENCOUNTER"
+          ]
+        }
+      ]
+    },
+    {
+      "floor": 5,
+      "name": "Boss Search / Final Control",
+      "nodes": [
+        {
+          "id": "F5_SEARCH_HUB",
+          "floor": 5,
+          "type": "DECISION",
+          "label": "Central Search Hub / 4F Arrival",
+          "x": 800,
+          "y": 752,
+          "routeContextId": "F5_ROOM_SEARCH[{CANONICAL_REMAINING_ROOMS}]"
+        },
+        {
+          "id": "F5_LEFT_WING",
+          "floor": 5,
+          "type": "ZONE",
+          "label": "Left Search Spine",
+          "x": 445,
+          "y": 610
+        },
+        {
+          "id": "F5_L1_GUARD",
+          "floor": 5,
+          "type": "ENCOUNTER",
+          "label": "L1 Guard",
+          "x": 188,
+          "y": 576,
+          "encounter": {
+            "state": "VILLAIN_ENCOUNTER",
+            "villainCount": 1,
+            "bypassAvailable": false
+          }
+        },
+        {
+          "id": "F5_ROOM_L1",
+          "floor": 5,
+          "type": "SEARCH_ROOM",
+          "label": "Search Room L1",
+          "x": 188,
+          "y": 396
+        },
+        {
+          "id": "F5_L2_GUARD",
+          "floor": 5,
+          "type": "ENCOUNTER",
+          "label": "L2 Guard",
+          "x": 445,
+          "y": 300,
+          "encounter": {
+            "state": "VILLAIN_ENCOUNTER",
+            "villainCount": 1,
+            "bypassAvailable": false
+          }
+        },
+        {
+          "id": "F5_ROOM_L2",
+          "floor": 5,
+          "type": "SEARCH_ROOM",
+          "label": "Search Room L2",
+          "x": 445,
+          "y": 136
+        },
+        {
+          "id": "F5_RIGHT_WING",
+          "floor": 5,
+          "type": "ZONE",
+          "label": "Right Search Spine",
+          "x": 1155,
+          "y": 610
+        },
+        {
+          "id": "F5_R1_GUARD",
+          "floor": 5,
+          "type": "ENCOUNTER",
+          "label": "R1 Guard",
+          "x": 1412,
+          "y": 576,
+          "encounter": {
+            "state": "VILLAIN_ENCOUNTER",
+            "villainCount": 1,
+            "bypassAvailable": false
+          }
+        },
+        {
+          "id": "F5_ROOM_R1",
+          "floor": 5,
+          "type": "SEARCH_ROOM",
+          "label": "Search Room R1",
+          "x": 1412,
+          "y": 396
+        },
+        {
+          "id": "F5_R2_GUARD",
+          "floor": 5,
+          "type": "ENCOUNTER",
+          "label": "R2 Guard",
+          "x": 1155,
+          "y": 300,
+          "encounter": {
+            "state": "VILLAIN_ENCOUNTER",
+            "villainCount": 1,
+            "bypassAvailable": false
+          }
+        },
+        {
+          "id": "F5_ROOM_R2",
+          "floor": 5,
+          "type": "SEARCH_ROOM",
+          "label": "Search Room R2",
+          "x": 1155,
+          "y": 136
+        },
+        {
+          "id": "F5_CENTRAL_HALL",
+          "floor": 5,
+          "type": "ZONE",
+          "label": "Central Hall",
+          "x": 800,
+          "y": 390
+        },
+        {
+          "id": "F5_SECURITY_LOCK",
+          "floor": 5,
+          "type": "LOCK",
+          "label": "Security Lock",
+          "x": 800,
+          "y": 290
+        },
+        {
+          "id": "F5_CONTROL_ROOM",
+          "floor": 5,
+          "type": "CONTROL_ROOM",
+          "label": "Control Room",
+          "x": 800,
+          "y": 210
+        },
+        {
+          "id": "F5_GOAL",
+          "floor": 5,
+          "type": "GOAL",
+          "label": "System Restored / GOAL_REACHED",
+          "x": 800,
+          "y": 140
+        }
+      ],
+      "edges": [
+        {
+          "id": "E_F5_HUB_LEFT",
+          "from": "F5_SEARCH_HUB",
+          "to": "F5_LEFT_WING",
+          "bidirectional": true,
+          "visualRouteId": "F5_LEFT_WING_ROUTE",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_LEFT_L1_GUARD",
+          "from": "F5_LEFT_WING",
+          "to": "F5_L1_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F5_L1_APPROACH",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "VILLAIN_ENCOUNTER"
+          ]
+        },
+        {
+          "id": "E_F5_L1_ROOM",
+          "from": "F5_L1_GUARD",
+          "to": "F5_ROOM_L1",
+          "bidirectional": true,
+          "visualRouteId": "F5_L1_APPROACH",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "BOSS_ENCOUNTER"
+          ]
+        },
+        {
+          "id": "E_F5_LEFT_L2_GUARD",
+          "from": "F5_LEFT_WING",
+          "to": "F5_L2_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F5_L2_APPROACH",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "VILLAIN_ENCOUNTER"
+          ]
+        },
+        {
+          "id": "E_F5_L2_ROOM",
+          "from": "F5_L2_GUARD",
+          "to": "F5_ROOM_L2",
+          "bidirectional": true,
+          "visualRouteId": "F5_L2_APPROACH",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "BOSS_ENCOUNTER"
+          ]
+        },
+        {
+          "id": "E_F5_HUB_RIGHT",
+          "from": "F5_SEARCH_HUB",
+          "to": "F5_RIGHT_WING",
+          "bidirectional": true,
+          "visualRouteId": "F5_RIGHT_WING_ROUTE",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_RIGHT_R1_GUARD",
+          "from": "F5_RIGHT_WING",
+          "to": "F5_R1_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F5_R1_APPROACH",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "VILLAIN_ENCOUNTER"
+          ]
+        },
+        {
+          "id": "E_F5_R1_ROOM",
+          "from": "F5_R1_GUARD",
+          "to": "F5_ROOM_R1",
+          "bidirectional": true,
+          "visualRouteId": "F5_R1_APPROACH",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "BOSS_ENCOUNTER"
+          ]
+        },
+        {
+          "id": "E_F5_RIGHT_R2_GUARD",
+          "from": "F5_RIGHT_WING",
+          "to": "F5_R2_GUARD",
+          "bidirectional": true,
+          "visualRouteId": "F5_R2_APPROACH",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "VILLAIN_ENCOUNTER"
+          ]
+        },
+        {
+          "id": "E_F5_R2_ROOM",
+          "from": "F5_R2_GUARD",
+          "to": "F5_ROOM_R2",
+          "bidirectional": true,
+          "visualRouteId": "F5_R2_APPROACH",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": [
+            "BOSS_ENCOUNTER"
+          ]
+        },
+        {
+          "id": "E_F5_L1_NO_BOSS_RETURN",
+          "from": "F5_ROOM_L1",
+          "to": "F5_SEARCH_HUB",
+          "bidirectional": false,
+          "availability": "NO_BOSS_RETURN",
+          "visualRouteId": "F5_SEARCH_RETURN",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_L2_NO_BOSS_RETURN",
+          "from": "F5_ROOM_L2",
+          "to": "F5_SEARCH_HUB",
+          "bidirectional": false,
+          "availability": "NO_BOSS_RETURN",
+          "visualRouteId": "F5_SEARCH_RETURN",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_R1_NO_BOSS_RETURN",
+          "from": "F5_ROOM_R1",
+          "to": "F5_SEARCH_HUB",
+          "bidirectional": false,
+          "availability": "NO_BOSS_RETURN",
+          "visualRouteId": "F5_SEARCH_RETURN",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_R2_NO_BOSS_RETURN",
+          "from": "F5_ROOM_R2",
+          "to": "F5_SEARCH_HUB",
+          "bidirectional": false,
+          "availability": "NO_BOSS_RETURN",
+          "visualRouteId": "F5_SEARCH_RETURN",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_L1_POST_BOSS",
+          "from": "F5_ROOM_L1",
+          "to": "F5_CENTRAL_HALL",
+          "bidirectional": false,
+          "availability": "BOSS_NEUTRALIZED",
+          "visualRouteId": "F5_POST_BOSS_RETURN",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_L2_POST_BOSS",
+          "from": "F5_ROOM_L2",
+          "to": "F5_CENTRAL_HALL",
+          "bidirectional": false,
+          "availability": "BOSS_NEUTRALIZED",
+          "visualRouteId": "F5_POST_BOSS_RETURN",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_R1_POST_BOSS",
+          "from": "F5_ROOM_R1",
+          "to": "F5_CENTRAL_HALL",
+          "bidirectional": false,
+          "availability": "BOSS_NEUTRALIZED",
+          "visualRouteId": "F5_POST_BOSS_RETURN",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_R2_POST_BOSS",
+          "from": "F5_ROOM_R2",
+          "to": "F5_CENTRAL_HALL",
+          "bidirectional": false,
+          "availability": "BOSS_NEUTRALIZED",
+          "visualRouteId": "F5_POST_BOSS_RETURN",
+          "traits": {
+            "distance": "MEDIUM",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "MEDIUM"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_HALL_LOCK",
+          "from": "F5_CENTRAL_HALL",
+          "to": "F5_SECURITY_LOCK",
+          "bidirectional": true,
+          "availability": "BOSS_NEUTRALIZED",
+          "visualRouteId": "F5_CONTROL_APPROACH",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_LOCK_CONTROL",
+          "from": "F5_SECURITY_LOCK",
+          "to": "F5_CONTROL_ROOM",
+          "bidirectional": true,
+          "availability": "BOSS_NEUTRALIZED",
+          "visualRouteId": "F5_CONTROL_APPROACH",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": []
+        },
+        {
+          "id": "E_F5_CONTROL_GOAL",
+          "from": "F5_CONTROL_ROOM",
+          "to": "F5_GOAL",
+          "bidirectional": false,
+          "availability": "SYSTEM_RESTORED",
+          "visualRouteId": "F5_GOAL_TRANSITION",
+          "traits": {
+            "distance": "LOW",
+            "citizenExposure": "LOW",
+            "obstacleRisk": "LOW",
+            "facilityRisk": "LOW",
+            "ambiguousExposure": "LOW",
+            "narrowness": "LOW"
+          },
+          "encounterCandidates": []
+        }
+      ]
+    }
+  ],
+  "verticalConnections": [
+    {
+      "id": "V_F1_LEFT_TO_F2_LEFT",
+      "from": "F1_LEFT_STAIR",
+      "to": "F2_LEFT_ARRIVAL",
+      "type": "STAIR",
+      "bidirectional": true
+    },
+    {
+      "id": "V_F1_RIGHT_TO_F2_RIGHT",
+      "from": "F1_RIGHT_STAIR",
+      "to": "F2_RIGHT_ARRIVAL",
+      "type": "STAIR",
+      "bidirectional": true
+    },
+    {
+      "id": "V_F2_CENTER_TO_F3_CENTER",
+      "from": "F2_CENTER_STAIR",
+      "to": "F3_CENTER_ARRIVAL",
+      "type": "STAIR",
+      "bidirectional": true
+    },
+    {
+      "id": "V_F3_LEFT_TO_F4_LEFT",
+      "from": "F3_LEFT_STAIR",
+      "to": "F4_LEFT_ARRIVAL",
+      "type": "STAIR",
+      "bidirectional": true
+    },
+    {
+      "id": "V_F3_RIGHT_TO_F4_RIGHT",
+      "from": "F3_RIGHT_STAIR",
+      "to": "F4_RIGHT_ARRIVAL",
+      "type": "STAIR",
+      "bidirectional": true
+    },
+    {
+      "id": "V_F4_CENTER_TO_F5_HUB",
+      "from": "F4_CENTER_STAIR",
+      "to": "F5_SEARCH_HUB",
+      "type": "STAIR",
+      "bidirectional": true
+    }
+  ],
+  "goal": {
+    "startNodeId": "F1_START",
+    "goalNodeId": "F5_GOAL",
+    "controlRoomNodeId": "F5_CONTROL_ROOM",
+    "requiredState": "BOSS_NEUTRALIZED",
+    "completionFlow": [
+      "BOSS_NEUTRALIZED",
+      "SECURITY_LOCK_OPEN",
+      "SYSTEM_RESTORED",
+      "GOAL_REACHED"
+    ]
+  },
+  "bossSearch": {
+    "roomIds": [
+      "L1",
+      "L2",
+      "R1",
+      "R2"
+    ],
+    "roomNodeIds": {
+      "L1": "F5_ROOM_L1",
+      "L2": "F5_ROOM_L2",
+      "R1": "F5_ROOM_R1",
+      "R2": "F5_ROOM_R2"
+    },
+    "locationSelection": "SEEDED_RANDOM_PER_EPISODE",
+    "locationPolicyVisibility": false,
+    "searchedRoomState": "EPISODE_LOCAL_SET",
+    "eligibleRoomRule": "canonicalRooms minus searchedRooms",
+    "repeatSelectionAllowed": false,
+    "contextKey": {
+      "prefix": "F5_ROOM_SEARCH",
+      "canonicalRoomOrder": [
+        "L1",
+        "L2",
+        "R1",
+        "R2"
+      ],
+      "format": "F5_ROOM_SEARCH[{comma-separated canonical remaining-room set}]",
+      "includesHiddenLocation": false
+    },
+    "spatialReference": "floor_5_structure_arch_v3.png",
+    "roomApproachDistancePolicy": "EQUALIZED_AS_PRACTICAL",
+    "roomApproachDistanceBias": false,
+    "roomApproachGeometry": "Outer lower rooms trade longer horizontal travel for shorter vertical travel; inner upper rooms trade shorter horizontal travel for longer vertical travel."
+  },
+  "blockoutFiles": [
+    "floor_1_blockout.svg",
+    "floor_2_blockout.svg",
+    "floor_3_blockout.svg",
+    "floor_4_blockout.svg",
+    "floor_5_blockout.svg"
+  ]
+}

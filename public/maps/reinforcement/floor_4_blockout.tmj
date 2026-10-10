@@ -4,11 +4,10 @@
  "layers":[
         {
          "compression":"zlib",
-         "data":"eJztmv1twjAQxdNNMkALCNo\/+BjGozAKo3QURmnS2JI5neMkF+d86D3pZELsvMdPdnAETQNB9nRpmt9Qkj5airNNqZW9H7euDbXvakfqEJ2\/DWPaNTNIpJ1f218q7fza\/lJp59f2l0o7v7a\/VNr5qf+UAr+0v3V+W+fX9pdKO7+2v1Q15J\/rX5Nq4HcmRf3o+ZpUAz+S58n4uVJ+UoGfXDXdfyzyq+n+Y5FfLG49b7lfAD+xP\/jJ\/MFP5m+dH5e\/VfZ3W\/lLBX7DGlwwpvUt+HX8vvxr2n779kTeB7+XDIufyWrkl+nvCmR4K350zfTPQNG6cQUyvBW\/TG5XIMM\/vx9\/HLzGjsHvJQPmnywD+MkymOXnM9y5uvK5nR\/zWMG3Ddeyev8bU+LZ3IVz4Tv56NvUHjjVUn5W519K3OeKNfczj12LU+j3MbGfBX7xXlDKLzc\/P6PjVHE5auZnocAP\/MAP\/NbQJVP9HpH7D16qDsOYe+66krKkfo7O5Wfp94HSAj8IWqY\/WIZPjA==",
+         "data":"eJztmuuNwjAQhE0n1wC545WD8IdSKIVSKIVSKAVbCQ+hOLazu6xxZqSVY7HYs18cFJwYA5WgjTEHF9ScKcoyOVe2dbGyseyJdfd51eYfdZzmKfCjCfxoAj+awI+mkvi5WjTmrRJCQ7HnzPHbdcefarcmjZ+GvxR+KbVMJcAP\/MDvewP89Pg1Avc0dswfrto+4Y\/Kj\/uegJuftD8qP+7rgZuftD\/wK4OfmTC\/xUv91L4Ev7fxH\/2GwV8u6893fl3U1uOm9eCNeoBf7utPml+MRy1\/4KfPT\/r3j8pP0h\/Wn\/76Az8efvsud2xfmp+EP6y\/fNYf+OXnr2R+VcwXR+Zy8IuZ0\/5vuc5sO2uPg\/OM9HapPf7cMzzfXtmfMSfXzp\/93rzQ80oKvyF\/9\/bu7zeQ998zvuVyGXp3Lod9ewo\/bY\/avsAP\/MCP5tHtr\/nef+p7Hyq0V5caseKcM7XekFLGK0Hc9YIf+KVoavVCEARx6QZHqbgm",
          "encoding":"base64",
          "height":45,
          "id":1,
-         "locked":true,
          "name":"Ground",
          "opacity":1,
          "type":"tilelayer",
@@ -23,7 +22,6 @@
          "encoding":"base64",
          "height":45,
          "id":2,
-         "locked":true,
          "name":"FloorDetail",
          "opacity":1,
          "type":"tilelayer",
@@ -34,11 +32,10 @@
         }, 
         {
          "compression":"zlib",
-         "data":"eJztkNENw0AMhW6E7D9tN6hqVS0mwdL7iw7Cdc65WmuP2vRo323+NN\/uT\/Pt\/jTf7k\/z7f403+5P8+3+NN\/uT\/Pt\/jTf7k\/z7+a\/vVf96rdp9buXP823+9N8uz\/Nt\/vTfLs\/zbf703y7P823+9N8uz\/Nt\/vTfLv\/5OhW9avfttGO9Xumm8Fxs5vB8Z3btzdh12\/+n59+O32X7Gc4uln96rdlxqOb\/box7btt9atfa\/\/eC4DosmE=",
+         "data":"eJzt1UEKwCAQBEGf4P9fG3IOBHRQN6Ea+ibs0Bd7a62TJEmSmx3h9NaK\/qkfnuiXoV+Gfhn6ZaT9qv9Rq\/fpp98b+mXol6Ffhn619+mnn3766Vdz38iNE\/v0008\/\/fRbt2\/m7czGE\/v0y\/bN7tpJ0m8XVXfd6JehX8bX+5EkSfL\/XjGdoLE=",
          "encoding":"base64",
          "height":45,
          "id":3,
-         "locked":true,
          "name":"Walls",
          "opacity":1,
          "type":"tilelayer",
@@ -53,7 +50,6 @@
          "encoding":"base64",
          "height":45,
          "id":4,
-         "locked":true,
          "name":"WallTop",
          "opacity":1,
          "type":"tilelayer",
@@ -64,7 +60,7 @@
         }, 
         {
          "compression":"zlib",
-         "data":"eJzt0MEJgEAQwEBbUPvv1bfPJQcqzkAayLYBf7MPe5tz2Gr+Nf41\/jX+Nf41\/jX+Nf41X\/\/3NP8AAAAAAAAAYL1jGHf+Nf41\/jX+wdwFMZEVAQ==",
+         "data":"eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB",
          "encoding":"base64",
          "height":45,
          "id":5,
@@ -78,16 +74,14 @@
          "y":0
         }, 
         {
-         "color":"#ff0000",
          "draworder":"topdown",
          "id":6,
-         "locked":true,
          "name":"Collision",
          "objects":[
                 {
-                 "height":96,
+                 "height":648,
                  "id":1,
-                 "name":"F3_BLOCKED_01",
+                 "name":"F4_CENTRAL_BLOCKED_MASS",
                  "opacity":1,
                  "properties":[
                         {
@@ -98,19 +92,24 @@
                         {
                          "name":"collisionId",
                          "type":"string",
-                         "value":"F3_BLOCKED_01"
+                         "value":"F4_CENTRAL_BLOCKED_MASS"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"CENTRAL_BLOCKED_MASS"
                         }],
                  "rotation":0,
                  "type":"Collision",
                  "visible":true,
-                 "width":2560,
-                 "x":0,
-                 "y":0
+                 "width":350,
+                 "x":1105,
+                 "y":672
                 }, 
                 {
-                 "height":352,
+                 "height":464,
                  "id":2,
-                 "name":"F3_BLOCKED_02",
+                 "name":"F4_LEFT_ROOM_MASS",
                  "opacity":1,
                  "properties":[
                         {
@@ -121,19 +120,29 @@
                         {
                          "name":"collisionId",
                          "type":"string",
-                         "value":"F3_BLOCKED_02"
+                         "value":"F4_LEFT_ROOM_MASS"
+                        }, 
+                        {
+                         "name":"enterable",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"RESTRICTED_ROOM_MASS"
                         }],
                  "rotation":0,
                  "type":"Collision",
                  "visible":true,
-                 "width":448,
-                 "x":0,
-                 "y":96
+                 "width":529,
+                 "x":376,
+                 "y":536
                 }, 
                 {
-                 "height":352,
+                 "height":464,
                  "id":3,
-                 "name":"F3_BLOCKED_03",
+                 "name":"F4_RIGHT_ROOM_MASS",
                  "opacity":1,
                  "properties":[
                         {
@@ -144,19 +153,29 @@
                         {
                          "name":"collisionId",
                          "type":"string",
-                         "value":"F3_BLOCKED_03"
+                         "value":"F4_RIGHT_ROOM_MASS"
+                        }, 
+                        {
+                         "name":"enterable",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"RESTRICTED_ROOM_MASS"
                         }],
                  "rotation":0,
                  "type":"Collision",
                  "visible":true,
-                 "width":1152,
-                 "x":832,
-                 "y":96
+                 "width":529,
+                 "x":1655,
+                 "y":536
                 }, 
                 {
-                 "height":448,
+                 "height":12,
                  "id":4,
-                 "name":"F3_BLOCKED_04",
+                 "name":"F4_LEFT_ROOM_DOOR_LOCKED",
                  "opacity":1,
                  "properties":[
                         {
@@ -167,352 +186,12 @@
                         {
                          "name":"collisionId",
                          "type":"string",
-                         "value":"F3_BLOCKED_04"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":192,
-                 "x":2368,
-                 "y":96
-                }, 
-                {
-                 "height":576,
-                 "id":5,
-                 "name":"F3_BLOCKED_05",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
+                         "value":"F4_LEFT_ROOM_DOOR_LOCKED"
                         }, 
                         {
-                         "name":"collisionId",
+                         "name":"doorFacing",
                          "type":"string",
-                         "value":"F3_BLOCKED_05"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":576,
-                 "x":0,
-                 "y":448
-                }, 
-                {
-                 "height":96,
-                 "id":6,
-                 "name":"F3_BLOCKED_06",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_06"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":1280,
-                 "x":704,
-                 "y":448
-                }, 
-                {
-                 "height":256,
-                 "id":7,
-                 "name":"F3_BLOCKED_07",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_07"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":1408,
-                 "x":704,
-                 "y":544
-                }, 
-                {
-                 "height":736,
-                 "id":8,
-                 "name":"F3_BLOCKED_08",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_08"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":320,
-                 "x":2240,
-                 "y":544
-                }, 
-                {
-                 "height":96,
-                 "id":9,
-                 "name":"F3_BLOCKED_09",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_09"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":928,
-                 "x":704,
-                 "y":800
-                }, 
-                {
-                 "height":288,
-                 "id":10,
-                 "name":"F3_BLOCKED_10",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_10"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":96,
-                 "x":2016,
-                 "y":800
-                }, 
-                {
-                 "height":192,
-                 "id":11,
-                 "name":"F3_BLOCKED_11",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_11"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":704,
-                 "x":928,
-                 "y":896
-                }, 
-                {
-                 "height":256,
-                 "id":12,
-                 "name":"F3_BLOCKED_12",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_12"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":800,
-                 "x":0,
-                 "y":1024
-                }, 
-                {
-                 "height":64,
-                 "id":13,
-                 "name":"F3_BLOCKED_13",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_13"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":96,
-                 "x":928,
-                 "y":1088
-                }, 
-                {
-                 "height":64,
-                 "id":14,
-                 "name":"F3_BLOCKED_14",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_14"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":256,
-                 "x":1536,
-                 "y":1088
-                }, 
-                {
-                 "height":64,
-                 "id":15,
-                 "name":"F3_BLOCKED_15",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_15"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":224,
-                 "x":1888,
-                 "y":1088
-                }, 
-                {
-                 "height":96,
-                 "id":16,
-                 "name":"F3_BLOCKED_16",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_16"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":1088,
-                 "x":0,
-                 "y":1280
-                }, 
-                {
-                 "height":96,
-                 "id":17,
-                 "name":"F3_BLOCKED_17",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_17"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":1088,
-                 "x":1472,
-                 "y":1280
-                }, 
-                {
-                 "height":64,
-                 "id":18,
-                 "name":"F3_BLOCKED_18",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_BLOCKED_18"
-                        }],
-                 "rotation":0,
-                 "type":"Collision",
-                 "visible":true,
-                 "width":2560,
-                 "x":0,
-                 "y":1376
-                }, 
-                {
-                 "height":288,
-                 "id":19,
-                 "name":"F3_GREEN_FACILITY_ROOM",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"blocksRobot",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"collisionId",
-                         "type":"string",
-                         "value":"F3_GREEN_FACILITY_ROOM"
+                         "value":"SOUTH"
                         }, 
                         {
                          "name":"enterable",
@@ -527,14 +206,533 @@
                         {
                          "name":"role",
                          "type":"string",
-                         "value":"SEALED_FACILITY_ROOM"
+                         "value":"LOCKED_SOUTH_DOOR"
                         }],
                  "rotation":0,
                  "type":"Collision",
                  "visible":true,
-                 "width":384,
-                 "x":1632,
-                 "y":800
+                 "width":61,
+                 "x":610,
+                 "y":988
+                }, 
+                {
+                 "height":12,
+                 "id":5,
+                 "name":"F4_RIGHT_ROOM_DOOR_LOCKED",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_RIGHT_ROOM_DOOR_LOCKED"
+                        }, 
+                        {
+                         "name":"doorFacing",
+                         "type":"string",
+                         "value":"SOUTH"
+                        }, 
+                        {
+                         "name":"enterable",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"locked",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"LOCKED_SOUTH_DOOR"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":61,
+                 "x":1889,
+                 "y":988
+                }, 
+                {
+                 "height":64,
+                 "id":70,
+                 "name":"F4_GRAY_BLOCK_001",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_001"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":2560,
+                 "x":0,
+                 "y":0
+                }, 
+                {
+                 "height":192,
+                 "id":85,
+                 "name":"F4_GRAY_BLOCK_016",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_016"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":1088,
+                 "x":0,
+                 "y":64
+                }, 
+                {
+                 "height":192,
+                 "id":86,
+                 "name":"F4_GRAY_BLOCK_017",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_017"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":1120,
+                 "x":1440,
+                 "y":64
+                }, 
+                {
+                 "height":64,
+                 "id":71,
+                 "name":"F4_GRAY_BLOCK_002",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_002"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":1088,
+                 "x":0,
+                 "y":256
+                }, 
+                {
+                 "height":64,
+                 "id":72,
+                 "name":"F4_GRAY_BLOCK_003",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_003"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":1120,
+                 "x":1440,
+                 "y":256
+                }, 
+                {
+                 "height":512,
+                 "id":73,
+                 "name":"F4_GRAY_BLOCK_004",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_004"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":640,
+                 "x":320,
+                 "y":480
+                }, 
+                {
+                 "height":512,
+                 "id":74,
+                 "name":"F4_GRAY_BLOCK_005",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_005"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":640,
+                 "x":1600,
+                 "y":480
+                }, 
+                {
+                 "height":736,
+                 "id":75,
+                 "name":"F4_GRAY_BLOCK_006",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_006"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":160,
+                 "x":0,
+                 "y":320
+                }, 
+                {
+                 "height":736,
+                 "id":76,
+                 "name":"F4_GRAY_BLOCK_007",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_007"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":192,
+                 "x":2368,
+                 "y":320
+                }, 
+                {
+                 "height":64,
+                 "id":77,
+                 "name":"F4_GRAY_BLOCK_008",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_008"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":288,
+                 "x":320,
+                 "y":992
+                }, 
+                {
+                 "height":64,
+                 "id":78,
+                 "name":"F4_GRAY_BLOCK_009",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_009"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":288,
+                 "x":672,
+                 "y":992
+                }, 
+                {
+                 "height":64,
+                 "id":79,
+                 "name":"F4_GRAY_BLOCK_010",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_010"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":288,
+                 "x":1600,
+                 "y":992
+                }, 
+                {
+                 "height":64,
+                 "id":80,
+                 "name":"F4_GRAY_BLOCK_011",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_011"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":288,
+                 "x":1952,
+                 "y":992
+                }, 
+                {
+                 "height":512,
+                 "id":81,
+                 "name":"F4_GRAY_BLOCK_012",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_012"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":320,
+                 "x":1120,
+                 "y":672
+                }, 
+                {
+                 "height":128,
+                 "id":82,
+                 "name":"F4_GRAY_BLOCK_013",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_013"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":96,
+                 "x":0,
+                 "y":1056
+                }, 
+                {
+                 "height":128,
+                 "id":83,
+                 "name":"F4_GRAY_BLOCK_014",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_014"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":128,
+                 "x":2432,
+                 "y":1056
+                }, 
+                {
+                 "height":256,
+                 "id":84,
+                 "name":"F4_GRAY_BLOCK_015",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"collisionId",
+                         "type":"string",
+                         "value":"F4_GRAY_BLOCK_015"
+                        }, 
+                        {
+                         "name":"role",
+                         "type":"string",
+                         "value":"GRAY_BLOCKED"
+                        }],
+                 "rotation":0,
+                 "type":"Collision",
+                 "visible":true,
+                 "width":2560,
+                 "x":0,
+                 "y":1184
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -543,33 +741,31 @@
          "y":0
         }, 
         {
-         "color":"#42a5f5",
          "draworder":"topdown",
          "id":7,
-         "locked":true,
          "name":"NavigationNodes",
          "objects":[
                 {
                  "height":0,
-                 "id":20,
-                 "name":"F3_CENTER_ARRIVAL",
+                 "id":42,
+                 "name":"F4_LEFT_ARRIVAL",
                  "opacity":1,
                  "point":true,
                  "properties":[
                         {
                          "name":"floor",
                          "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
                          "name":"nodeId",
                          "type":"string",
-                         "value":"F3_CENTER_ARRIVAL"
+                         "value":"F4_LEFT_ARRIVAL"
                         }, 
                         {
                          "name":"routeContextId",
                          "type":"string",
-                         "value":"F3_STAIR_SPLIT"
+                         "value":"F4_LEFT_APPROACH"
                         }, 
                         {
                          "name":"type",
@@ -580,83 +776,204 @@
                  "type":"NavigationNode",
                  "visible":true,
                  "width":0,
+                 "x":304,
+                 "y":1120
+                }, 
+                {
+                 "height":0,
+                 "id":43,
+                 "name":"F4_LEFT_SECURITY_ZONE",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F4_LEFT_SECURITY_ZONE"
+                        }, 
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationNode",
+                 "visible":true,
+                 "width":0,
+                 "x":1040,
+                 "y":848
+                }, 
+                {
+                 "height":0,
+                 "id":44,
+                 "name":"F4_LEFT_PERIMETER_ZONE",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F4_LEFT_PERIMETER_ZONE"
+                        }, 
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationNode",
+                 "visible":true,
+                 "width":0,
+                 "x":640,
+                 "y":400
+                }, 
+                {
+                 "height":0,
+                 "id":45,
+                 "name":"F4_RIGHT_ARRIVAL",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F4_RIGHT_ARRIVAL"
+                        }, 
+                        {
+                         "name":"routeContextId",
+                         "type":"string",
+                         "value":"F4_RIGHT_APPROACH"
+                        }, 
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"DECISION"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationNode",
+                 "visible":true,
+                 "width":0,
+                 "x":2256,
+                 "y":1120
+                }, 
+                {
+                 "height":0,
+                 "id":46,
+                 "name":"F4_RIGHT_INNER_ZONE",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F4_RIGHT_INNER_ZONE"
+                        }, 
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationNode",
+                 "visible":true,
+                 "width":0,
+                 "x":1520,
+                 "y":848
+                }, 
+                {
+                 "height":0,
+                 "id":47,
+                 "name":"F4_RIGHT_SERVICE_ZONE",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F4_RIGHT_SERVICE_ZONE"
+                        }, 
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationNode",
+                 "visible":true,
+                 "width":0,
+                 "x":1920,
+                 "y":400
+                }, 
+                {
+                 "height":0,
+                 "id":48,
+                 "name":"F4_CENTER_GUARD",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F4_CENTER_GUARD"
+                        }, 
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"ENCOUNTER"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationNode",
+                 "visible":true,
+                 "width":0,
                  "x":1280,
-                 "y":1184
+                 "y":560
                 }, 
                 {
                  "height":0,
-                 "id":21,
-                 "name":"F3_LEFT_MAINT_ZONE",
+                 "id":49,
+                 "name":"F4_CENTER_STAIR",
                  "opacity":1,
                  "point":true,
                  "properties":[
                         {
                          "name":"floor",
                          "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
                          "name":"nodeId",
                          "type":"string",
-                         "value":"F3_LEFT_MAINT_ZONE"
-                        }, 
-                        {
-                         "name":"type",
-                         "type":"string",
-                         "value":"ZONE"
-                        }],
-                 "rotation":0,
-                 "type":"NavigationNode",
-                 "visible":true,
-                 "width":0,
-                 "x":864,
-                 "y":960
-                }, 
-                {
-                 "height":0,
-                 "id":22,
-                 "name":"F3_LEFT_GUARD",
-                 "opacity":1,
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"nodeId",
-                         "type":"string",
-                         "value":"F3_LEFT_GUARD"
-                        }, 
-                        {
-                         "name":"type",
-                         "type":"string",
-                         "value":"ENCOUNTER"
-                        }],
-                 "rotation":0,
-                 "type":"NavigationNode",
-                 "visible":true,
-                 "width":0,
-                 "x":640,
-                 "y":512
-                }, 
-                {
-                 "height":0,
-                 "id":23,
-                 "name":"F3_LEFT_STAIR",
-                 "opacity":1,
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"nodeId",
-                         "type":"string",
-                         "value":"F3_LEFT_STAIR"
+                         "value":"F4_CENTER_STAIR"
                         }, 
                         {
                          "name":"type",
@@ -667,113 +984,24 @@
                  "type":"NavigationNode",
                  "visible":true,
                  "width":0,
-                 "x":640,
-                 "y":240
-                }, 
-                {
-                 "height":0,
-                 "id":24,
-                 "name":"F3_RIGHT_PERIMETER_ZONE",
-                 "opacity":1,
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"nodeId",
-                         "type":"string",
-                         "value":"F3_RIGHT_PERIMETER_ZONE"
-                        }, 
-                        {
-                         "name":"type",
-                         "type":"string",
-                         "value":"ZONE"
-                        }],
-                 "rotation":0,
-                 "type":"NavigationNode",
-                 "visible":true,
-                 "width":0,
-                 "x":2176,
-                 "y":800
-                }, 
-                {
-                 "height":0,
-                 "id":25,
-                 "name":"F3_RIGHT_GUARD",
-                 "opacity":1,
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"nodeId",
-                         "type":"string",
-                         "value":"F3_RIGHT_GUARD"
-                        }, 
-                        {
-                         "name":"type",
-                         "type":"string",
-                         "value":"ENCOUNTER"
-                        }],
-                 "rotation":0,
-                 "type":"NavigationNode",
-                 "visible":true,
-                 "width":0,
-                 "x":2176,
-                 "y":480
-                }, 
-                {
-                 "height":0,
-                 "id":26,
-                 "name":"F3_RIGHT_STAIR",
-                 "opacity":1,
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"nodeId",
-                         "type":"string",
-                         "value":"F3_RIGHT_STAIR"
-                        }, 
-                        {
-                         "name":"type",
-                         "type":"string",
-                         "value":"STAIR_UP"
-                        }],
-                 "rotation":0,
-                 "type":"NavigationNode",
-                 "visible":true,
-                 "width":0,
-                 "x":2176,
-                 "y":240
+                 "x":1280,
+                 "y":304
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
         {
-         "color":"#2196f3",
          "draworder":"topdown",
          "id":8,
-         "locked":true,
          "name":"NavigationEdges",
          "objects":[
                 {
                  "height":0,
-                 "id":27,
-                 "name":"E_F3_LEFT_A",
+                 "id":50,
+                 "name":"E_F4_LEFT_SECURITY_A",
                  "opacity":1,
                  "polyline":[
                         {
@@ -781,214 +1009,18 @@
                          "y":0
                         }, 
                         {
-                         "x":-384,
+                         "x":736,
                          "y":0
                         }, 
                         {
-                         "x":-416,
-                         "y":-48
-                        }, 
-                        {
-                         "x":-416,
-                         "y":-224
-                        }],
-                 "properties":[
-                        {
-                         "name":"ambiguousExposure",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"bidirectional",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"citizenExposure",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"distance",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"edgeId",
-                         "type":"string",
-                         "value":"E_F3_LEFT_A"
-                        }, 
-                        {
-                         "name":"encounterCandidates",
-                         "type":"string",
-                         "value":"OBSTACLE"
-                        }, 
-                        {
-                         "name":"facilityRisk",
-                         "type":"string",
-                         "value":"HIGH"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"from",
-                         "type":"string",
-                         "value":"F3_CENTER_ARRIVAL"
-                        }, 
-                        {
-                         "name":"lengthTiles",
-                         "type":"float",
-                         "value":19.304
-                        }, 
-                        {
-                         "name":"narrowness",
-                         "type":"string",
-                         "value":"MEDIUM"
-                        }, 
-                        {
-                         "name":"obstacleRisk",
-                         "type":"string",
-                         "value":"HIGH"
-                        }, 
-                        {
-                         "name":"route",
-                         "type":"string",
-                         "value":"F3_LEFT_MAINTENANCE_ROUTE"
-                        }, 
-                        {
-                         "name":"to",
-                         "type":"string",
-                         "value":"F3_LEFT_MAINT_ZONE"
-                        }],
-                 "rotation":0,
-                 "type":"NavigationEdge",
-                 "visible":true,
-                 "width":0,
-                 "x":1280,
-                 "y":1184
-                }, 
-                {
-                 "height":0,
-                 "id":28,
-                 "name":"E_F3_LEFT_B",
-                 "opacity":1,
-                 "polyline":[
-                        {
-                         "x":0,
-                         "y":0
-                        }, 
-                        {
-                         "x":-176,
-                         "y":0
-                        }, 
-                        {
-                         "x":-224,
-                         "y":-64
-                        }, 
-                        {
-                         "x":-224,
-                         "y":-448
-                        }],
-                 "properties":[
-                        {
-                         "name":"ambiguousExposure",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"bidirectional",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"citizenExposure",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"distance",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"edgeId",
-                         "type":"string",
-                         "value":"E_F3_LEFT_B"
-                        }, 
-                        {
-                         "name":"encounterCandidates",
-                         "type":"string",
-                         "value":"OBSTACLE"
-                        }, 
-                        {
-                         "name":"facilityRisk",
-                         "type":"string",
-                         "value":"HIGH"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"from",
-                         "type":"string",
-                         "value":"F3_LEFT_MAINT_ZONE"
-                        }, 
-                        {
-                         "name":"lengthTiles",
-                         "type":"float",
-                         "value":20
-                        }, 
-                        {
-                         "name":"narrowness",
-                         "type":"string",
-                         "value":"MEDIUM"
-                        }, 
-                        {
-                         "name":"obstacleRisk",
-                         "type":"string",
-                         "value":"HIGH"
-                        }, 
-                        {
-                         "name":"route",
-                         "type":"string",
-                         "value":"F3_LEFT_MAINTENANCE_ROUTE"
-                        }, 
-                        {
-                         "name":"to",
-                         "type":"string",
-                         "value":"F3_LEFT_GUARD"
-                        }],
-                 "rotation":0,
-                 "type":"NavigationEdge",
-                 "visible":true,
-                 "width":0,
-                 "x":864,
-                 "y":960
-                }, 
-                {
-                 "height":0,
-                 "id":29,
-                 "name":"E_F3_LEFT_C",
-                 "opacity":1,
-                 "polyline":[
-                        {
-                         "x":0,
-                         "y":0
-                        }, 
-                        {
-                         "x":0,
+                         "x":736,
                          "y":-272
                         }],
                  "properties":[
                         {
                          "name":"ambiguousExposure",
                          "type":"string",
-                         "value":"LOW"
+                         "value":"HIGH"
                         }, 
                         {
                          "name":"bidirectional",
@@ -1008,32 +1040,32 @@
                         {
                          "name":"edgeId",
                          "type":"string",
-                         "value":"E_F3_LEFT_C"
+                         "value":"E_F4_LEFT_SECURITY_A"
                         }, 
                         {
                          "name":"encounterCandidates",
                          "type":"string",
-                         "value":"VILLAIN_ENCOUNTER"
+                         "value":"AMBIGUOUS_PERSON"
                         }, 
                         {
                          "name":"facilityRisk",
                          "type":"string",
-                         "value":"HIGH"
+                         "value":"LOW"
                         }, 
                         {
                          "name":"floor",
                          "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
                          "name":"from",
                          "type":"string",
-                         "value":"F3_LEFT_GUARD"
+                         "value":"F4_LEFT_ARRIVAL"
                         }, 
                         {
                          "name":"lengthTiles",
                          "type":"float",
-                         "value":8.5
+                         "value":31.5
                         }, 
                         {
                          "name":"narrowness",
@@ -1043,29 +1075,333 @@
                         {
                          "name":"obstacleRisk",
                          "type":"string",
-                         "value":"HIGH"
+                         "value":"LOW"
                         }, 
                         {
                          "name":"route",
                          "type":"string",
-                         "value":"F3_LEFT_MAINTENANCE_ROUTE"
+                         "value":"F4_SECURITY_HALL_ROUTE"
                         }, 
                         {
                          "name":"to",
                          "type":"string",
-                         "value":"F3_LEFT_STAIR"
+                         "value":"F4_LEFT_SECURITY_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":304,
+                 "y":1120
+                }, 
+                {
+                 "height":0,
+                 "id":51,
+                 "name":"E_F4_LEFT_SECURITY_B",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-192
+                        }, 
+                        {
+                         "x":80,
+                         "y":-192
+                        }, 
+                        {
+                         "x":240,
+                         "y":-288
+                        }],
+                 "properties":[
+                        {
+                         "name":"ambiguousExposure",
+                         "type":"string",
+                         "value":"HIGH"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"citizenExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"distance",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F4_LEFT_SECURITY_B"
+                        }, 
+                        {
+                         "name":"encounterCandidates",
+                         "type":"string",
+                         "value":"AMBIGUOUS_PERSON"
+                        }, 
+                        {
+                         "name":"facilityRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F4_LEFT_SECURITY_ZONE"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":14.3309518948453
+                        }, 
+                        {
+                         "name":"narrowness",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"obstacleRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"route",
+                         "type":"string",
+                         "value":"F4_SECURITY_HALL_ROUTE"
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F4_CENTER_GUARD"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1040,
+                 "y":848
+                }, 
+                {
+                 "height":0,
+                 "id":52,
+                 "name":"E_F4_LEFT_PERIMETER_A",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":-64,
+                         "y":0
+                        }, 
+                        {
+                         "x":-64,
+                         "y":-720
+                        }, 
+                        {
+                         "x":336,
+                         "y":-720
+                        }],
+                 "properties":[
+                        {
+                         "name":"ambiguousExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"citizenExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"distance",
+                         "type":"string",
+                         "value":"HIGH"
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F4_LEFT_PERIMETER_A"
+                        }, 
+                        {
+                         "name":"encounterCandidates",
+                         "type":"string",
+                         "value":""
+                        }, 
+                        {
+                         "name":"facilityRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F4_LEFT_ARRIVAL"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":37
+                        }, 
+                        {
+                         "name":"narrowness",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"obstacleRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"route",
+                         "type":"string",
+                         "value":"F4_PERIMETER_DETOUR_ROUTE"
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F4_LEFT_PERIMETER_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":304,
+                 "y":1120
+                }, 
+                {
+                 "height":0,
+                 "id":53,
+                 "name":"E_F4_LEFT_PERIMETER_B",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":304,
+                         "y":0
+                        }, 
+                        {
+                         "x":336,
+                         "y":0
+                        }, 
+                        {
+                         "x":480,
+                         "y":0
+                        }, 
+                        {
+                         "x":640,
+                         "y":160
+                        }],
+                 "properties":[
+                        {
+                         "name":"ambiguousExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"citizenExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"distance",
+                         "type":"string",
+                         "value":"HIGH"
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F4_LEFT_PERIMETER_B"
+                        }, 
+                        {
+                         "name":"encounterCandidates",
+                         "type":"string",
+                         "value":""
+                        }, 
+                        {
+                         "name":"facilityRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F4_LEFT_PERIMETER_ZONE"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":22.0710678118655
+                        }, 
+                        {
+                         "name":"narrowness",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"obstacleRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"route",
+                         "type":"string",
+                         "value":"F4_PERIMETER_DETOUR_ROUTE"
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F4_CENTER_GUARD"
                         }],
                  "rotation":0,
                  "type":"NavigationEdge",
                  "visible":true,
                  "width":0,
                  "x":640,
-                 "y":512
+                 "y":400
                 }, 
                 {
                  "height":0,
-                 "id":30,
-                 "name":"E_F3_RIGHT_A",
+                 "id":54,
+                 "name":"E_F4_RIGHT_INNER_A",
                  "opacity":1,
                  "polyline":[
                         {
@@ -1073,12 +1409,212 @@
                          "y":0
                         }, 
                         {
-                         "x":896,
+                         "x":-736,
                          "y":0
                         }, 
                         {
-                         "x":896,
-                         "y":-384
+                         "x":-736,
+                         "y":-272
+                        }],
+                 "properties":[
+                        {
+                         "name":"ambiguousExposure",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"citizenExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"distance",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F4_RIGHT_INNER_A"
+                        }, 
+                        {
+                         "name":"encounterCandidates",
+                         "type":"string",
+                         "value":"AMBIGUOUS_PERSON"
+                        }, 
+                        {
+                         "name":"facilityRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F4_RIGHT_ARRIVAL"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":31.5
+                        }, 
+                        {
+                         "name":"narrowness",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"obstacleRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"route",
+                         "type":"string",
+                         "value":"F4_INNER_SECURITY_ROUTE"
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F4_RIGHT_INNER_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":2256,
+                 "y":1120
+                }, 
+                {
+                 "height":0,
+                 "id":55,
+                 "name":"E_F4_RIGHT_INNER_B",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-192
+                        }, 
+                        {
+                         "x":-80,
+                         "y":-192
+                        }, 
+                        {
+                         "x":-240,
+                         "y":-288
+                        }],
+                 "properties":[
+                        {
+                         "name":"ambiguousExposure",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"citizenExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"distance",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F4_RIGHT_INNER_B"
+                        }, 
+                        {
+                         "name":"encounterCandidates",
+                         "type":"string",
+                         "value":"AMBIGUOUS_PERSON"
+                        }, 
+                        {
+                         "name":"facilityRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F4_RIGHT_INNER_ZONE"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":14.3309518948453
+                        }, 
+                        {
+                         "name":"narrowness",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"obstacleRisk",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"route",
+                         "type":"string",
+                         "value":"F4_INNER_SECURITY_ROUTE"
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F4_CENTER_GUARD"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1520,
+                 "y":848
+                }, 
+                {
+                 "height":0,
+                 "id":56,
+                 "name":"E_F4_RIGHT_SERVICE_A",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":64,
+                         "y":0
+                        }, 
+                        {
+                         "x":64,
+                         "y":-720
+                        }, 
+                        {
+                         "x":-336,
+                         "y":-720
                         }],
                  "properties":[
                         {
@@ -1104,12 +1640,208 @@
                         {
                          "name":"edgeId",
                          "type":"string",
-                         "value":"E_F3_RIGHT_A"
+                         "value":"E_F4_RIGHT_SERVICE_A"
                         }, 
                         {
                          "name":"encounterCandidates",
                          "type":"string",
-                         "value":""
+                         "value":"OBSTACLE"
+                        }, 
+                        {
+                         "name":"facilityRisk",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F4_RIGHT_ARRIVAL"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":37
+                        }, 
+                        {
+                         "name":"narrowness",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"obstacleRisk",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"route",
+                         "type":"string",
+                         "value":"F4_SERVICE_ROUTE"
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F4_RIGHT_SERVICE_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":2256,
+                 "y":1120
+                }, 
+                {
+                 "height":0,
+                 "id":57,
+                 "name":"E_F4_RIGHT_SERVICE_B",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":-304,
+                         "y":0
+                        }, 
+                        {
+                         "x":-336,
+                         "y":0
+                        }, 
+                        {
+                         "x":-480,
+                         "y":0
+                        }, 
+                        {
+                         "x":-640,
+                         "y":160
+                        }],
+                 "properties":[
+                        {
+                         "name":"ambiguousExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"citizenExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"distance",
+                         "type":"string",
+                         "value":"HIGH"
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F4_RIGHT_SERVICE_B"
+                        }, 
+                        {
+                         "name":"encounterCandidates",
+                         "type":"string",
+                         "value":"OBSTACLE"
+                        }, 
+                        {
+                         "name":"facilityRisk",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F4_RIGHT_SERVICE_ZONE"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":22.0710678118655
+                        }, 
+                        {
+                         "name":"narrowness",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"obstacleRisk",
+                         "type":"string",
+                         "value":"MEDIUM"
+                        }, 
+                        {
+                         "name":"route",
+                         "type":"string",
+                         "value":"F4_SERVICE_ROUTE"
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F4_CENTER_GUARD"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1920,
+                 "y":400
+                }, 
+                {
+                 "height":0,
+                 "id":58,
+                 "name":"E_F4_GUARD_STAIR",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-256
+                        }],
+                 "properties":[
+                        {
+                         "name":"ambiguousExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"citizenExposure",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"distance",
+                         "type":"string",
+                         "value":"LOW"
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F4_GUARD_STAIR"
+                        }, 
+                        {
+                         "name":"encounterCandidates",
+                         "type":"string",
+                         "value":"VILLAIN_ENCOUNTER"
                         }, 
                         {
                          "name":"facilityRisk",
@@ -1119,22 +1851,22 @@
                         {
                          "name":"floor",
                          "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
                          "name":"from",
                          "type":"string",
-                         "value":"F3_CENTER_ARRIVAL"
+                         "value":"F4_CENTER_GUARD"
                         }, 
                         {
                          "name":"lengthTiles",
                          "type":"float",
-                         "value":40
+                         "value":8
                         }, 
                         {
                          "name":"narrowness",
                          "type":"string",
-                         "value":"LOW"
+                         "value":"MEDIUM"
                         }, 
                         {
                          "name":"obstacleRisk",
@@ -1144,221 +1876,111 @@
                         {
                          "name":"route",
                          "type":"string",
-                         "value":"F3_RIGHT_PERIMETER_ROUTE"
+                         "value":"F4_CENTER_STAIR_PASS"
                         }, 
                         {
                          "name":"to",
                          "type":"string",
-                         "value":"F3_RIGHT_PERIMETER_ZONE"
+                         "value":"F4_CENTER_STAIR"
                         }],
                  "rotation":0,
                  "type":"NavigationEdge",
                  "visible":true,
                  "width":0,
                  "x":1280,
-                 "y":1184
-                }, 
-                {
-                 "height":0,
-                 "id":31,
-                 "name":"E_F3_RIGHT_B",
-                 "opacity":1,
-                 "polyline":[
-                        {
-                         "x":0,
-                         "y":0
-                        }, 
-                        {
-                         "x":0,
-                         "y":-320
-                        }],
-                 "properties":[
-                        {
-                         "name":"ambiguousExposure",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"bidirectional",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"citizenExposure",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"distance",
-                         "type":"string",
-                         "value":"HIGH"
-                        }, 
-                        {
-                         "name":"edgeId",
-                         "type":"string",
-                         "value":"E_F3_RIGHT_B"
-                        }, 
-                        {
-                         "name":"encounterCandidates",
-                         "type":"string",
-                         "value":""
-                        }, 
-                        {
-                         "name":"facilityRisk",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"from",
-                         "type":"string",
-                         "value":"F3_RIGHT_PERIMETER_ZONE"
-                        }, 
-                        {
-                         "name":"lengthTiles",
-                         "type":"float",
-                         "value":10
-                        }, 
-                        {
-                         "name":"narrowness",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"obstacleRisk",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"route",
-                         "type":"string",
-                         "value":"F3_RIGHT_PERIMETER_ROUTE"
-                        }, 
-                        {
-                         "name":"to",
-                         "type":"string",
-                         "value":"F3_RIGHT_GUARD"
-                        }],
-                 "rotation":0,
-                 "type":"NavigationEdge",
-                 "visible":true,
-                 "width":0,
-                 "x":2176,
-                 "y":800
-                }, 
-                {
-                 "height":0,
-                 "id":32,
-                 "name":"E_F3_RIGHT_C",
-                 "opacity":1,
-                 "polyline":[
-                        {
-                         "x":0,
-                         "y":0
-                        }, 
-                        {
-                         "x":0,
-                         "y":-240
-                        }],
-                 "properties":[
-                        {
-                         "name":"ambiguousExposure",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"bidirectional",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"citizenExposure",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"distance",
-                         "type":"string",
-                         "value":"HIGH"
-                        }, 
-                        {
-                         "name":"edgeId",
-                         "type":"string",
-                         "value":"E_F3_RIGHT_C"
-                        }, 
-                        {
-                         "name":"encounterCandidates",
-                         "type":"string",
-                         "value":"VILLAIN_ENCOUNTER"
-                        }, 
-                        {
-                         "name":"facilityRisk",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"from",
-                         "type":"string",
-                         "value":"F3_RIGHT_GUARD"
-                        }, 
-                        {
-                         "name":"lengthTiles",
-                         "type":"float",
-                         "value":7.5
-                        }, 
-                        {
-                         "name":"narrowness",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"obstacleRisk",
-                         "type":"string",
-                         "value":"LOW"
-                        }, 
-                        {
-                         "name":"route",
-                         "type":"string",
-                         "value":"F3_RIGHT_PERIMETER_ROUTE"
-                        }, 
-                        {
-                         "name":"to",
-                         "type":"string",
-                         "value":"F3_RIGHT_STAIR"
-                        }],
-                 "rotation":0,
-                 "type":"NavigationEdge",
-                 "visible":true,
-                 "width":0,
-                 "x":2176,
-                 "y":480
+                 "y":560
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
         {
-         "color":"#9e00fb",
          "draworder":"topdown",
          "id":9,
-         "locked":true,
          "name":"EncounterZones",
          "objects":[
                 {
-                 "height":48,
-                 "id":33,
-                 "name":"F3_LEFT_OBSTACLE_ZONE_A",
+                 "height":192,
+                 "id":59,
+                 "name":"F4_LEFT_SECURITY_AMBIGUOUS_ZONE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"encounterType",
+                         "type":"string",
+                         "value":"AMBIGUOUS_PERSON"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"mandatory",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"route",
+                         "type":"string",
+                         "value":"F4_SECURITY_HALL_ROUTE"
+                        }, 
+                        {
+                         "name":"zoneId",
+                         "type":"string",
+                         "value":"F4_LEFT_SECURITY_AMBIGUOUS_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"EncounterZone",
+                 "visible":true,
+                 "width":96,
+                 "x":992,
+                 "y":768
+                }, 
+                {
+                 "height":192,
+                 "id":60,
+                 "name":"F4_RIGHT_INNER_AMBIGUOUS_ZONE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"encounterType",
+                         "type":"string",
+                         "value":"AMBIGUOUS_PERSON"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"mandatory",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"route",
+                         "type":"string",
+                         "value":"F4_INNER_SECURITY_ROUTE"
+                        }, 
+                        {
+                         "name":"zoneId",
+                         "type":"string",
+                         "value":"F4_RIGHT_INNER_AMBIGUOUS_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"EncounterZone",
+                 "visible":true,
+                 "width":96,
+                 "x":1472,
+                 "y":768
+                }, 
+                {
+                 "height":96,
+                 "id":61,
+                 "name":"F4_RIGHT_SERVICE_OBSTACLE_ZONE",
                  "opacity":1,
                  "properties":[
                         {
@@ -1374,7 +1996,7 @@
                         {
                          "name":"floor",
                          "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
                          "name":"mandatory",
@@ -1384,153 +2006,24 @@
                         {
                          "name":"route",
                          "type":"string",
-                         "value":"F3_LEFT_MAINTENANCE_ROUTE"
+                         "value":"F4_SERVICE_ROUTE"
                         }, 
                         {
                          "name":"zoneId",
                          "type":"string",
-                         "value":"F3_LEFT_OBSTACLE_ZONE_A"
+                         "value":"F4_RIGHT_SERVICE_OBSTACLE_ZONE"
                         }],
                  "rotation":0,
                  "type":"EncounterZone",
                  "visible":true,
-                 "width":48,
-                 "x":584,
-                 "y":632
+                 "width":224,
+                 "x":1744,
+                 "y":352
                 }, 
                 {
-                 "height":48,
-                 "id":34,
-                 "name":"F3_LEFT_OBSTACLE_ZONE_B",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"encounterType",
-                         "type":"string",
-                         "value":"OBSTACLE"
-                        }, 
-                        {
-                         "name":"facilityDamagePossible",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"mandatory",
-                         "type":"bool",
-                         "value":false
-                        }, 
-                        {
-                         "name":"route",
-                         "type":"string",
-                         "value":"F3_LEFT_MAINTENANCE_ROUTE"
-                        }, 
-                        {
-                         "name":"zoneId",
-                         "type":"string",
-                         "value":"F3_LEFT_OBSTACLE_ZONE_B"
-                        }],
-                 "rotation":0,
-                 "type":"EncounterZone",
-                 "visible":true,
-                 "width":40,
-                 "x":656,
-                 "y":728
-                }, 
-                {
-                 "height":64,
-                 "id":35,
-                 "name":"F3_LEFT_OBSTACLE_ZONE_C",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"encounterType",
-                         "type":"string",
-                         "value":"OBSTACLE"
-                        }, 
-                        {
-                         "name":"facilityDamagePossible",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"mandatory",
-                         "type":"bool",
-                         "value":false
-                        }, 
-                        {
-                         "name":"route",
-                         "type":"string",
-                         "value":"F3_LEFT_MAINTENANCE_ROUTE"
-                        }, 
-                        {
-                         "name":"zoneId",
-                         "type":"string",
-                         "value":"F3_LEFT_OBSTACLE_ZONE_C"
-                        }],
-                 "rotation":0,
-                 "type":"EncounterZone",
-                 "visible":true,
-                 "width":64,
-                 "x":592,
-                 "y":936
-                }, 
-                {
-                 "height":64,
-                 "id":36,
-                 "name":"F3_LEFT_OBSTACLE_ZONE_D",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"encounterType",
-                         "type":"string",
-                         "value":"OBSTACLE"
-                        }, 
-                        {
-                         "name":"facilityDamagePossible",
-                         "type":"bool",
-                         "value":true
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"mandatory",
-                         "type":"bool",
-                         "value":false
-                        }, 
-                        {
-                         "name":"route",
-                         "type":"string",
-                         "value":"F3_LEFT_MAINTENANCE_ROUTE"
-                        }, 
-                        {
-                         "name":"zoneId",
-                         "type":"string",
-                         "value":"F3_LEFT_OBSTACLE_ZONE_D"
-                        }],
-                 "rotation":0,
-                 "type":"EncounterZone",
-                 "visible":true,
-                 "width":72,
-                 "x":808,
-                 "y":920
-                }, 
-                {
-                 "height":112,
-                 "id":37,
-                 "name":"F3_LEFT_GUARD_ZONE",
+                 "height":272,
+                 "id":62,
+                 "name":"F4_CENTER_GUARD_ZONE",
                  "opacity":1,
                  "properties":[
                         {
@@ -1551,60 +2044,17 @@
                         {
                          "name":"floor",
                          "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
-                         "name":"route",
-                         "type":"string",
-                         "value":"F3_LEFT_MAINTENANCE_ROUTE"
-                        }, 
-                        {
-                         "name":"villainCount",
-                         "type":"int",
-                         "value":2
-                        }, 
-                        {
-                         "name":"zoneId",
-                         "type":"string",
-                         "value":"F3_LEFT_GUARD_ZONE"
-                        }],
-                 "rotation":0,
-                 "type":"EncounterZone",
-                 "visible":true,
-                 "width":128,
-                 "x":576,
-                 "y":400
-                }, 
-                {
-                 "height":144,
-                 "id":38,
-                 "name":"F3_RIGHT_GUARD_ZONE",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"actions",
-                         "type":"string",
-                         "value":"SUBDUE,DISTRACT,RETREAT"
-                        }, 
-                        {
-                         "name":"bypassAvailable",
+                         "name":"mandatory",
                          "type":"bool",
-                         "value":false
-                        }, 
-                        {
-                         "name":"encounterType",
-                         "type":"string",
-                         "value":"VILLAIN_ENCOUNTER"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
+                         "value":true
                         }, 
                         {
                          "name":"route",
                          "type":"string",
-                         "value":"F3_RIGHT_PERIMETER_ROUTE"
+                         "value":"F4_CENTER_STAIR_PASS"
                         }, 
                         {
                          "name":"villainCount",
@@ -1614,14 +2064,14 @@
                         {
                          "name":"zoneId",
                          "type":"string",
-                         "value":"F3_RIGHT_GUARD_ZONE"
+                         "value":"F4_CENTER_GUARD_ZONE"
                         }],
                  "rotation":0,
                  "type":"EncounterZone",
                  "visible":true,
-                 "width":129.333333333333,
-                 "x":2112,
-                 "y":400
+                 "width":640,
+                 "x":960,
+                 "y":336
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1630,224 +2080,143 @@
          "y":0
         }, 
         {
-         "color":"#ab47bc",
          "draworder":"topdown",
          "id":10,
-         "locked":true,
          "name":"FloorTransitions",
          "objects":[
                 {
-                 "height":96,
-                 "id":39,
-                 "name":"F3_LEFT_STAIR_TRANSITION",
+                 "height":64,
+                 "id":63,
+                 "name":"F4_CENTER_STAIR_TRANSITION",
                  "opacity":1,
                  "properties":[
                         {
                          "name":"floor",
                          "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
                          "name":"stairId",
                          "type":"string",
-                         "value":"F3_LEFT_STAIR"
+                         "value":"F4_CENTER_STAIR"
                         }, 
                         {
                          "name":"targetFloor",
                          "type":"int",
-                         "value":4
+                         "value":5
                         }, 
                         {
                          "name":"targetSpawn",
                          "type":"string",
-                         "value":"F4_LEFT_ARRIVAL"
+                         "value":"F5_SEARCH_HUB"
                         }, 
                         {
                          "name":"transitionId",
                          "type":"string",
-                         "value":"F3_LEFT_STAIR_TRANSITION"
+                         "value":"F4_CENTER_STAIR_TRANSITION"
                         }],
                  "rotation":0,
                  "type":"FloorTransition",
                  "visible":true,
-                 "width":96,
-                 "x":592,
-                 "y":144
-                }, 
-                {
-                 "height":96,
-                 "id":40,
-                 "name":"F3_RIGHT_STAIR_TRANSITION",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"stairId",
-                         "type":"string",
-                         "value":"F3_RIGHT_STAIR"
-                        }, 
-                        {
-                         "name":"targetFloor",
-                         "type":"int",
-                         "value":4
-                        }, 
-                        {
-                         "name":"targetSpawn",
-                         "type":"string",
-                         "value":"F4_RIGHT_ARRIVAL"
-                        }, 
-                        {
-                         "name":"transitionId",
-                         "type":"string",
-                         "value":"F3_RIGHT_STAIR_TRANSITION"
-                        }],
-                 "rotation":0,
-                 "type":"FloorTransition",
-                 "visible":true,
-                 "width":96,
-                 "x":2128,
-                 "y":144
+                 "width":288,
+                 "x":1136,
+                 "y":272
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
         {
-         "color":"#ffee58",
          "draworder":"topdown",
          "id":11,
-         "locked":true,
          "name":"SpawnPoints",
          "objects":[
                 {
                  "height":0,
-                 "id":41,
-                 "name":"F3_CENTER_ARRIVAL",
+                 "id":64,
+                 "name":"F4_LEFT_ARRIVAL",
                  "opacity":1,
                  "point":true,
                  "properties":[
                         {
                          "name":"floor",
                          "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
                          "name":"routeContextId",
                          "type":"string",
-                         "value":"F3_STAIR_SPLIT"
+                         "value":"F4_LEFT_APPROACH"
                         }, 
                         {
                          "name":"spawnId",
                          "type":"string",
-                         "value":"F3_CENTER_ARRIVAL"
+                         "value":"F4_LEFT_ARRIVAL"
                         }],
                  "rotation":0,
                  "type":"SpawnPoint",
                  "visible":true,
                  "width":0,
-                 "x":1280,
-                 "y":1184
+                 "x":304,
+                 "y":1120
+                }, 
+                {
+                 "height":0,
+                 "id":65,
+                 "name":"F4_RIGHT_ARRIVAL",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"routeContextId",
+                         "type":"string",
+                         "value":"F4_RIGHT_APPROACH"
+                        }, 
+                        {
+                         "name":"spawnId",
+                         "type":"string",
+                         "value":"F4_RIGHT_ARRIVAL"
+                        }],
+                 "rotation":0,
+                 "type":"SpawnPoint",
+                 "visible":true,
+                 "width":0,
+                 "x":2256,
+                 "y":1120
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }, 
         {
-         "color":"#ffffff",
          "draworder":"topdown",
          "id":12,
-         "locked":true,
          "name":"Debug",
          "objects":[
                 {
-                 "height":352,
-                 "id":42,
-                 "name":"F3_LEFT_STAIR_ARCHITECTURE",
+                 "height":265,
+                 "id":66,
+                 "name":"F4_LEFT_ARRIVAL_STAIR",
                  "opacity":1,
                  "properties":[
                         {
                          "name":"debugId",
                          "type":"string",
-                         "value":"F3_LEFT_STAIR_ARCHITECTURE"
+                         "value":"F4_LEFT_ARRIVAL_STAIR"
                         }, 
                         {
                          "name":"floor",
                          "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"role",
-                         "type":"string",
-                         "value":"UPWARD_STAIR"
-                        }, 
-                        {
-                         "name":"stairId",
-                         "type":"string",
-                         "value":"F3_LEFT_STAIR"
-                        }],
-                 "rotation":0,
-                 "type":"StairFootprint",
-                 "visible":true,
-                 "width":384,
-                 "x":448,
-                 "y":96
-                }, 
-                {
-                 "height":288,
-                 "id":43,
-                 "name":"F3_RIGHT_STAIR_ARCHITECTURE",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"debugId",
-                         "type":"string",
-                         "value":"F3_RIGHT_STAIR_ARCHITECTURE"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
-                        }, 
-                        {
-                         "name":"role",
-                         "type":"string",
-                         "value":"UPWARD_STAIR"
-                        }, 
-                        {
-                         "name":"stairId",
-                         "type":"string",
-                         "value":"F3_RIGHT_STAIR"
-                        }],
-                 "rotation":0,
-                 "type":"StairFootprint",
-                 "visible":true,
-                 "width":384,
-                 "x":1984,
-                 "y":96
-                }, 
-                {
-                 "height":160,
-                 "id":44,
-                 "name":"F3_CENTER_ARRIVAL_STAIR_ARCHITECTURE",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"debugId",
-                         "type":"string",
-                         "value":"F3_CENTER_ARRIVAL_STAIR_ARCHITECTURE"
-                        }, 
-                        {
-                         "name":"floor",
-                         "type":"int",
-                         "value":3
+                         "value":4
                         }, 
                         {
                          "name":"role",
@@ -1857,95 +2226,133 @@
                         {
                          "name":"stairId",
                          "type":"string",
-                         "value":"F3_CENTER_ARRIVAL_STAIR"
+                         "value":"F4_LEFT_ARRIVAL_STAIR"
                         }],
                  "rotation":0,
                  "type":"StairFootprint",
                  "visible":true,
-                 "width":384,
-                 "x":1088,
-                 "y":1216
+                 "width":392,
+                 "x":112,
+                 "y":1055
                 }, 
                 {
-                 "height":192,
-                 "id":45,
-                 "name":"F3_CENTER_DECISION_AREA",
+                 "height":265,
+                 "id":67,
+                 "name":"F4_RIGHT_ARRIVAL_STAIR",
                  "opacity":1,
                  "properties":[
                         {
                          "name":"debugId",
                          "type":"string",
-                         "value":"F3_CENTER_DECISION_AREA"
+                         "value":"F4_RIGHT_ARRIVAL_STAIR"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
                         }, 
                         {
                          "name":"role",
                          "type":"string",
-                         "value":"ROUTE_DECISION_AREA"
+                         "value":"ARRIVAL_STAIR"
                         }, 
                         {
-                         "name":"routeContextId",
+                         "name":"stairId",
                          "type":"string",
-                         "value":"F3_STAIR_SPLIT"
+                         "value":"F4_RIGHT_ARRIVAL_STAIR"
                         }],
                  "rotation":0,
-                 "type":"DecisionArea",
+                 "type":"StairFootprint",
                  "visible":true,
-                 "width":512,
-                 "x":1024,
-                 "y":1088
+                 "width":392,
+                 "x":2056,
+                 "y":1055
                 }, 
                 {
-                 "height":288,
-                 "id":46,
-                 "name":"F3_GREEN_FACILITY_ROOM_DEBUG",
+                 "height":264,
+                 "id":68,
+                 "name":"F4_CENTER_STAIR_FOOTPRINT",
                  "opacity":1,
                  "properties":[
                         {
                          "name":"debugId",
                          "type":"string",
-                         "value":"F3_GREEN_FACILITY_ROOM_DEBUG"
+                         "value":"F4_CENTER_STAIR_FOOTPRINT"
+                        }, 
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":4
                         }, 
                         {
                          "name":"role",
                          "type":"string",
-                         "value":"SEALED_FACILITY_ROOM"
+                         "value":"UP_STAIR"
+                        }, 
+                        {
+                         "name":"stairId",
+                         "type":"string",
+                         "value":"F4_CENTER_STAIR"
                         }],
                  "rotation":0,
-                 "type":"FacilityRoom",
+                 "type":"StairFootprint",
                  "visible":true,
-                 "width":384,
-                 "x":1632,
-                 "y":800
+                 "width":352,
+                 "x":1104,
+                 "y":72
+                }, 
+                {
+                 "height":648,
+                 "id":69,
+                 "name":"F4_CENTRAL_BLOCKED_BOUNDS",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"debugId",
+                         "type":"string",
+                         "value":"F4_CENTRAL_BLOCKED_BOUNDS"
+                        }, 
+                        {
+                         "name":"label",
+                         "type":"string",
+                         "value":"Central blocked mass"
+                        }],
+                 "rotation":0,
+                 "type":"DebugArea",
+                 "visible":true,
+                 "width":350,
+                 "x":1105,
+                 "y":672
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }],
  "nextlayerid":13,
- "nextobjectid":47,
+ "nextobjectid":87,
  "orientation":"orthogonal",
  "properties":[
         {
          "name":"floor",
          "type":"int",
-         "value":3
+         "value":4
         }, 
         {
          "name":"geometrySource",
          "type":"string",
-         "value":"floor_3_structure_clean_v2.png"
+         "value":"floor_4_structure_clean_v2.png"
         }, 
         {
-         "name":"routeContextId",
+         "name":"module",
          "type":"string",
-         "value":"F3_STAIR_SPLIT"
+         "value":"reinforcement-learning"
         }, 
         {
          "name":"status",
          "type":"string",
-         "value":"BLOCKOUT_PLAYTEST"
+         "value":"FLOOR4_STRUCTURE_PLAYTEST"
         }],
  "renderorder":"right-down",
  "tiledversion":"1.12.2",
@@ -1957,7 +2364,7 @@
         }, 
         {
          "firstgid":44,
-         "source":"..\/..\/assets\/environment\/reinforcement\/floor3_room_shell_manual\/floor3_room_shell_manual.tsj"
+         "source":"..\/..\/assets\/environment\/reinforcement\/floor4_room_shell_manual\/floor4_room_shell_manual.tsj"
         }],
  "tilewidth":32,
  "type":"map",

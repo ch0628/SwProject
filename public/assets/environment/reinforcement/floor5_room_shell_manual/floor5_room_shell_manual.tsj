@@ -1,0 +1,21 @@
+{
+  "columns": 0,
+  "grid": { "height": 32, "orientation": "orthogonal", "width": 32 },
+  "margin": 0,
+  "name": "floor5_room_shell_manual",
+  "objectalignment": "bottomleft",
+  "properties": [
+    { "name": "authoringMode", "type": "string", "value": "manual-placement" },
+    { "name": "gameplayGridPx", "type": "int", "value": 32 },
+    { "name": "namingContract", "type": "string", "value": "filename stem = Class = ASSET_IDS entry" }
+  ],
+  "spacing": 0,
+  "tilecount": 0,
+  "tiledversion": "1.12.2",
+  "tileheight": 32,
+  "tiles": [],
+  "tilewidth": 32,
+  "transformations": { "hflip": true, "preferuntransformed": false, "rotate": true, "vflip": true },
+  "type": "tileset",
+  "version": "1.10"
+}

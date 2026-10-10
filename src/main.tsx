@@ -21,6 +21,8 @@ import { AiBasicsApp } from './modules/ai-basics/AiBasicsApp';
 import { ReinforcementFloor1DebugApp } from './modules/reinforcement/debug/ReinforcementFloor1DebugApp';
 import { ReinforcementFloor2DebugApp } from './modules/reinforcement/debug/ReinforcementFloor2DebugApp';
 import { ReinforcementFloor3DebugApp } from './modules/reinforcement/debug/ReinforcementFloor3DebugApp';
+import { ReinforcementFloor4DebugApp } from './modules/reinforcement/debug/ReinforcementFloor4DebugApp';
+import { ReinforcementFloor5DebugApp } from './modules/reinforcement/debug/ReinforcementFloor5DebugApp';
 import worldBackground from '../assets/background/world_background.png';
 import fairyImg from '../assets/ai/fairy.png';
 import centralAiCoreImg from '../assets/ai/central_ai_core.png';
@@ -717,5 +719,5 @@ function Hub() {
 const entryParams = new URLSearchParams(window.location.search);
 const mode = entryParams.get('mode');
 createRoot(document.getElementById('root')!).render(
-  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' ? <App /> : mode === 'reinforcement-floor1-debug' ? <ReinforcementFloor1DebugApp /> : mode === 'reinforcement-floor2-debug' ? <ReinforcementFloor2DebugApp /> : mode === 'reinforcement-floor3-debug' ? <ReinforcementFloor3DebugApp /> : <Hub />,
+  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' ? <App /> : mode === 'reinforcement-floor1-debug' ? <ReinforcementFloor1DebugApp /> : mode === 'reinforcement-floor2-debug' ? <ReinforcementFloor2DebugApp /> : mode === 'reinforcement-floor3-debug' ? <ReinforcementFloor3DebugApp /> : mode === 'reinforcement-floor4-debug' ? <ReinforcementFloor4DebugApp /> : mode === 'reinforcement-floor5-debug' ? <ReinforcementFloor5DebugApp /> : <Hub />,
 );
