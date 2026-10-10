@@ -1,2874 +1,3007 @@
-{
-  "compressionlevel": -1,
-  "infinite": false,
-  "orientation": "orthogonal",
-  "renderorder": "right-down",
-  "type": "map",
-  "version": "1.10",
-  "tiledversion": "1.12.2",
-  "width": 80,
-  "height": 45,
-  "tilewidth": 32,
-  "tileheight": 32,
-  "nextlayerid": 13,
-  "nextobjectid": 82,
-  "properties": [
-    {
-      "name": "geometrySource",
-      "type": "string",
-      "value": "floor_5_structure_arch_v3.png"
-    },
-    {
-      "name": "role",
-      "type": "string",
-      "value": "BOSS_SEARCH_FINAL_CONTROL"
-    },
-    {
-      "name": "bossCandidateRooms",
-      "type": "string",
-      "value": "L1,L2,R1,R2"
-    },
-    {
-      "name": "locationSelection",
-      "type": "string",
-      "value": "SEEDED_RANDOM_PER_EPISODE"
-    },
-    {
-      "name": "locationPolicyVisibility",
-      "type": "bool",
-      "value": false
-    },
-    {
-      "name": "searchedRoomState",
-      "type": "string",
-      "value": "EPISODE_LOCAL_SET"
-    },
-    {
-      "name": "repeatSelectionAllowed",
-      "type": "bool",
-      "value": false
-    },
-    {
-      "name": "contextKeyIncludesHiddenLocation",
-      "type": "bool",
-      "value": false
-    }
-  ],
-  "tilesets": [
-    {
-      "firstgid": 1,
-      "source": "../../assets/environment/reinforcement/floor1_room_shell_manual/floor1_room_shell_manual.tsj"
-    },
-    {
-      "firstgid": 100,
-      "source": "../../assets/environment/reinforcement/floor5_room_shell_manual/floor5_room_shell_manual.tsj"
-    }
-  ],
-  "layers": [
-    {
-      "id": 1,
-      "name": "Ground",
-      "type": "tilelayer",
-      "width": 80,
-      "height": 45,
-      "x": 0,
-      "y": 0,
-      "opacity": 1,
-      "visible": true,
-      "encoding": "base64",
-      "compression": "zlib",
-      "data": "eJztwwEJAAAMBKGL8P3TrsdQcNVUVVVVVVVVVVVVVVVV1VcPjTXhAQ=="
-    },
-    {
-      "id": 2,
-      "name": "FloorDetail",
-      "type": "tilelayer",
-      "width": 80,
-      "height": 45,
-      "x": 0,
-      "y": 0,
-      "opacity": 1,
-      "visible": true,
-      "encoding": "base64",
-      "compression": "zlib",
-      "data": "eJzt1DESwjAMRcFwBe5/WFpSJfaXjYP3zbhEkbbgOCTt2qvx9f5u1Nxfxy+LXxa/LH5Z/LL4ZfHL4ldXy46j/Hr3WaGqfVebM6vV7ua3xpz0e3f36Nl3xP9e6z5V3+THjx8/fvz48eN3fWNyd9UcftkcftmcKr+7M1e5u3pOapbO4pfN4nc9Z+fHjx+/5z5+/J7gN6t/vWtW/LL4ZfHL+jZ4Nz5+51r9dI5fFr89+wBXYAmz"
-    },
-    {
-      "id": 3,
-      "name": "Walls",
-      "type": "tilelayer",
-      "width": 80,
-      "height": 45,
-      "x": 0,
-      "y": 0,
-      "opacity": 1,
-      "visible": true,
-      "encoding": "base64",
-      "compression": "zlib",
-      "data": "eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB"
-    },
-    {
-      "id": 4,
-      "name": "WallTop",
-      "type": "tilelayer",
-      "width": 80,
-      "height": 45,
-      "x": 0,
-      "y": 0,
-      "opacity": 1,
-      "visible": true,
-      "encoding": "base64",
-      "compression": "zlib",
-      "data": "eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB"
-    },
-    {
-      "id": 5,
-      "name": "StaticProps",
-      "type": "tilelayer",
-      "width": 80,
-      "height": 45,
-      "x": 0,
-      "y": 0,
-      "opacity": 1,
-      "visible": true,
-      "encoding": "base64",
-      "compression": "zlib",
-      "data": "eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB"
-    },
-    {
-      "id": 6,
-      "name": "Collision",
-      "type": "objectgroup",
-      "draworder": "topdown",
-      "objects": [
-        {
-          "id": 1,
-          "name": "F5_ARCH_MASS_001",
-          "type": "ArchitecturalMass",
-          "x": 0,
-          "y": 0,
-          "width": 2560,
-          "height": 96,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 2,
-          "name": "F5_ARCH_MASS_002",
-          "type": "ArchitecturalMass",
-          "x": 0,
-          "y": 96,
-          "width": 512,
-          "height": 288,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 3,
-          "name": "F5_ARCH_MASS_003",
-          "type": "ArchitecturalMass",
-          "x": 896,
-          "y": 96,
-          "width": 64,
-          "height": 288,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 4,
-          "name": "F5_ARCH_MASS_004",
-          "type": "ArchitecturalMass",
-          "x": 1600,
-          "y": 96,
-          "width": 64,
-          "height": 288,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 5,
-          "name": "F5_ARCH_MASS_005",
-          "type": "ArchitecturalMass",
-          "x": 2048,
-          "y": 96,
-          "width": 512,
-          "height": 288,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 6,
-          "name": "F5_ARCH_MASS_006",
-          "type": "ArchitecturalMass",
-          "x": 800,
-          "y": 384,
-          "width": 160,
-          "height": 32,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 7,
-          "name": "F5_ARCH_MASS_007",
-          "type": "ArchitecturalMass",
-          "x": 1600,
-          "y": 384,
-          "width": 160,
-          "height": 32,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 8,
-          "name": "F5_ARCH_MASS_008",
-          "type": "ArchitecturalMass",
-          "x": 0,
-          "y": 384,
-          "width": 608,
-          "height": 128,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 9,
-          "name": "F5_ARCH_MASS_009",
-          "type": "ArchitecturalMass",
-          "x": 800,
-          "y": 416,
-          "width": 384,
-          "height": 96,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 10,
-          "name": "F5_ARCH_MASS_010",
-          "type": "ArchitecturalMass",
-          "x": 1376,
-          "y": 416,
-          "width": 384,
-          "height": 96,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 11,
-          "name": "F5_ARCH_MASS_011",
-          "type": "ArchitecturalMass",
-          "x": 1952,
-          "y": 384,
-          "width": 608,
-          "height": 128,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 12,
-          "name": "F5_ARCH_MASS_012",
-          "type": "ArchitecturalMass",
-          "x": 800,
-          "y": 512,
-          "width": 224,
-          "height": 256,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 13,
-          "name": "F5_ARCH_MASS_013",
-          "type": "ArchitecturalMass",
-          "x": 1536,
-          "y": 512,
-          "width": 224,
-          "height": 256,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 14,
-          "name": "F5_ARCH_MASS_014",
-          "type": "ArchitecturalMass",
-          "x": 0,
-          "y": 512,
-          "width": 96,
-          "height": 352,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 15,
-          "name": "F5_ARCH_MASS_015",
-          "type": "ArchitecturalMass",
-          "x": 480,
-          "y": 512,
-          "width": 128,
-          "height": 352,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 16,
-          "name": "F5_ARCH_MASS_016",
-          "type": "ArchitecturalMass",
-          "x": 1952,
-          "y": 512,
-          "width": 128,
-          "height": 352,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 17,
-          "name": "F5_ARCH_MASS_017",
-          "type": "ArchitecturalMass",
-          "x": 2464,
-          "y": 512,
-          "width": 96,
-          "height": 352,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 18,
-          "name": "F5_ARCH_MASS_018",
-          "type": "ArchitecturalMass",
-          "x": 0,
-          "y": 864,
-          "width": 192,
-          "height": 96,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 19,
-          "name": "F5_ARCH_MASS_019",
-          "type": "ArchitecturalMass",
-          "x": 416,
-          "y": 864,
-          "width": 192,
-          "height": 96,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 20,
-          "name": "F5_ARCH_MASS_020",
-          "type": "ArchitecturalMass",
-          "x": 800,
-          "y": 768,
-          "width": 384,
-          "height": 192,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 21,
-          "name": "F5_ARCH_MASS_021",
-          "type": "ArchitecturalMass",
-          "x": 1376,
-          "y": 768,
-          "width": 384,
-          "height": 192,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 22,
-          "name": "F5_ARCH_MASS_022",
-          "type": "ArchitecturalMass",
-          "x": 1952,
-          "y": 864,
-          "width": 192,
-          "height": 96,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 23,
-          "name": "F5_ARCH_MASS_023",
-          "type": "ArchitecturalMass",
-          "x": 2368,
-          "y": 864,
-          "width": 192,
-          "height": 96,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 24,
-          "name": "F5_ARCH_MASS_024",
-          "type": "ArchitecturalMass",
-          "x": 0,
-          "y": 960,
-          "width": 160,
-          "height": 192,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 25,
-          "name": "F5_ARCH_MASS_025",
-          "type": "ArchitecturalMass",
-          "x": 2400,
-          "y": 960,
-          "width": 160,
-          "height": 192,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 26,
-          "name": "F5_ARCH_MASS_026",
-          "type": "ArchitecturalMass",
-          "x": 0,
-          "y": 1152,
-          "width": 992,
-          "height": 160,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 27,
-          "name": "F5_ARCH_MASS_027",
-          "type": "ArchitecturalMass",
-          "x": 1568,
-          "y": 1152,
-          "width": 992,
-          "height": 160,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 28,
-          "name": "F5_ARCH_MASS_028",
-          "type": "ArchitecturalMass",
-          "x": 0,
-          "y": 1312,
-          "width": 1088,
-          "height": 96,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 29,
-          "name": "F5_ARCH_MASS_029",
-          "type": "ArchitecturalMass",
-          "x": 1472,
-          "y": 1312,
-          "width": 1088,
-          "height": 96,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 30,
-          "name": "F5_ARCH_MASS_030",
-          "type": "ArchitecturalMass",
-          "x": 0,
-          "y": 1408,
-          "width": 2560,
-          "height": 32,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 31,
-          "name": "F5_SECURITY_LOCK_BARRIER",
-          "type": "SecurityLock",
-          "x": 1184,
-          "y": 448,
-          "width": 192,
-          "height": 32,
-          "properties": [
-            {
-              "name": "blocksRobot",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "dynamicLock",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "requiresState",
-              "type": "string",
-              "value": "BOSS_NEUTRALIZED"
-            }
-          ]
-        }
-      ],
-      "opacity": 1,
-      "visible": true,
-      "x": 0,
-      "y": 0
-    },
-    {
-      "id": 7,
-      "name": "NavigationNodes",
-      "type": "objectgroup",
-      "draworder": "topdown",
-      "objects": [
-        {
-          "id": 32,
-          "name": "F5_SEARCH_HUB",
-          "type": "DECISION",
-          "x": 1280,
-          "y": 1200,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_SEARCH_HUB"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            },
-            {
-              "name": "routeContextId",
-              "type": "string",
-              "value": "F5_ROOM_SEARCH[{CANONICAL_REMAINING_ROOMS}]"
-            }
-          ]
-        },
-        {
-          "id": 33,
-          "name": "F5_LEFT_WING",
-          "type": "ZONE",
-          "x": 704,
-          "y": 976,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_LEFT_WING"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 34,
-          "name": "F5_L1_GUARD",
-          "type": "ENCOUNTER",
-          "x": 304,
-          "y": 928,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_L1_GUARD"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 35,
-          "name": "F5_ROOM_L1",
-          "type": "SEARCH_ROOM",
-          "x": 304,
-          "y": 640,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_ROOM_L1"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            },
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "L1"
-            }
-          ]
-        },
-        {
-          "id": 36,
-          "name": "F5_L2_GUARD",
-          "type": "ENCOUNTER",
-          "x": 704,
-          "y": 480,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_L2_GUARD"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 37,
-          "name": "F5_ROOM_L2",
-          "type": "SEARCH_ROOM",
-          "x": 704,
-          "y": 224,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_ROOM_L2"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            },
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "L2"
-            }
-          ]
-        },
-        {
-          "id": 38,
-          "name": "F5_RIGHT_WING",
-          "type": "ZONE",
-          "x": 1856,
-          "y": 976,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_RIGHT_WING"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 39,
-          "name": "F5_R1_GUARD",
-          "type": "ENCOUNTER",
-          "x": 2256,
-          "y": 928,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_R1_GUARD"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 40,
-          "name": "F5_ROOM_R1",
-          "type": "SEARCH_ROOM",
-          "x": 2256,
-          "y": 640,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_ROOM_R1"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            },
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "R1"
-            }
-          ]
-        },
-        {
-          "id": 41,
-          "name": "F5_R2_GUARD",
-          "type": "ENCOUNTER",
-          "x": 1856,
-          "y": 480,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_R2_GUARD"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 42,
-          "name": "F5_ROOM_R2",
-          "type": "SEARCH_ROOM",
-          "x": 1856,
-          "y": 224,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_ROOM_R2"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            },
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "R2"
-            }
-          ]
-        },
-        {
-          "id": 43,
-          "name": "F5_CENTRAL_HALL",
-          "type": "ZONE",
-          "x": 1280,
-          "y": 624,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_CENTRAL_HALL"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 44,
-          "name": "F5_SECURITY_LOCK",
-          "type": "LOCK",
-          "x": 1280,
-          "y": 496,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_SECURITY_LOCK"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 45,
-          "name": "F5_CONTROL_ROOM",
-          "type": "CONTROL_ROOM",
-          "x": 1280,
-          "y": 336,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_CONTROL_ROOM"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 46,
-          "name": "F5_GOAL",
-          "type": "GOAL",
-          "x": 1280,
-          "y": 224,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "nodeId",
-              "type": "string",
-              "value": "F5_GOAL"
-            },
-            {
-              "name": "floor",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        }
-      ],
-      "opacity": 1,
-      "visible": true,
-      "x": 0,
-      "y": 0
-    },
-    {
-      "id": 8,
-      "name": "NavigationEdges",
-      "type": "objectgroup",
-      "draworder": "topdown",
-      "objects": [
-        {
-          "id": 47,
-          "name": "E_F5_HUB_LEFT",
-          "type": "NavigationEdge",
-          "x": 1280,
-          "y": 1200,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -160
-            },
-            {
-              "x": -576,
-              "y": -160
-            },
-            {
-              "x": -576,
-              "y": -224
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_HUB_LEFT"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_SEARCH_HUB"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_LEFT_WING"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_LEFT_WING_ROUTE"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 25
-            }
-          ]
-        },
-        {
-          "id": 48,
-          "name": "E_F5_LEFT_L1_GUARD",
-          "type": "NavigationEdge",
-          "x": 704,
-          "y": 976,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": -400,
-              "y": 0
-            },
-            {
-              "x": -400,
-              "y": -48
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_LEFT_L1_GUARD"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_LEFT_WING"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_L1_GUARD"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_L1_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 14
-            }
-          ]
-        },
-        {
-          "id": 49,
-          "name": "E_F5_L1_ROOM",
-          "type": "NavigationEdge",
-          "x": 304,
-          "y": 928,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -288
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_L1_ROOM"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_L1_GUARD"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_ROOM_L1"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_L1_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 9
-            }
-          ]
-        },
-        {
-          "id": 50,
-          "name": "E_F5_LEFT_L2_GUARD",
-          "type": "NavigationEdge",
-          "x": 704,
-          "y": 976,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -496
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_LEFT_L2_GUARD"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_LEFT_WING"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_L2_GUARD"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_L2_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "float",
-              "value": 15.5
-            }
-          ]
-        },
-        {
-          "id": 51,
-          "name": "E_F5_L2_ROOM",
-          "type": "NavigationEdge",
-          "x": 704,
-          "y": 480,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -256
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_L2_ROOM"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_L2_GUARD"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_ROOM_L2"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_L2_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 8
-            }
-          ]
-        },
-        {
-          "id": 52,
-          "name": "E_F5_HUB_RIGHT",
-          "type": "NavigationEdge",
-          "x": 1280,
-          "y": 1200,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -160
-            },
-            {
-              "x": 576,
-              "y": -160
-            },
-            {
-              "x": 576,
-              "y": -224
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_HUB_RIGHT"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_SEARCH_HUB"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_RIGHT_WING"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_RIGHT_WING_ROUTE"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 25
-            }
-          ]
-        },
-        {
-          "id": 53,
-          "name": "E_F5_RIGHT_R1_GUARD",
-          "type": "NavigationEdge",
-          "x": 1856,
-          "y": 976,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 400,
-              "y": 0
-            },
-            {
-              "x": 400,
-              "y": -48
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_RIGHT_R1_GUARD"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_RIGHT_WING"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_R1_GUARD"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_R1_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 14
-            }
-          ]
-        },
-        {
-          "id": 54,
-          "name": "E_F5_R1_ROOM",
-          "type": "NavigationEdge",
-          "x": 2256,
-          "y": 928,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -288
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_R1_ROOM"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_R1_GUARD"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_ROOM_R1"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_R1_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 9
-            }
-          ]
-        },
-        {
-          "id": 55,
-          "name": "E_F5_RIGHT_R2_GUARD",
-          "type": "NavigationEdge",
-          "x": 1856,
-          "y": 976,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -496
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_RIGHT_R2_GUARD"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_RIGHT_WING"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_R2_GUARD"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_R2_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "float",
-              "value": 15.5
-            }
-          ]
-        },
-        {
-          "id": 56,
-          "name": "E_F5_R2_ROOM",
-          "type": "NavigationEdge",
-          "x": 1856,
-          "y": 480,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -256
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_R2_ROOM"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_R2_GUARD"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_ROOM_R2"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_R2_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "ALWAYS"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 8
-            }
-          ]
-        },
-        {
-          "id": 57,
-          "name": "E_F5_L1_NO_BOSS_RETURN",
-          "type": "NavigationEdge",
-          "x": 304,
-          "y": 640,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": 288
-            },
-            {
-              "x": 0,
-              "y": 336
-            },
-            {
-              "x": 400,
-              "y": 336
-            },
-            {
-              "x": 400,
-              "y": 400
-            },
-            {
-              "x": 976,
-              "y": 400
-            },
-            {
-              "x": 976,
-              "y": 560
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_L1_NO_BOSS_RETURN"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_ROOM_L1"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_SEARCH_HUB"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_SEARCH_RETURN"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "NO_BOSS_RETURN"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 48
-            }
-          ]
-        },
-        {
-          "id": 58,
-          "name": "E_F5_L2_NO_BOSS_RETURN",
-          "type": "NavigationEdge",
-          "x": 704,
-          "y": 224,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": 256
-            },
-            {
-              "x": 0,
-              "y": 752
-            },
-            {
-              "x": 0,
-              "y": 816
-            },
-            {
-              "x": 576,
-              "y": 816
-            },
-            {
-              "x": 576,
-              "y": 976
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_L2_NO_BOSS_RETURN"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_ROOM_L2"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_SEARCH_HUB"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_SEARCH_RETURN"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "NO_BOSS_RETURN"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "float",
-              "value": 48.5
-            }
-          ]
-        },
-        {
-          "id": 59,
-          "name": "E_F5_R1_NO_BOSS_RETURN",
-          "type": "NavigationEdge",
-          "x": 2256,
-          "y": 640,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": 288
-            },
-            {
-              "x": 0,
-              "y": 336
-            },
-            {
-              "x": -400,
-              "y": 336
-            },
-            {
-              "x": -400,
-              "y": 400
-            },
-            {
-              "x": -976,
-              "y": 400
-            },
-            {
-              "x": -976,
-              "y": 560
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_R1_NO_BOSS_RETURN"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_ROOM_R1"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_SEARCH_HUB"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_SEARCH_RETURN"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "NO_BOSS_RETURN"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 48
-            }
-          ]
-        },
-        {
-          "id": 60,
-          "name": "E_F5_R2_NO_BOSS_RETURN",
-          "type": "NavigationEdge",
-          "x": 1856,
-          "y": 224,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": 256
-            },
-            {
-              "x": 0,
-              "y": 752
-            },
-            {
-              "x": 0,
-              "y": 816
-            },
-            {
-              "x": -576,
-              "y": 816
-            },
-            {
-              "x": -576,
-              "y": 976
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_R2_NO_BOSS_RETURN"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_ROOM_R2"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_SEARCH_HUB"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_SEARCH_RETURN"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "NO_BOSS_RETURN"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "float",
-              "value": 48.5
-            }
-          ]
-        },
-        {
-          "id": 61,
-          "name": "E_F5_L1_POST_BOSS",
-          "type": "NavigationEdge",
-          "x": 304,
-          "y": 640,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": 288
-            },
-            {
-              "x": 0,
-              "y": 336
-            },
-            {
-              "x": 976,
-              "y": 336
-            },
-            {
-              "x": 976,
-              "y": -16
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_L1_POST_BOSS"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_ROOM_L1"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_CENTRAL_HALL"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_POST_BOSS_RETURN"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "BOSS_NEUTRALIZED"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 52
-            }
-          ]
-        },
-        {
-          "id": 62,
-          "name": "E_F5_L2_POST_BOSS",
-          "type": "NavigationEdge",
-          "x": 704,
-          "y": 224,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": 256
-            },
-            {
-              "x": 0,
-              "y": 752
-            },
-            {
-              "x": 576,
-              "y": 752
-            },
-            {
-              "x": 576,
-              "y": 400
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_L2_POST_BOSS"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_ROOM_L2"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_CENTRAL_HALL"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_POST_BOSS_RETURN"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "BOSS_NEUTRALIZED"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "float",
-              "value": 52.5
-            }
-          ]
-        },
-        {
-          "id": 63,
-          "name": "E_F5_R1_POST_BOSS",
-          "type": "NavigationEdge",
-          "x": 2256,
-          "y": 640,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": 288
-            },
-            {
-              "x": 0,
-              "y": 336
-            },
-            {
-              "x": -976,
-              "y": 336
-            },
-            {
-              "x": -976,
-              "y": -16
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_R1_POST_BOSS"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_ROOM_R1"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_CENTRAL_HALL"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_POST_BOSS_RETURN"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "BOSS_NEUTRALIZED"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 52
-            }
-          ]
-        },
-        {
-          "id": 64,
-          "name": "E_F5_R2_POST_BOSS",
-          "type": "NavigationEdge",
-          "x": 1856,
-          "y": 224,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": 256
-            },
-            {
-              "x": 0,
-              "y": 752
-            },
-            {
-              "x": -576,
-              "y": 752
-            },
-            {
-              "x": -576,
-              "y": 400
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_R2_POST_BOSS"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_ROOM_R2"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_CENTRAL_HALL"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_POST_BOSS_RETURN"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "BOSS_NEUTRALIZED"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "float",
-              "value": 52.5
-            }
-          ]
-        },
-        {
-          "id": 65,
-          "name": "E_F5_HALL_LOCK",
-          "type": "NavigationEdge",
-          "x": 1280,
-          "y": 624,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -128
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_HALL_LOCK"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_CENTRAL_HALL"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_SECURITY_LOCK"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_CONTROL_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "BOSS_NEUTRALIZED"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 4
-            }
-          ]
-        },
-        {
-          "id": 66,
-          "name": "E_F5_LOCK_CONTROL",
-          "type": "NavigationEdge",
-          "x": 1280,
-          "y": 496,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -160
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_LOCK_CONTROL"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_SECURITY_LOCK"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_CONTROL_ROOM"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_CONTROL_APPROACH"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "BOSS_NEUTRALIZED"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "int",
-              "value": 5
-            }
-          ]
-        },
-        {
-          "id": 67,
-          "name": "E_F5_CONTROL_GOAL",
-          "type": "NavigationEdge",
-          "x": 1280,
-          "y": 336,
-          "width": 0,
-          "height": 0,
-          "polyline": [
-            {
-              "x": 0,
-              "y": 0
-            },
-            {
-              "x": 0,
-              "y": -112
-            }
-          ],
-          "properties": [
-            {
-              "name": "edgeId",
-              "type": "string",
-              "value": "E_F5_CONTROL_GOAL"
-            },
-            {
-              "name": "from",
-              "type": "string",
-              "value": "F5_CONTROL_ROOM"
-            },
-            {
-              "name": "to",
-              "type": "string",
-              "value": "F5_GOAL"
-            },
-            {
-              "name": "bidirectional",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "visualRouteId",
-              "type": "string",
-              "value": "F5_GOAL_TRANSITION"
-            },
-            {
-              "name": "availability",
-              "type": "string",
-              "value": "SYSTEM_RESTORED"
-            },
-            {
-              "name": "lengthTiles",
-              "type": "float",
-              "value": 3.5
-            }
-          ]
-        }
-      ],
-      "opacity": 1,
-      "visible": true,
-      "x": 0,
-      "y": 0
-    },
-    {
-      "id": 9,
-      "name": "EncounterZones",
-      "type": "objectgroup",
-      "draworder": "topdown",
-      "objects": [
-        {
-          "id": 68,
-          "name": "F5_L1_GUARD_ZONE",
-          "type": "GuardEncounter",
-          "x": 192,
-          "y": 896,
-          "width": 224,
-          "height": 64,
-          "properties": [
-            {
-              "name": "zoneId",
-              "type": "string",
-              "value": "F5_L1_GUARD_ZONE"
-            },
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "L1"
-            },
-            {
-              "name": "state",
-              "type": "string",
-              "value": "VILLAIN_ENCOUNTER"
-            },
-            {
-              "name": "encounterType",
-              "type": "string",
-              "value": "VILLAIN_ENCOUNTER"
-            },
-            {
-              "name": "villainCount",
-              "type": "int",
-              "value": 1
-            },
-            {
-              "name": "bypassAvailable",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "mandatory",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "actions",
-              "type": "string",
-              "value": "SUBDUE,DISTRACT,RETREAT"
-            }
-          ]
-        },
-        {
-          "id": 69,
-          "name": "F5_L2_GUARD_ZONE",
-          "type": "GuardEncounter",
-          "x": 608,
-          "y": 448,
-          "width": 192,
-          "height": 64,
-          "properties": [
-            {
-              "name": "zoneId",
-              "type": "string",
-              "value": "F5_L2_GUARD_ZONE"
-            },
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "L2"
-            },
-            {
-              "name": "state",
-              "type": "string",
-              "value": "VILLAIN_ENCOUNTER"
-            },
-            {
-              "name": "encounterType",
-              "type": "string",
-              "value": "VILLAIN_ENCOUNTER"
-            },
-            {
-              "name": "villainCount",
-              "type": "int",
-              "value": 1
-            },
-            {
-              "name": "bypassAvailable",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "mandatory",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "actions",
-              "type": "string",
-              "value": "SUBDUE,DISTRACT,RETREAT"
-            }
-          ]
-        },
-        {
-          "id": 70,
-          "name": "F5_R1_GUARD_ZONE",
-          "type": "GuardEncounter",
-          "x": 2144,
-          "y": 896,
-          "width": 224,
-          "height": 64,
-          "properties": [
-            {
-              "name": "zoneId",
-              "type": "string",
-              "value": "F5_R1_GUARD_ZONE"
-            },
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "R1"
-            },
-            {
-              "name": "state",
-              "type": "string",
-              "value": "VILLAIN_ENCOUNTER"
-            },
-            {
-              "name": "encounterType",
-              "type": "string",
-              "value": "VILLAIN_ENCOUNTER"
-            },
-            {
-              "name": "villainCount",
-              "type": "int",
-              "value": 1
-            },
-            {
-              "name": "bypassAvailable",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "mandatory",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "actions",
-              "type": "string",
-              "value": "SUBDUE,DISTRACT,RETREAT"
-            }
-          ]
-        },
-        {
-          "id": 71,
-          "name": "F5_R2_GUARD_ZONE",
-          "type": "GuardEncounter",
-          "x": 1760,
-          "y": 448,
-          "width": 192,
-          "height": 64,
-          "properties": [
-            {
-              "name": "zoneId",
-              "type": "string",
-              "value": "F5_R2_GUARD_ZONE"
-            },
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "R2"
-            },
-            {
-              "name": "state",
-              "type": "string",
-              "value": "VILLAIN_ENCOUNTER"
-            },
-            {
-              "name": "encounterType",
-              "type": "string",
-              "value": "VILLAIN_ENCOUNTER"
-            },
-            {
-              "name": "villainCount",
-              "type": "int",
-              "value": 1
-            },
-            {
-              "name": "bypassAvailable",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "mandatory",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "actions",
-              "type": "string",
-              "value": "SUBDUE,DISTRACT,RETREAT"
-            }
-          ]
-        }
-      ],
-      "opacity": 1,
-      "visible": true,
-      "x": 0,
-      "y": 0
-    },
-    {
-      "id": 10,
-      "name": "FloorTransitions",
-      "type": "objectgroup",
-      "draworder": "topdown",
-      "objects": [],
-      "opacity": 1,
-      "visible": true,
-      "x": 0,
-      "y": 0
-    },
-    {
-      "id": 11,
-      "name": "SpawnPoints",
-      "type": "objectgroup",
-      "draworder": "topdown",
-      "objects": [
-        {
-          "id": 82,
-          "name": "F5_SEARCH_HUB_SPAWN",
-          "type": "SpawnPoint",
-          "x": 1280,
-          "y": 1200,
-          "width": 0,
-          "height": 0,
-          "point": true,
-          "properties": [
-            {
-              "name": "spawnId",
-              "type": "string",
-              "value": "F5_SEARCH_HUB"
-            },
-            {
-              "name": "sourceFloor",
-              "type": "int",
-              "value": 4
-            },
-            {
-              "name": "sourceTransition",
-              "type": "string",
-              "value": "F4_CENTER_STAIR_TRANSITION"
-            },
-            {
-              "name": "routeContextId",
-              "type": "string",
-              "value": "F5_ROOM_SEARCH[L1,L2,R1,R2]"
-            }
-          ]
-        }
-      ],
-      "opacity": 1,
-      "visible": true,
-      "x": 0,
-      "y": 0
-    },
-    {
-      "id": 12,
-      "name": "Debug",
-      "type": "objectgroup",
-      "draworder": "topdown",
-      "objects": [
-        {
-          "id": 72,
-          "name": "F5_ROOM_L1_REGION",
-          "type": "SearchRoom",
-          "x": 96,
-          "y": 512,
-          "width": 384,
-          "height": 352,
-          "properties": [
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "L1"
-            },
-            {
-              "name": "walkable",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "bossCandidate",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 73,
-          "name": "F5_ROOM_L2_REGION",
-          "type": "SearchRoom",
-          "x": 512,
-          "y": 96,
-          "width": 384,
-          "height": 288,
-          "properties": [
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "L2"
-            },
-            {
-              "name": "walkable",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "bossCandidate",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 74,
-          "name": "F5_ROOM_R1_REGION",
-          "type": "SearchRoom",
-          "x": 2080,
-          "y": 512,
-          "width": 384,
-          "height": 352,
-          "properties": [
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "R1"
-            },
-            {
-              "name": "walkable",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "bossCandidate",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 75,
-          "name": "F5_ROOM_R2_REGION",
-          "type": "SearchRoom",
-          "x": 1664,
-          "y": 96,
-          "width": 384,
-          "height": 288,
-          "properties": [
-            {
-              "name": "roomId",
-              "type": "string",
-              "value": "R2"
-            },
-            {
-              "name": "walkable",
-              "type": "bool",
-              "value": true
-            },
-            {
-              "name": "bossCandidate",
-              "type": "bool",
-              "value": true
-            }
-          ]
-        },
-        {
-          "id": 76,
-          "name": "F5_ARRIVAL_STAIR",
-          "type": "ArrivalStair",
-          "x": 1088,
-          "y": 1280,
-          "width": 384,
-          "height": 128,
-          "properties": [
-            {
-              "name": "fromFloor",
-              "type": "int",
-              "value": 4
-            },
-            {
-              "name": "sourceNode",
-              "type": "string",
-              "value": "F4_CENTER_STAIR"
-            },
-            {
-              "name": "spawnId",
-              "type": "string",
-              "value": "F5_SEARCH_HUB"
-            },
-            {
-              "name": "upwardTransition",
-              "type": "bool",
-              "value": false
-            }
-          ]
-        },
-        {
-          "id": 77,
-          "name": "F5_SEARCH_SPINE",
-          "type": "WalkableReference",
-          "x": 160,
-          "y": 960,
-          "width": 2240,
-          "height": 192,
-          "properties": [
-            {
-              "name": "semanticOverlay",
-              "type": "bool",
-              "value": false
-            }
-          ]
-        },
-        {
-          "id": 78,
-          "name": "F5_L1_ARCH_REFERENCE",
-          "type": "ArchitecturalReference",
-          "x": 256,
-          "y": 576,
-          "width": 64,
-          "height": 64,
-          "properties": [
-            {
-              "name": "semantic",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "bossMarker",
-              "type": "bool",
-              "value": false
-            }
-          ]
-        },
-        {
-          "id": 79,
-          "name": "F5_L2_ARCH_REFERENCE",
-          "type": "ArchitecturalReference",
-          "x": 672,
-          "y": 160,
-          "width": 64,
-          "height": 64,
-          "properties": [
-            {
-              "name": "semantic",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "bossMarker",
-              "type": "bool",
-              "value": false
-            }
-          ]
-        },
-        {
-          "id": 80,
-          "name": "F5_R1_ARCH_REFERENCE",
-          "type": "ArchitecturalReference",
-          "x": 2240,
-          "y": 576,
-          "width": 64,
-          "height": 64,
-          "properties": [
-            {
-              "name": "semantic",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "bossMarker",
-              "type": "bool",
-              "value": false
-            }
-          ]
-        },
-        {
-          "id": 81,
-          "name": "F5_R2_ARCH_REFERENCE",
-          "type": "ArchitecturalReference",
-          "x": 1824,
-          "y": 160,
-          "width": 64,
-          "height": 64,
-          "properties": [
-            {
-              "name": "semantic",
-              "type": "bool",
-              "value": false
-            },
-            {
-              "name": "bossMarker",
-              "type": "bool",
-              "value": false
-            }
-          ]
-        }
-      ],
-      "opacity": 1,
-      "visible": true,
-      "x": 0,
-      "y": 0
-    }
-  ]
+{ "compressionlevel":-1,
+ "height":45,
+ "infinite":false,
+ "layers":[
+        {
+         "compression":"zlib",
+         "data":"eJztmO1xwyAMhhmhI3iBfvxo7aZtWneTjuJRMlpGKVwhR1UEEsJ2XOu902HHIF49Z5KAMaq19GzMuWLMV3snl9ynijFdeyfkuc+9v37ybQ9a+Pnc\/Cr8dHP5Kcnxu7MtJxy\/mnHEvKeKcd0scAhSfjKlODxEz5VfXvr+ySTld4\/kTY0r9d0jP33\/lJ9Uwce7ofl1moufIfa1XqfYz5oK\/0OP0XXwFu5H67cH4zK1VfGL\/Xx4P4ONT+Bn+Hn2x8\/acmvn1rapSK0RuC9wdYW6MUajrTv0heOlftZWK7+5tc3Z+y3NT7r3rvGLzVlao5gHmJvip9WZg3TvXcsvXr\/w+xNGqm8Lfi3OHKS\/\/bX8Gvzuormp\/FrMqfyUn\/JTfspP+W2Fn0nkzO0\/UoFpL\/yk+zdMe+HH8cHNsyQ\/p5socuNDnxq\/lLqX5Gd8bs65D6Z4DWFnUe48aLTraBD4LdW9ND9X09G3LoZoznAGNjLOvA6ZuTEeW+ZX6s+pIZxH5HJh4vbHxF03rfyUaqYwdPyGQq7wHj\/6NtyX+sNzDHgf8mH84HylfFw\/uZoHQ+eXy7PnUH7KT\/ltN5Sf8rt2fp7h7HFoWJfNNVV4mLhBYbeUWr7nnH3Jf5Hyk0n5yaT85Iq\/m1\/t\/Qsx3sDYVcxfmbj8VL+l\/GTaKr9vHvrWqA==",
+         "encoding":"base64",
+         "height":45,
+         "id":1,
+         "name":"Ground",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":80,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "compression":"zlib",
+         "data":"eJztlDEWgzAMxegVuP9hu5YJbNlpQqT3MqL8aOA4RGRXPsGT\/a7L+2\/sx7Afw34M+zHsx7Afw34M+9UR2djVL7tnBqr2zuYZxWzvtt8cHnrf0x2ZvR3\/veieqjvtZ7\/MHvvF3NXvrvLYz372i++xX8xd\/e4qT+aNkR1dHvsxj\/2Yp6rfUyfdm72720ObUZf9mMt+956dj\/3sZ791j\/3st0K\/Ubz1XaOwH8N+DPsxfhucwWO\/K9F+csV+DPvtyRdXYAmz",
+         "encoding":"base64",
+         "height":45,
+         "id":2,
+         "name":"FloorDetail",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":false,
+         "width":80,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "compression":"zlib",
+         "data":"eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB",
+         "encoding":"base64",
+         "height":45,
+         "id":3,
+         "name":"Walls",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":80,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "compression":"zlib",
+         "data":"eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB",
+         "encoding":"base64",
+         "height":45,
+         "id":4,
+         "name":"WallTop",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":80,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "compression":"zlib",
+         "data":"eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAA8GY4QAAB",
+         "encoding":"base64",
+         "height":45,
+         "id":5,
+         "name":"StaticProps",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":80,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":6,
+         "name":"Collision",
+         "objects":[
+                {
+                 "height":96,
+                 "id":1,
+                 "name":"F5_ARCH_MASS_001",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":2560,
+                 "x":0,
+                 "y":0
+                }, 
+                {
+                 "height":288,
+                 "id":2,
+                 "name":"F5_ARCH_MASS_002",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":512,
+                 "x":0,
+                 "y":96
+                }, 
+                {
+                 "height":288,
+                 "id":3,
+                 "name":"F5_ARCH_MASS_003",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":64,
+                 "x":896,
+                 "y":96
+                }, 
+                {
+                 "height":288,
+                 "id":4,
+                 "name":"F5_ARCH_MASS_004",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":64,
+                 "x":1600,
+                 "y":96
+                }, 
+                {
+                 "height":288,
+                 "id":5,
+                 "name":"F5_ARCH_MASS_005",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":512,
+                 "x":2048,
+                 "y":96
+                }, 
+                {
+                 "height":32,
+                 "id":6,
+                 "name":"F5_ARCH_MASS_006",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":160,
+                 "x":800,
+                 "y":384
+                }, 
+                {
+                 "height":32,
+                 "id":7,
+                 "name":"F5_ARCH_MASS_007",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":160,
+                 "x":1600,
+                 "y":384
+                }, 
+                {
+                 "height":128,
+                 "id":8,
+                 "name":"F5_ARCH_MASS_008",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":608,
+                 "x":0,
+                 "y":384
+                }, 
+                {
+                 "height":96,
+                 "id":9,
+                 "name":"F5_ARCH_MASS_009",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":384,
+                 "x":800,
+                 "y":416
+                }, 
+                {
+                 "height":96,
+                 "id":10,
+                 "name":"F5_ARCH_MASS_010",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":384,
+                 "x":1376,
+                 "y":416
+                }, 
+                {
+                 "height":128,
+                 "id":11,
+                 "name":"F5_ARCH_MASS_011",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":608,
+                 "x":1952,
+                 "y":384
+                }, 
+                {
+                 "height":256,
+                 "id":12,
+                 "name":"F5_ARCH_MASS_012",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":224,
+                 "x":800,
+                 "y":512
+                }, 
+                {
+                 "height":256,
+                 "id":13,
+                 "name":"F5_ARCH_MASS_013",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":224,
+                 "x":1536,
+                 "y":512
+                }, 
+                {
+                 "height":352,
+                 "id":14,
+                 "name":"F5_ARCH_MASS_014",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":96,
+                 "x":0,
+                 "y":512
+                }, 
+                {
+                 "height":352,
+                 "id":15,
+                 "name":"F5_ARCH_MASS_015",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":128,
+                 "x":480,
+                 "y":512
+                }, 
+                {
+                 "height":352,
+                 "id":16,
+                 "name":"F5_ARCH_MASS_016",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":128,
+                 "x":1952,
+                 "y":512
+                }, 
+                {
+                 "height":352,
+                 "id":17,
+                 "name":"F5_ARCH_MASS_017",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":96,
+                 "x":2464,
+                 "y":512
+                }, 
+                {
+                 "height":96,
+                 "id":18,
+                 "name":"F5_ARCH_MASS_018",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":192,
+                 "x":0,
+                 "y":864
+                }, 
+                {
+                 "height":96,
+                 "id":19,
+                 "name":"F5_ARCH_MASS_019",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":192,
+                 "x":416,
+                 "y":864
+                }, 
+                {
+                 "height":192,
+                 "id":20,
+                 "name":"F5_ARCH_MASS_020",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":384,
+                 "x":800,
+                 "y":768
+                }, 
+                {
+                 "height":192,
+                 "id":21,
+                 "name":"F5_ARCH_MASS_021",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":384,
+                 "x":1376,
+                 "y":768
+                }, 
+                {
+                 "height":96,
+                 "id":22,
+                 "name":"F5_ARCH_MASS_022",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":192,
+                 "x":1952,
+                 "y":864
+                }, 
+                {
+                 "height":96,
+                 "id":23,
+                 "name":"F5_ARCH_MASS_023",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":192,
+                 "x":2368,
+                 "y":864
+                }, 
+                {
+                 "height":192,
+                 "id":24,
+                 "name":"F5_ARCH_MASS_024",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":160,
+                 "x":0,
+                 "y":960
+                }, 
+                {
+                 "height":192,
+                 "id":25,
+                 "name":"F5_ARCH_MASS_025",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":160,
+                 "x":2400,
+                 "y":960
+                }, 
+                {
+                 "height":160,
+                 "id":26,
+                 "name":"F5_ARCH_MASS_026",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":992,
+                 "x":0,
+                 "y":1152
+                }, 
+                {
+                 "height":160,
+                 "id":27,
+                 "name":"F5_ARCH_MASS_027",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":992,
+                 "x":1568,
+                 "y":1152
+                }, 
+                {
+                 "height":96,
+                 "id":28,
+                 "name":"F5_ARCH_MASS_028",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":1088,
+                 "x":0,
+                 "y":1312
+                }, 
+                {
+                 "height":96,
+                 "id":29,
+                 "name":"F5_ARCH_MASS_029",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":1088,
+                 "x":1472,
+                 "y":1312
+                }, 
+                {
+                 "height":32,
+                 "id":30,
+                 "name":"F5_ARCH_MASS_030",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalMass",
+                 "visible":true,
+                 "width":2560,
+                 "x":0,
+                 "y":1408
+                }, 
+                {
+                 "height":32,
+                 "id":31,
+                 "name":"F5_SECURITY_LOCK_BARRIER",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"blocksRobot",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"dynamicLock",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"requiresState",
+                         "type":"string",
+                         "value":"BOSS_NEUTRALIZED"
+                        }],
+                 "rotation":0,
+                 "type":"SecurityLock",
+                 "visible":true,
+                 "width":192,
+                 "x":1184,
+                 "y":448
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":7,
+         "name":"NavigationNodes",
+         "objects":[
+                {
+                 "height":0,
+                 "id":32,
+                 "name":"F5_SEARCH_HUB",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_SEARCH_HUB"
+                        }, 
+                        {
+                         "name":"routeContextId",
+                         "type":"string",
+                         "value":"F5_ROOM_SEARCH[{CANONICAL_REMAINING_ROOMS}]"
+                        }],
+                 "rotation":0,
+                 "type":"DECISION",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":1200
+                }, 
+                {
+                 "height":0,
+                 "id":33,
+                 "name":"F5_LEFT_WING",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_LEFT_WING"
+                        }],
+                 "rotation":0,
+                 "type":"ZONE",
+                 "visible":true,
+                 "width":0,
+                 "x":704,
+                 "y":976
+                }, 
+                {
+                 "height":0,
+                 "id":34,
+                 "name":"F5_L1_GUARD",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_L1_GUARD"
+                        }],
+                 "rotation":0,
+                 "type":"ENCOUNTER",
+                 "visible":true,
+                 "width":0,
+                 "x":304,
+                 "y":928
+                }, 
+                {
+                 "height":0,
+                 "id":35,
+                 "name":"F5_ROOM_L1",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_ROOM_L1"
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L1"
+                        }],
+                 "rotation":0,
+                 "type":"SEARCH_ROOM",
+                 "visible":true,
+                 "width":0,
+                 "x":304,
+                 "y":640
+                }, 
+                {
+                 "height":0,
+                 "id":36,
+                 "name":"F5_L2_GUARD",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_L2_GUARD"
+                        }],
+                 "rotation":0,
+                 "type":"ENCOUNTER",
+                 "visible":true,
+                 "width":0,
+                 "x":704,
+                 "y":480
+                }, 
+                {
+                 "height":0,
+                 "id":37,
+                 "name":"F5_ROOM_L2",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_ROOM_L2"
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L2"
+                        }],
+                 "rotation":0,
+                 "type":"SEARCH_ROOM",
+                 "visible":true,
+                 "width":0,
+                 "x":704,
+                 "y":224
+                }, 
+                {
+                 "height":0,
+                 "id":38,
+                 "name":"F5_RIGHT_WING",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_RIGHT_WING"
+                        }],
+                 "rotation":0,
+                 "type":"ZONE",
+                 "visible":true,
+                 "width":0,
+                 "x":1856,
+                 "y":976
+                }, 
+                {
+                 "height":0,
+                 "id":39,
+                 "name":"F5_R1_GUARD",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_R1_GUARD"
+                        }],
+                 "rotation":0,
+                 "type":"ENCOUNTER",
+                 "visible":true,
+                 "width":0,
+                 "x":2256,
+                 "y":928
+                }, 
+                {
+                 "height":0,
+                 "id":40,
+                 "name":"F5_ROOM_R1",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_ROOM_R1"
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R1"
+                        }],
+                 "rotation":0,
+                 "type":"SEARCH_ROOM",
+                 "visible":true,
+                 "width":0,
+                 "x":2256,
+                 "y":640
+                }, 
+                {
+                 "height":0,
+                 "id":41,
+                 "name":"F5_R2_GUARD",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_R2_GUARD"
+                        }],
+                 "rotation":0,
+                 "type":"ENCOUNTER",
+                 "visible":true,
+                 "width":0,
+                 "x":1856,
+                 "y":480
+                }, 
+                {
+                 "height":0,
+                 "id":42,
+                 "name":"F5_ROOM_R2",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_ROOM_R2"
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R2"
+                        }],
+                 "rotation":0,
+                 "type":"SEARCH_ROOM",
+                 "visible":true,
+                 "width":0,
+                 "x":1856,
+                 "y":224
+                }, 
+                {
+                 "height":0,
+                 "id":43,
+                 "name":"F5_CENTRAL_HALL",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_CENTRAL_HALL"
+                        }],
+                 "rotation":0,
+                 "type":"ZONE",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":624
+                }, 
+                {
+                 "height":0,
+                 "id":44,
+                 "name":"F5_SECURITY_LOCK",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_SECURITY_LOCK"
+                        }],
+                 "rotation":0,
+                 "type":"LOCK",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":496
+                }, 
+                {
+                 "height":0,
+                 "id":45,
+                 "name":"F5_CONTROL_ROOM",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_CONTROL_ROOM"
+                        }],
+                 "rotation":0,
+                 "type":"CONTROL_ROOM",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":336
+                }, 
+                {
+                 "height":0,
+                 "id":46,
+                 "name":"F5_GOAL",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"floor",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"nodeId",
+                         "type":"string",
+                         "value":"F5_GOAL"
+                        }],
+                 "rotation":0,
+                 "type":"GOAL",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":224
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":8,
+         "name":"NavigationEdges",
+         "objects":[
+                {
+                 "height":0,
+                 "id":47,
+                 "name":"E_F5_HUB_LEFT",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-160
+                        }, 
+                        {
+                         "x":-576,
+                         "y":-160
+                        }, 
+                        {
+                         "x":-576,
+                         "y":-224
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_HUB_LEFT"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_SEARCH_HUB"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":25
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_LEFT_WING"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_LEFT_WING_ROUTE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":1200
+                }, 
+                {
+                 "height":0,
+                 "id":48,
+                 "name":"E_F5_LEFT_L1_GUARD",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":-400,
+                         "y":0
+                        }, 
+                        {
+                         "x":-400,
+                         "y":-48
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_LEFT_L1_GUARD"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_LEFT_WING"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":14
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_L1_GUARD"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_L1_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":704,
+                 "y":976
+                }, 
+                {
+                 "height":0,
+                 "id":49,
+                 "name":"E_F5_L1_ROOM",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-288
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_L1_ROOM"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_L1_GUARD"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":9
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_ROOM_L1"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_L1_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":304,
+                 "y":928
+                }, 
+                {
+                 "height":0,
+                 "id":50,
+                 "name":"E_F5_LEFT_L2_GUARD",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-496
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_LEFT_L2_GUARD"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_LEFT_WING"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":15.5
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_L2_GUARD"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_L2_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":704,
+                 "y":976
+                }, 
+                {
+                 "height":0,
+                 "id":51,
+                 "name":"E_F5_L2_ROOM",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-256
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_L2_ROOM"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_L2_GUARD"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":8
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_ROOM_L2"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_L2_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":704,
+                 "y":480
+                }, 
+                {
+                 "height":0,
+                 "id":52,
+                 "name":"E_F5_HUB_RIGHT",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-160
+                        }, 
+                        {
+                         "x":576,
+                         "y":-160
+                        }, 
+                        {
+                         "x":576,
+                         "y":-224
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_HUB_RIGHT"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_SEARCH_HUB"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":25
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_RIGHT_WING"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_RIGHT_WING_ROUTE"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":1200
+                }, 
+                {
+                 "height":0,
+                 "id":53,
+                 "name":"E_F5_RIGHT_R1_GUARD",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":400,
+                         "y":0
+                        }, 
+                        {
+                         "x":400,
+                         "y":-48
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_RIGHT_R1_GUARD"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_RIGHT_WING"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":14
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_R1_GUARD"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_R1_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1856,
+                 "y":976
+                }, 
+                {
+                 "height":0,
+                 "id":54,
+                 "name":"E_F5_R1_ROOM",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-288
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_R1_ROOM"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_R1_GUARD"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":9
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_ROOM_R1"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_R1_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":2256,
+                 "y":928
+                }, 
+                {
+                 "height":0,
+                 "id":55,
+                 "name":"E_F5_RIGHT_R2_GUARD",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-496
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_RIGHT_R2_GUARD"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_RIGHT_WING"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":15.5
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_R2_GUARD"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_R2_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1856,
+                 "y":976
+                }, 
+                {
+                 "height":0,
+                 "id":56,
+                 "name":"E_F5_R2_ROOM",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-256
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"ALWAYS"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_R2_ROOM"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_R2_GUARD"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":8
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_ROOM_R2"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_R2_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1856,
+                 "y":480
+                }, 
+                {
+                 "height":0,
+                 "id":57,
+                 "name":"E_F5_L1_NO_BOSS_RETURN",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":288
+                        }, 
+                        {
+                         "x":0,
+                         "y":336
+                        }, 
+                        {
+                         "x":400,
+                         "y":336
+                        }, 
+                        {
+                         "x":400,
+                         "y":400
+                        }, 
+                        {
+                         "x":976,
+                         "y":400
+                        }, 
+                        {
+                         "x":976,
+                         "y":560
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"NO_BOSS_RETURN"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_L1_NO_BOSS_RETURN"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_ROOM_L1"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":48
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_SEARCH_HUB"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_SEARCH_RETURN"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":304,
+                 "y":640
+                }, 
+                {
+                 "height":0,
+                 "id":58,
+                 "name":"E_F5_L2_NO_BOSS_RETURN",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":256
+                        }, 
+                        {
+                         "x":0,
+                         "y":752
+                        }, 
+                        {
+                         "x":0,
+                         "y":816
+                        }, 
+                        {
+                         "x":576,
+                         "y":816
+                        }, 
+                        {
+                         "x":576,
+                         "y":976
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"NO_BOSS_RETURN"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_L2_NO_BOSS_RETURN"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_ROOM_L2"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":48.5
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_SEARCH_HUB"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_SEARCH_RETURN"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":704,
+                 "y":224
+                }, 
+                {
+                 "height":0,
+                 "id":59,
+                 "name":"E_F5_R1_NO_BOSS_RETURN",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":288
+                        }, 
+                        {
+                         "x":0,
+                         "y":336
+                        }, 
+                        {
+                         "x":-400,
+                         "y":336
+                        }, 
+                        {
+                         "x":-400,
+                         "y":400
+                        }, 
+                        {
+                         "x":-976,
+                         "y":400
+                        }, 
+                        {
+                         "x":-976,
+                         "y":560
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"NO_BOSS_RETURN"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_R1_NO_BOSS_RETURN"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_ROOM_R1"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":48
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_SEARCH_HUB"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_SEARCH_RETURN"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":2256,
+                 "y":640
+                }, 
+                {
+                 "height":0,
+                 "id":60,
+                 "name":"E_F5_R2_NO_BOSS_RETURN",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":256
+                        }, 
+                        {
+                         "x":0,
+                         "y":752
+                        }, 
+                        {
+                         "x":0,
+                         "y":816
+                        }, 
+                        {
+                         "x":-576,
+                         "y":816
+                        }, 
+                        {
+                         "x":-576,
+                         "y":976
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"NO_BOSS_RETURN"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_R2_NO_BOSS_RETURN"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_ROOM_R2"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":48.5
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_SEARCH_HUB"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_SEARCH_RETURN"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1856,
+                 "y":224
+                }, 
+                {
+                 "height":0,
+                 "id":61,
+                 "name":"E_F5_L1_POST_BOSS",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":288
+                        }, 
+                        {
+                         "x":0,
+                         "y":336
+                        }, 
+                        {
+                         "x":976,
+                         "y":336
+                        }, 
+                        {
+                         "x":976,
+                         "y":-16
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"BOSS_NEUTRALIZED"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_L1_POST_BOSS"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_ROOM_L1"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":52
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_CENTRAL_HALL"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_POST_BOSS_RETURN"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":304,
+                 "y":640
+                }, 
+                {
+                 "height":0,
+                 "id":62,
+                 "name":"E_F5_L2_POST_BOSS",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":256
+                        }, 
+                        {
+                         "x":0,
+                         "y":752
+                        }, 
+                        {
+                         "x":576,
+                         "y":752
+                        }, 
+                        {
+                         "x":576,
+                         "y":400
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"BOSS_NEUTRALIZED"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_L2_POST_BOSS"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_ROOM_L2"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":52.5
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_CENTRAL_HALL"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_POST_BOSS_RETURN"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":704,
+                 "y":224
+                }, 
+                {
+                 "height":0,
+                 "id":63,
+                 "name":"E_F5_R1_POST_BOSS",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":288
+                        }, 
+                        {
+                         "x":0,
+                         "y":336
+                        }, 
+                        {
+                         "x":-976,
+                         "y":336
+                        }, 
+                        {
+                         "x":-976,
+                         "y":-16
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"BOSS_NEUTRALIZED"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_R1_POST_BOSS"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_ROOM_R1"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":52
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_CENTRAL_HALL"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_POST_BOSS_RETURN"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":2256,
+                 "y":640
+                }, 
+                {
+                 "height":0,
+                 "id":64,
+                 "name":"E_F5_R2_POST_BOSS",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":256
+                        }, 
+                        {
+                         "x":0,
+                         "y":752
+                        }, 
+                        {
+                         "x":-576,
+                         "y":752
+                        }, 
+                        {
+                         "x":-576,
+                         "y":400
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"BOSS_NEUTRALIZED"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_R2_POST_BOSS"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_ROOM_R2"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":52.5
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_CENTRAL_HALL"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_POST_BOSS_RETURN"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1856,
+                 "y":224
+                }, 
+                {
+                 "height":0,
+                 "id":65,
+                 "name":"E_F5_HALL_LOCK",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-128
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"BOSS_NEUTRALIZED"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_HALL_LOCK"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_CENTRAL_HALL"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_SECURITY_LOCK"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_CONTROL_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":624
+                }, 
+                {
+                 "height":0,
+                 "id":66,
+                 "name":"E_F5_LOCK_CONTROL",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-160
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"BOSS_NEUTRALIZED"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_LOCK_CONTROL"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_SECURITY_LOCK"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"int",
+                         "value":5
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_CONTROL_ROOM"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_CONTROL_APPROACH"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":496
+                }, 
+                {
+                 "height":0,
+                 "id":67,
+                 "name":"E_F5_CONTROL_GOAL",
+                 "opacity":1,
+                 "polyline":[
+                        {
+                         "x":0,
+                         "y":0
+                        }, 
+                        {
+                         "x":0,
+                         "y":-112
+                        }],
+                 "properties":[
+                        {
+                         "name":"availability",
+                         "type":"string",
+                         "value":"SYSTEM_RESTORED"
+                        }, 
+                        {
+                         "name":"bidirectional",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"edgeId",
+                         "type":"string",
+                         "value":"E_F5_CONTROL_GOAL"
+                        }, 
+                        {
+                         "name":"from",
+                         "type":"string",
+                         "value":"F5_CONTROL_ROOM"
+                        }, 
+                        {
+                         "name":"lengthTiles",
+                         "type":"float",
+                         "value":3.5
+                        }, 
+                        {
+                         "name":"to",
+                         "type":"string",
+                         "value":"F5_GOAL"
+                        }, 
+                        {
+                         "name":"visualRouteId",
+                         "type":"string",
+                         "value":"F5_GOAL_TRANSITION"
+                        }],
+                 "rotation":0,
+                 "type":"NavigationEdge",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":336
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":9,
+         "name":"EncounterZones",
+         "objects":[
+                {
+                 "height":64,
+                 "id":68,
+                 "name":"F5_L1_GUARD_ZONE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"actions",
+                         "type":"string",
+                         "value":"SUBDUE,DISTRACT,RETREAT"
+                        }, 
+                        {
+                         "name":"bypassAvailable",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"encounterType",
+                         "type":"string",
+                         "value":"VILLAIN_ENCOUNTER"
+                        }, 
+                        {
+                         "name":"mandatory",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L1"
+                        }, 
+                        {
+                         "name":"state",
+                         "type":"string",
+                         "value":"VILLAIN_ENCOUNTER"
+                        }, 
+                        {
+                         "name":"villainCount",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"zoneId",
+                         "type":"string",
+                         "value":"F5_L1_GUARD_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"GuardEncounter",
+                 "visible":true,
+                 "width":224,
+                 "x":192,
+                 "y":896
+                }, 
+                {
+                 "height":64,
+                 "id":69,
+                 "name":"F5_L2_GUARD_ZONE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"actions",
+                         "type":"string",
+                         "value":"SUBDUE,DISTRACT,RETREAT"
+                        }, 
+                        {
+                         "name":"bypassAvailable",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"encounterType",
+                         "type":"string",
+                         "value":"VILLAIN_ENCOUNTER"
+                        }, 
+                        {
+                         "name":"mandatory",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L2"
+                        }, 
+                        {
+                         "name":"state",
+                         "type":"string",
+                         "value":"VILLAIN_ENCOUNTER"
+                        }, 
+                        {
+                         "name":"villainCount",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"zoneId",
+                         "type":"string",
+                         "value":"F5_L2_GUARD_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"GuardEncounter",
+                 "visible":true,
+                 "width":192,
+                 "x":608,
+                 "y":448
+                }, 
+                {
+                 "height":64,
+                 "id":70,
+                 "name":"F5_R1_GUARD_ZONE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"actions",
+                         "type":"string",
+                         "value":"SUBDUE,DISTRACT,RETREAT"
+                        }, 
+                        {
+                         "name":"bypassAvailable",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"encounterType",
+                         "type":"string",
+                         "value":"VILLAIN_ENCOUNTER"
+                        }, 
+                        {
+                         "name":"mandatory",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R1"
+                        }, 
+                        {
+                         "name":"state",
+                         "type":"string",
+                         "value":"VILLAIN_ENCOUNTER"
+                        }, 
+                        {
+                         "name":"villainCount",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"zoneId",
+                         "type":"string",
+                         "value":"F5_R1_GUARD_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"GuardEncounter",
+                 "visible":true,
+                 "width":224,
+                 "x":2144,
+                 "y":896
+                }, 
+                {
+                 "height":64,
+                 "id":71,
+                 "name":"F5_R2_GUARD_ZONE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"actions",
+                         "type":"string",
+                         "value":"SUBDUE,DISTRACT,RETREAT"
+                        }, 
+                        {
+                         "name":"bypassAvailable",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"encounterType",
+                         "type":"string",
+                         "value":"VILLAIN_ENCOUNTER"
+                        }, 
+                        {
+                         "name":"mandatory",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R2"
+                        }, 
+                        {
+                         "name":"state",
+                         "type":"string",
+                         "value":"VILLAIN_ENCOUNTER"
+                        }, 
+                        {
+                         "name":"villainCount",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"zoneId",
+                         "type":"string",
+                         "value":"F5_R2_GUARD_ZONE"
+                        }],
+                 "rotation":0,
+                 "type":"GuardEncounter",
+                 "visible":true,
+                 "width":192,
+                 "x":1760,
+                 "y":448
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":10,
+         "name":"FloorTransitions",
+         "objects":[],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":11,
+         "name":"SpawnPoints",
+         "objects":[
+                {
+                 "height":0,
+                 "id":82,
+                 "name":"F5_SEARCH_HUB_SPAWN",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"routeContextId",
+                         "type":"string",
+                         "value":"F5_ROOM_SEARCH[L1,L2,R1,R2]"
+                        }, 
+                        {
+                         "name":"sourceFloor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"sourceTransition",
+                         "type":"string",
+                         "value":"F4_CENTER_STAIR_TRANSITION"
+                        }, 
+                        {
+                         "name":"spawnId",
+                         "type":"string",
+                         "value":"F5_SEARCH_HUB"
+                        }],
+                 "rotation":0,
+                 "type":"SpawnPoint",
+                 "visible":true,
+                 "width":0,
+                 "x":1280,
+                 "y":1200
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":12,
+         "name":"Debug",
+         "objects":[
+                {
+                 "height":352,
+                 "id":72,
+                 "name":"F5_ROOM_L1_REGION",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"bossCandidate",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L1"
+                        }, 
+                        {
+                         "name":"walkable",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"SearchRoom",
+                 "visible":true,
+                 "width":384,
+                 "x":96,
+                 "y":512
+                }, 
+                {
+                 "height":288,
+                 "id":73,
+                 "name":"F5_ROOM_L2_REGION",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"bossCandidate",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"L2"
+                        }, 
+                        {
+                         "name":"walkable",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"SearchRoom",
+                 "visible":true,
+                 "width":384,
+                 "x":512,
+                 "y":96
+                }, 
+                {
+                 "height":352,
+                 "id":74,
+                 "name":"F5_ROOM_R1_REGION",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"bossCandidate",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R1"
+                        }, 
+                        {
+                         "name":"walkable",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"SearchRoom",
+                 "visible":true,
+                 "width":384,
+                 "x":2080,
+                 "y":512
+                }, 
+                {
+                 "height":288,
+                 "id":75,
+                 "name":"F5_ROOM_R2_REGION",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"bossCandidate",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"roomId",
+                         "type":"string",
+                         "value":"R2"
+                        }, 
+                        {
+                         "name":"walkable",
+                         "type":"bool",
+                         "value":true
+                        }],
+                 "rotation":0,
+                 "type":"SearchRoom",
+                 "visible":true,
+                 "width":384,
+                 "x":1664,
+                 "y":96
+                }, 
+                {
+                 "height":128,
+                 "id":76,
+                 "name":"F5_ARRIVAL_STAIR",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"fromFloor",
+                         "type":"int",
+                         "value":4
+                        }, 
+                        {
+                         "name":"sourceNode",
+                         "type":"string",
+                         "value":"F4_CENTER_STAIR"
+                        }, 
+                        {
+                         "name":"spawnId",
+                         "type":"string",
+                         "value":"F5_SEARCH_HUB"
+                        }, 
+                        {
+                         "name":"upwardTransition",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"ArrivalStair",
+                 "visible":true,
+                 "width":384,
+                 "x":1088,
+                 "y":1280
+                }, 
+                {
+                 "height":192,
+                 "id":77,
+                 "name":"F5_SEARCH_SPINE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"semanticOverlay",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"WalkableReference",
+                 "visible":true,
+                 "width":2240,
+                 "x":160,
+                 "y":960
+                }, 
+                {
+                 "height":64,
+                 "id":78,
+                 "name":"F5_L1_ARCH_REFERENCE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"bossMarker",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"semantic",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalReference",
+                 "visible":true,
+                 "width":64,
+                 "x":256,
+                 "y":576
+                }, 
+                {
+                 "height":64,
+                 "id":79,
+                 "name":"F5_L2_ARCH_REFERENCE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"bossMarker",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"semantic",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalReference",
+                 "visible":true,
+                 "width":64,
+                 "x":672,
+                 "y":160
+                }, 
+                {
+                 "height":64,
+                 "id":80,
+                 "name":"F5_R1_ARCH_REFERENCE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"bossMarker",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"semantic",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalReference",
+                 "visible":true,
+                 "width":64,
+                 "x":2240,
+                 "y":576
+                }, 
+                {
+                 "height":64,
+                 "id":81,
+                 "name":"F5_R2_ARCH_REFERENCE",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"bossMarker",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"semantic",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"ArchitecturalReference",
+                 "visible":true,
+                 "width":64,
+                 "x":1824,
+                 "y":160
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }],
+ "nextlayerid":13,
+ "nextobjectid":82,
+ "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"bossCandidateRooms",
+         "type":"string",
+         "value":"L1,L2,R1,R2"
+        }, 
+        {
+         "name":"contextKeyIncludesHiddenLocation",
+         "type":"bool",
+         "value":false
+        }, 
+        {
+         "name":"geometrySource",
+         "type":"string",
+         "value":"floor_5_structure_arch_v3.png"
+        }, 
+        {
+         "name":"locationPolicyVisibility",
+         "type":"bool",
+         "value":false
+        }, 
+        {
+         "name":"locationSelection",
+         "type":"string",
+         "value":"SEEDED_RANDOM_PER_EPISODE"
+        }, 
+        {
+         "name":"repeatSelectionAllowed",
+         "type":"bool",
+         "value":false
+        }, 
+        {
+         "name":"role",
+         "type":"string",
+         "value":"BOSS_SEARCH_FINAL_CONTROL"
+        }, 
+        {
+         "name":"searchedRoomState",
+         "type":"string",
+         "value":"EPISODE_LOCAL_SET"
+        }],
+ "renderorder":"right-down",
+ "tiledversion":"1.12.2",
+ "tileheight":32,
+ "tilesets":[
+        {
+         "firstgid":1,
+         "source":"..\/..\/assets\/environment\/reinforcement\/floor1_room_shell_manual\/floor1_room_shell_manual.tsj"
+        }, 
+        {
+         "firstgid":44,
+         "source":"..\/..\/assets\/environment\/reinforcement\/floor5_room_shell_manual\/floor5_room_shell_manual.tsj"
+        }],
+ "tilewidth":32,
+ "type":"map",
+ "version":"1.10",
+ "width":80
 }
