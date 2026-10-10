@@ -6,6 +6,16 @@ export type Floor5ProbeKind = 'SEARCH' | 'NO_BOSS' | 'POST_BOSS';
 const TILE_LAYER_DEPTHS: Record<(typeof TILE_LAYERS)[number], number> = { Ground: 0, FloorDetail: 1, Walls: 2, WallTop: 3, StaticProps: 4 };
 const OBJECT_LAYERS = ['Collision', 'NavigationNodes', 'NavigationEdges', 'EncounterZones', 'FloorTransitions', 'SpawnPoints', 'Debug'] as const;
 export const FLOOR5_ROOMS = ['L1', 'L2', 'R1', 'R2'] as const;
+export const FLOOR5_DOORWAYS: Record<Floor5RoomId, {
+  x: number; y: number; width: number; height: number; centerX: number;
+  west: { x: number; y: number; width: number; height: number };
+  east: { x: number; y: number; width: number; height: number };
+}> = {
+  L1: { x: 256, y: 832, width: 64, height: 32, centerX: 288, west: { x: 96, y: 832, width: 160, height: 32 }, east: { x: 320, y: 832, width: 160, height: 32 } },
+  L2: { x: 672, y: 352, width: 64, height: 32, centerX: 704, west: { x: 512, y: 352, width: 160, height: 32 }, east: { x: 736, y: 352, width: 160, height: 32 } },
+  R2: { x: 1824, y: 352, width: 64, height: 32, centerX: 1856, west: { x: 1664, y: 352, width: 160, height: 32 }, east: { x: 1888, y: 352, width: 160, height: 32 } },
+  R1: { x: 2240, y: 832, width: 64, height: 32, centerX: 2272, west: { x: 2080, y: 832, width: 160, height: 32 }, east: { x: 2304, y: 832, width: 160, height: 32 } },
+};
 export const FLOOR5_REQUIRED_NODES = [
   'F5_SEARCH_HUB', 'F5_LEFT_WING', 'F5_L1_GUARD', 'F5_ROOM_L1', 'F5_L2_GUARD', 'F5_ROOM_L2',
   'F5_RIGHT_WING', 'F5_R1_GUARD', 'F5_ROOM_R1', 'F5_R2_GUARD', 'F5_ROOM_R2',
@@ -40,6 +50,8 @@ const combineEdges = (edges: TiledObject[], ids: readonly string[]) => ids.flatM
   return absolutePoints(edge).slice(index ? 1 : 0);
 });
 const polylineLength = (points: { x: number; y: number }[]) => points.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - points[index].x, point.y - points[index].y), 0);
+const sameBounds = (object: TiledObject | undefined, bounds: { x: number; y: number; width: number; height: number }) =>
+  Boolean(object && object.x === bounds.x && object.y === bounds.y && object.width === bounds.width && object.height === bounds.height);
 
 export const floor5TileDepth = (layer: (typeof TILE_LAYERS)[number], manual: boolean) => TILE_LAYER_DEPTHS[layer] + (manual ? 6 : 0);
 export const missingFloor5TextureMessage = (assetId: string) =>
@@ -103,11 +115,35 @@ export function validateFloor5Map(map: TiledMapJson) {
   const securityLock = collision.find(object => object.name === 'F5_SECURITY_LOCK_BARRIER');
   const lockValues = securityLock ? properties(securityLock) : {};
   if (!securityLock || lockValues.dynamicLock !== true || lockValues.requiresState !== 'BOSS_NEUTRALIZED') throw new Error('Floor 5 debug: Security Lock barrier contract is invalid');
+  const doors = {} as Record<Floor5RoomId, TiledObject>;
+  for (const room of FLOOR5_ROOMS) {
+    const contract = FLOOR5_DOORWAYS[room];
+    const door = collision.find(object => object.name === `F5_${room}_DOOR_BARRIER`);
+    const values = door ? properties(door) : {};
+    if (!sameBounds(door, contract) || values.blocksRobot !== true || values.dynamicDoor !== true || values.roomId !== room ||
+      values.doorId !== `F5_${room}_DOOR` || values.guardNodeId !== `F5_${room}_GUARD` || values.requiresState !== 'VILLAIN_NEUTRALIZED') {
+      throw new Error(`Floor 5 debug: ${room} dynamic door contract is invalid`);
+    }
+    for (const [side, bounds] of [['WEST', contract.west], ['EAST', contract.east]] as const) {
+      const wall = collision.find(object => object.name === `F5_${room}_DOOR_WALL_${side}`);
+      const wallValues = wall ? properties(wall) : {};
+      if (!sameBounds(wall, bounds) || wallValues.blocksRobot !== true || wallValues.roomId !== room || wallValues.doorSide !== side) {
+        throw new Error(`Floor 5 debug: ${room} ${side.toLowerCase()} doorway wall contract is invalid`);
+      }
+    }
+    const roomRoute = floor5ProbePoints(edges, room, 'SEARCH');
+    const centered = roomRoute.slice(1).some((point, index) => point.x === contract.centerX && roomRoute[index].x === contract.centerX &&
+      Math.min(point.y, roomRoute[index].y) <= contract.y && Math.max(point.y, roomRoute[index].y) >= contract.y + contract.height);
+    if (!centered) {
+      throw new Error(`Floor 5 debug: ${room} route does not cross the doorway centerline`);
+    }
+    doors[room] = door!;
+  }
   const lengths = floor5RoomPathLengths(edges);
   const values = Object.values(lengths);
   const ratio = Math.max(...values) / Math.min(...values);
   const spread = Math.max(...values) - Math.min(...values);
   if (ratio > 1.05 && spread > 2) throw new Error(`Floor 5 debug: room path distance bias exceeds policy (ratio=${ratio.toFixed(4)}, spread=${spread.toFixed(3)})`);
 
-  return { collision, securityLock, nodes, edges, encounters, rooms, spawn, lengths, ratio, spread };
+  return { collision, securityLock, doors, nodes, edges, encounters, rooms, spawn, lengths, ratio, spread };
 }

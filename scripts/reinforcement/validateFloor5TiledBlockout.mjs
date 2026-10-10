@@ -17,6 +17,12 @@ const SEARCH_EDGES = {
   L1: ['E_F5_HUB_LEFT', 'E_F5_LEFT_L1_GUARD', 'E_F5_L1_ROOM'], L2: ['E_F5_HUB_LEFT', 'E_F5_LEFT_L2_GUARD', 'E_F5_L2_ROOM'],
   R1: ['E_F5_HUB_RIGHT', 'E_F5_RIGHT_R1_GUARD', 'E_F5_R1_ROOM'], R2: ['E_F5_HUB_RIGHT', 'E_F5_RIGHT_R2_GUARD', 'E_F5_R2_ROOM'],
 };
+const DOORWAYS = {
+  L1: { x: 256, y: 832, width: 64, height: 32, centerX: 288, west: { x: 96, y: 832, width: 160, height: 32 }, east: { x: 320, y: 832, width: 160, height: 32 } },
+  L2: { x: 672, y: 352, width: 64, height: 32, centerX: 704, west: { x: 512, y: 352, width: 160, height: 32 }, east: { x: 736, y: 352, width: 160, height: 32 } },
+  R2: { x: 1824, y: 352, width: 64, height: 32, centerX: 1856, west: { x: 1664, y: 352, width: 160, height: 32 }, east: { x: 1888, y: 352, width: 160, height: 32 } },
+  R1: { x: 2240, y: 832, width: 64, height: 32, centerX: 2272, west: { x: 2080, y: 832, width: 160, height: 32 }, east: { x: 2304, y: 832, width: 160, height: 32 } },
+};
 const failures = [];
 const check = (condition, message) => { if (!condition) failures.push(message); };
 const props = item => Object.fromEntries((item?.properties ?? []).map(({ name, value }) => [name, value]));
@@ -36,6 +42,7 @@ const edgeById = new Map(objects('NavigationEdges').map(edge => [props(edge).edg
 const routePoints = ids => ids.flatMap((id, index) => absolutePoints(edgeById.get(id)).slice(index ? 1 : 0));
 const contains = (rectangle, x, y, margin = 0) => x >= rectangle.x - margin && x <= rectangle.x + rectangle.width + margin && y >= rectangle.y - margin && y <= rectangle.y + rectangle.height + margin;
 const overlaps = (left, right) => left.x < right.x + right.width && left.x + left.width > right.x && left.y < right.y + right.height && left.y + left.height > right.y;
+const sameBounds = (object, bounds) => object?.x === bounds.x && object?.y === bounds.y && object?.width === bounds.width && object?.height === bounds.height;
 const segmentHits = (rectangles, from, to, margin = 0) => {
   const steps = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y) / 4));
   for (let step = 0; step <= steps; step += 1) {
@@ -129,8 +136,26 @@ for (const room of ROOMS) {
 }
 const collision = objects('Collision');
 const lock = collision.find(item => item.name === 'F5_SECURITY_LOCK_BARRIER');
-const permanentCollision = collision.filter(item => item !== lock);
+const dynamicDoors = collision.filter(item => props(item).dynamicDoor === true);
+const permanentCollision = collision.filter(item => item !== lock && props(item).dynamicDoor !== true);
 check(lock && props(lock).dynamicLock === true && props(lock).requiresState === 'BOSS_NEUTRALIZED', 'Security Lock dynamic barrier is invalid');
+check(dynamicDoors.length === 4, 'exactly four dynamic Search Room doors are required');
+for (const room of ROOMS) {
+  const contract = DOORWAYS[room];
+  const door = dynamicDoors.find(item => item.name === `F5_${room}_DOOR_BARRIER`);
+  const doorValues = props(door);
+  check(sameBounds(door, contract) && doorValues.blocksRobot === true && doorValues.roomId === room && doorValues.doorId === `F5_${room}_DOOR` &&
+    doorValues.guardNodeId === `F5_${room}_GUARD` && doorValues.requiresState === 'VILLAIN_NEUTRALIZED', `${room} dynamic door contract is invalid`);
+  for (const [side, bounds] of [['WEST', contract.west], ['EAST', contract.east]]) {
+    const wall = collision.find(item => item.name === `F5_${room}_DOOR_WALL_${side}`);
+    const wallValues = props(wall);
+    check(sameBounds(wall, bounds) && wallValues.blocksRobot === true && wallValues.roomId === room && wallValues.doorSide === side, `${room} ${side} doorway wall is invalid`);
+  }
+  const route = routePoints(SEARCH_EDGES[room]);
+  const centered = route.slice(1).some((point, index) => point.x === contract.centerX && route[index].x === contract.centerX &&
+    Math.min(point.y, route[index].y) <= contract.y && Math.max(point.y, route[index].y) >= contract.y + contract.height);
+  check(centered, `${room} route does not cross the exact doorway centerline`);
+}
 for (const node of nodes) check(!collision.some(item => contains(item, node.x, node.y, 12)), `${node.name} is inside Collision`);
 for (const room of rooms) check(!permanentCollision.some(item => contains(item, nodeById.get(`F5_ROOM_${props(room).roomId}`).x, nodeById.get(`F5_ROOM_${props(room).roomId}`).y, 12)), `${room.name} interior is blocked`);
 for (const edge of edges) {
@@ -145,6 +170,8 @@ for (const room of ROOMS) {
   for (let index = 1; index < points.length; index += 1) check(!segmentHits(permanentCollision, points[index - 1], points[index], 12), `Hub→${room} centerline hits Collision`);
   const roomNode = nodeById.get(`F5_ROOM_${room}`);
   check(physicalReachable(nodeById.get('F5_SEARCH_HUB'), roomNode, permanentCollision), `Hub→${room} is not physically reachable`);
+  const roomDoor = dynamicDoors.find(item => props(item).roomId === room);
+  check(roomDoor && !physicalReachable(nodeById.get('F5_SEARCH_HUB'), roomNode, [...permanentCollision, roomDoor]), `Hub→${room} passes through a closed door`);
   const guard = encounters.find(item => props(item).roomId === room);
   check(!physicalReachable(nodeById.get('F5_SEARCH_HUB'), roomNode, [...permanentCollision, guard]), `${room} guard has a physical bypass`);
 }
@@ -182,7 +209,7 @@ if (failures.length) {
   process.exitCode = 1;
 } else {
   console.log('PASS floor_5_blockout');
-  console.log(`map=80x45 tile=32x32 layers=12 nodes=${nodes.length} edges=${edges.length} collision=${collision.length}`);
+  console.log(`map=80x45 tile=32x32 layers=12 nodes=${nodes.length} edges=${edges.length} collision=${collision.length} doors=${dynamicDoors.length}`);
   console.log(`distances=L1:${lengths.L1.toFixed(3)} L2:${lengths.L2.toFixed(3)} R1:${lengths.R1.toFixed(3)} R2:${lengths.R2.toFixed(3)} tiles ratio=${ratio.toFixed(4)} spread=${spread.toFixed(3)}`);
   console.log('rooms=PASS guards=4 guardBypass=BLOCKED bossPolicy=SEEDED_RANDOM_HIDDEN noBossReturns=4');
   console.log(`securityLock=PRE_BOSS_BLOCKED postBossControl=PASS goal=PASS manualTiles=${(tileset.tiles ?? []).length}`);

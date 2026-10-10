@@ -19,14 +19,14 @@ Floor 5 only was implemented from `floor_5_structure_arch_v3.png`, `navigation_g
 | Node | Runtime coordinate |
 |---|---:|
 | `F5_SEARCH_HUB` | `(1280, 1200)` |
-| `F5_LEFT_WING` | `(704, 976)` |
-| `F5_L1_GUARD` | `(304, 928)` |
-| `F5_ROOM_L1` | `(304, 640)` |
+| `F5_LEFT_WING` | `(704, 992)` |
+| `F5_L1_GUARD` | `(288, 928)` |
+| `F5_ROOM_L1` | `(288, 640)` |
 | `F5_L2_GUARD` | `(704, 480)` |
 | `F5_ROOM_L2` | `(704, 224)` |
-| `F5_RIGHT_WING` | `(1856, 976)` |
-| `F5_R1_GUARD` | `(2256, 928)` |
-| `F5_ROOM_R1` | `(2256, 640)` |
+| `F5_RIGHT_WING` | `(1856, 992)` |
+| `F5_R1_GUARD` | `(2272, 928)` |
+| `F5_ROOM_R1` | `(2272, 640)` |
 | `F5_R2_GUARD` | `(1856, 480)` |
 | `F5_ROOM_R2` | `(1856, 224)` |
 | `F5_CENTRAL_HALL` | `(1280, 624)` |
@@ -49,32 +49,47 @@ All polylines follow walkable corridor centerlines. Search and unlocked control 
 
 | Search path | Actual polyline length |
 |---|---:|
-| Hub → L1 | `48.000 tiles` (`1536 px`) |
+| Hub → L1 | `48.500 tiles` (`1552 px`) |
 | Hub → L2 | `48.500 tiles` (`1552 px`) |
-| Hub → R1 | `48.000 tiles` (`1536 px`) |
+| Hub → R1 | `48.500 tiles` (`1552 px`) |
 | Hub → R2 | `48.500 tiles` (`1552 px`) |
 
-- Max/min ratio: `1.0104`
-- Absolute spread: `0.500 tile` (`16 px`)
+- Max/min ratio: `1.0000`
+- Absolute spread: `0.000 tile` (`0 px`)
 - Policy: PASS (`ratio <= 1.05`, `spread <= 2 tiles`)
 
 ## Rooms, guards, and Boss Search
 
 | Guard | Center | Zone | Villains | Bypass |
 |---|---:|---:|---:|---|
-| L1 | `(304, 928)` | `(192, 896, 224, 64)` | 1 | false |
+| L1 | `(288, 928)` | `(176, 896, 224, 64)` | 1 | false |
 | L2 | `(704, 480)` | `(608, 448, 192, 64)` | 1 | false |
-| R1 | `(2256, 928)` | `(2144, 896, 224, 64)` | 1 | false |
+| R1 | `(2272, 928)` | `(2160, 896, 224, 64)` | 1 | false |
 | R2 | `(1856, 480)` | `(1760, 448, 192, 64)` | 1 | false |
 
 - Hub → Wing → Guard → Room physical reachability: PASS for all four rooms
 - Guard treated as blocked choke: no alternative physical route to its room, so bypass is BLOCKED
-- Room interiors and door openings are walkable; room walls remain Collision
+- Room interiors are walkable; each room has one exact two-tile opening and surrounding wall Collision
 - Boss candidates: exactly `L1,L2,R1,R2`
 - Selection: `SEEDED_RANDOM_PER_EPISODE`; location visibility false
 - Searched state: `EPISODE_LOCAL_SET`; repeat selection false
 - Route context contains remaining candidates only; hidden Boss location is excluded
 - The four dark room squares are non-semantic architectural references, never fixed Boss markers
+
+## Search Room doors
+
+| Room | Door tiles | Centerline | Collision wall tiles |
+|---|---:|---:|---|
+| L1 | `(8,26)–(9,26)` | `x=288` | `x=3–7,10–14; y=26` |
+| L2 | `(21,11)–(22,11)` | `x=704` | `x=16–20,23–27; y=11` |
+| R2 | `(57,11)–(58,11)` | `x=1856` | `x=52–56,59–63; y=11` |
+| R1 | `(70,26)–(71,26)` | `x=2272` | `x=65–69,72–76; y=26` |
+
+- Tiled owns the static frame, surrounding wall visuals, and wall Collision.
+- Phaser owns four identical closed-door visuals and four dynamic door colliders.
+- A Search probe reaches its room Guard first; neutralizing that Guard hides the closed visual and disables only that room's collider.
+- Reset closes all four doors. NO_BOSS/POST_BOSS probes begin with only their selected room door open.
+- The 64 px opening leaves 20 px clearance on each side of the 24 px robot when it follows the exact centerline.
 
 ## State-gated control flow
 
@@ -88,10 +103,10 @@ All polylines follow walkable corridor centerlines. Search and unlocked control 
 
 ## Manual visual pipeline
 
-- Created empty Collection-of-Images tileset `floor5_room_shell_manual.tsj`
-- Logical grid `32 × 32`; no final Floor 5 PNG was generated
+- Collection-of-Images tileset: `floor5_room_shell_manual.tsj`
+- Logical grid `32 × 32`; current manual tileset contains 20 PNG entries
 - Contract: PNG filename stem = TSJ Class = explicit `ASSET_IDS` entry
-- `ASSET_IDS` remains intentionally empty until the user adds assets
+- Every current tileset Class has a matching explicit `ASSET_IDS` entry
 - Missing Class vs missing PNG diagnostics are separate
 - Manual Ground tiles render at depth 6, above every blockout placeholder layer (maximum depth 4)
 - Runtime has no permanent semantic room/route/Boss color rectangles; Collision, Navigation, and Encounter overlays are opt-in
@@ -100,7 +115,7 @@ All polylines follow walkable corridor centerlines. Search and unlocked control 
 ## Automated validation
 
 - `node scripts/reinforcement/validateFloor5TiledBlockout.mjs`: PASS
-- `node --experimental-strip-types --test tests/reinforcementFloor5Debug.test.ts`: PASS (9/9)
+- `node --experimental-strip-types --test tests/reinforcementFloor5Debug.test.ts`: PASS (11/11)
 - `npm run typecheck`: PASS
 - `npm test`: Floor 5 tests PASS; suite remains at the pre-existing Floor 4 TSJ test failure because that test expects an empty TSJ while the user has already added 16 Floor 4 assets
 - `npm run build`: `ENVIRONMENT_BLOCKED` by `EPERM realpath src/main.tsx`; the elevated retry was not approved
@@ -115,6 +130,6 @@ URL: `http://127.0.0.1:5173/?mode=reinforcement-floor5-debug`
 - `1` / `2` / `3` / `4`: L1 / L2 / R1 / R2 search probe
 - `B`: selected room NO_BOSS return probe
 - `P`: selected room POST_BOSS → Control → Goal probe
-- `R` or `X`: reset to Search Hub and close Security Lock
+- `R` or `X`: reset to Search Hub and close Security Lock plus all Search Room doors
 
 `BROWSER_PLAYTEST = USER_MANUAL_PENDING`
