@@ -14,7 +14,11 @@ const BLOCKOUT_ASSET_ROOT = '/assets/environment/reinforcement/floor1_room_shell
 const ASSET_ROOT = '/assets/environment/reinforcement/floor5_room_shell_manual';
 const BLOCKOUT_ASSET_IDS = ['F1_FLOOR_PUBLIC', 'F1_BACKGROUND', 'F1_STAIR_CENTER'] as const;
 const ASSET_IDS = [
-  // Add each F5 PNG filename stem after assigning the same Class in the TSJ.
+  'F5_HALL_FLOOR', 'F5_ROOM_FLOOR', 'F5_CONTROL', 'F2_CHAIR_2',
+  'F5_CORE', 'F5_CORE_2', 'F5_WALL_BASE', 'F5_WALL_BASE_2', 'F5_WALL_BASE_3',
+  'F5_WALL_BASE_HALF', 'F5_WALL_TOP', 'F5_WALL_CORNER', 'F5_STAIR_CENTER',
+  'F5_STAIR_LEFT', 'F5_STAIR_RIGHT','F5_WALL_TOP_2','F5_WALL_TOP_3',
+  'F5_WALL_BASE_4', 'F5_WALL_BASE_5','F5_WALL_BASE_6'
 ] as const;
 const SPEED = 180;
 const PROBE_SPEED = 1800;
