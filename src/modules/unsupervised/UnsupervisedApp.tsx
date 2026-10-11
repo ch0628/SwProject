@@ -1,8 +1,7 @@
 // 비지도학습 화면 (1차 뼈대). sceneFlow 상태를 그대로 그리는 얇은 뷰이며, 진행 로직은 sceneFlow.ts에만 있다.
 // 이 파일의 로컬 상태는 아직 확정되지 않은 특징 체크박스 선택(pending)뿐이다.
 import { useEffect, useState, type ReactNode } from 'react';
-import { characterAssetPath } from '../../characterManifest';
-import fairyImg from '../../../assets/ai/fairy.png';
+import { PORTRAITS } from './assets';
 import { CoordinatePlane } from './CoordinatePlane';
 import { FEATURE_KEYS, summarizeCluster, type FeatureKey } from './sim/clusteringEngine';
 import {
@@ -22,8 +21,6 @@ import { SCENE_TITLE, SPECIES_NAME, clusterName } from './labels';
 import './unsupervised.css';
 
 const CLUSTER_INPUTS = RESIDENTS.map(toClusterInput);
-// 결정 10: AI 보안관은 1차에 기존 캐릭터(강아지) 스프라이트를 재사용한다.
-const SHERIFF_IMG = characterAssetPath('dog', 'male', 'down');
 
 export function UnsupervisedApp() {
   const [flow, setFlow] = useState<FlowState>(createInitialFlowState);
@@ -73,6 +70,7 @@ export function UnsupervisedApp() {
         clusters={step === 'PATTERN_FIND' ? null : flow.clusterResult?.clusters ?? null}
         blurry={isBlurry(flow)} clickable={planeClickable} activeClusterId={activeClusterId}
         clearedClusterIds={flow.clearedClusterIds} revealedVillainIds={step === 'INVESTIGATE' ? flow.revealedVillainIds : []}
+        investigating={step === 'INVESTIGATE' || step === 'ORDINARY_RESULT'}
         onClusterClick={onClusterClick} />
     </div>}
 
@@ -133,7 +131,7 @@ function SceneActions({ flow, pending, dispatch }: { flow: FlowState; pending: r
 
 function DialogueBox({ line, children }: { line: DialogueLine; children: ReactNode }) {
   return <section className="unsup-dialogue" aria-live="polite">
-    <div className="unsup-portrait"><img src={line.speaker === '아리' ? fairyImg : SHERIFF_IMG} alt="" /></div>
+    <div className="unsup-portrait"><img src={PORTRAITS[line.speaker]} alt="" /></div>
     <div className="unsup-dialogue-copy">
       <strong>{line.speaker}</strong>
       <p>{highlight(line.text, line.highlights ?? [])}</p>
