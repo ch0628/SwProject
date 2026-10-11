@@ -214,6 +214,8 @@ Residential Area
 
 ## 7. 비지도학습
 
+> 비지도학습은 PRD v1.0.0(prd/unsupervised_prd_v1.0.0.md) 기준으로 변경되어 이 절은 갱신 필요
+
 - 한 번의 분석 Snapshot에 홀로그램 약 45~50명
 - Feature Dial 변경에 따라 군집 결과 재계산
 - 플랫폼 merge / split / 이동 연출
