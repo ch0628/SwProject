@@ -154,8 +154,8 @@ Map:
 
 ### 비지도학습
 
-CCTV Snapshot의 캐릭터를 홀로그램으로 분석하고,
-Feature Dial 설정에 따라 Cluster가 merge / split되는 경험을 제공한다.
+마을 창고 사건의 단서를 보고 주민 특징 4개 중 2개를 골라, AI가 정답 없이 비슷한 주민끼리 묶는 과정을 경험한다.
+고른 특징에 따라 군집 모양이 달라지고, 단서와 가장 비슷한 군집을 조사해 숨어 있던 범인을 찾는다.
 
 상세:
 - `docs/modules/machine_learning/unsupervised/prd/unsupervised_prd_v1.0.0.md`
