@@ -158,7 +158,7 @@ CCTV Snapshot의 캐릭터를 홀로그램으로 분석하고,
 Feature Dial 설정에 따라 Cluster가 merge / split되는 경험을 제공한다.
 
 상세:
-- `docs/modules/machine_learning/unsupervised/concept_rules.md`
+- `docs/modules/machine_learning/unsupervised/prd/unsupervised_prd_v1.0.0.md`
 
 ### 강화학습
 
