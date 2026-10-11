@@ -27,7 +27,7 @@ AI Basics는 기능 구현과 배포 확인이 완료되었다. 현재 상태와
 → [modules/machine_learning/supervised/supervised_character_pool.md](modules/machine_learning/supervised/supervised_character_pool.md)
 
 #### Unsupervised
-→ [modules/machine_learning/unsupervised/concept_rules.md](modules/machine_learning/unsupervised/concept_rules.md)
+→ [modules/machine_learning/unsupervised/prd/unsupervised_prd_v1.0.0.md](modules/machine_learning/unsupervised/prd/unsupervised_prd_v1.0.0.md)
 
 #### Reinforcement
 → [modules/machine_learning/reinforcement/concept_rules.md](modules/machine_learning/reinforcement/concept_rules.md)
