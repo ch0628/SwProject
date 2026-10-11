@@ -38,6 +38,8 @@ body {
 .hub-hotspot:focus-visible { outline: 3px solid #243bff; outline-offset: 3px; }
 .hub-ai-basics { left: 17.2%; top: 8%; }
 .hub-supervised { left: 52.75%; top: 44%; }
+/* 임시: 월드맵 이미지에 원이 없어 CSS로 원과 라벨을 그린다 (최종 월드맵 이미지가 나오면 투명 hotspot으로 교체) */
+.hub-unsupervised { left: 76%; top: 14%; background: #d9d9d9; color: #111; font-size: clamp(12px, 2vw, 38px); }
 
 .game {
   position: absolute;
