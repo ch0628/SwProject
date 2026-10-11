@@ -301,3 +301,17 @@ assets/unsupervised/               장면 배경, 단서와 특징 아이콘 (�
 
 #### E2-2. 데이터와 PRD 이미지의 차이
 - R10 너구리의 먹는 음식은 0.85(화면 라벨 "육식")이다. PRD Scene 4 이미지에서는 "잡식"(X축 중앙)이다. 정답 조합에서 단서 군집(육식·밤)에 들어가도록 0.85를 유지한다(2026-10-11 사용자 확정).
+
+### E3. 에셋 교체 지점 (파일 경로만 바꾸면 교체됨)
+| 대상 | 위치 | 바꾸는 방법 |
+|---|---|---|
+| 주민 스프라이트 12명 | `src/modules/unsupervised/data/residents.ts`의 `RESIDENTS` 표 3번째 인자 | `base('dog', 'male')`를 `'/assets/characters/deer/…/deer_male_down.png'` 같은 경로 문자열로 바꾼다 (`public/` 기준 URL) |
+| 악당 정체 공개 스프라이트 (가면·망토) | 같은 표의 마지막 인자 `revealSprite` (현재 비어 있음) | `r('R10', …, true, '/assets/unsupervised/raccoon_villain.png')`처럼 경로를 추가한다. 비어 있으면 원래 스프라이트에 CSS 강조만 적용 |
+| 대사 초상: 아리 / AI 보안관 | `src/modules/unsupervised/assets.ts`의 `PORTRAITS` | 아리는 Vite import(`assets/ai/fairy.png`), AI 보안관은 현재 `dog male` 스프라이트 경로. 전용 이미지 경로로 교체 |
+| 장면 배경 (밤의 창고 S1 / 밤의 마을 S2~S7 / 밝은 마을 S8) | `src/modules/unsupervised/unsupervised.css` 맨 위 `--unsup-bg-warehouse`, `--unsup-bg-night`, `--unsup-bg-day` | `none`을 `url('/assets/unsupervised/파일명.png')`로 바꾼다. 이미지가 없으면 `--unsup-bg-color-*` 단색이 보인다 |
+| Hub 진입점 | `src/style.css`의 `.hub-unsupervised`, `src/main.tsx`의 Hub 버튼 텍스트 | 최종 월드맵 이미지에 원이 생기면 배경색과 글자를 지우고 위치(`left`/`top`)만 맞춘다 (다른 두 hotspot과 같은 투명 방식) |
+| 단서·특징 아이콘 (미적용) | 현재 텍스트로만 표시 | 아이콘이 생기면 `data/features.ts`의 `FEATURE_DEFINITIONS`에 경로 필드를 추가하는 방식으로 연결한다 (코드 추가 필요) |
+
+### E4. 빌드 경고 확인 (2026-10-11)
+- `npm run build`의 "Some chunks are larger than 500 kB" 경고는 **main 브랜치(`e856bf2`)에서도 이미 나온다.** 이번 변경 때문에 생긴 경고가 아니다.
+- JS 번들(`index-*.js`): main 1,879.31 kB (gzip 510.26 kB) → 3단계 후 1,900.32 kB → 4단계 후 1,901.83 kB (gzip 517.57 kB), 약 +22.5 kB.
