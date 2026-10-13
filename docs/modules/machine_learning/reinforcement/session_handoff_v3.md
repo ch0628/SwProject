@@ -2,25 +2,30 @@
 
 ## 현재 상태
 
+`ACTUAL_MAP_LOGIC_INTEGRATION_APPROVED`
+
+Map Integration v1의 Environment/Encounter/Simulation Time 숫자 계약은 `map_integration_v1.md`가 Source of Truth다. actual TMJ adapter, Learning Engine 연결, Production Environment v1, 5 Robots × 20 Rounds × 5 seeds confirmation을 완료했다.
+
 - **Module ID:** `reinforcement-learning`
-- **전체 Module 상태:** `DESIGNING`
-- **Learning Engine 상태:** `v1.2 / APPROVED_FOR_INTEGRATION`
+- **전체 Module 상태:** `ACTUAL_MAP_LOGIC_INTEGRATION_APPROVED`
+- **Learning Engine 상태:** `v1.2 Core APPROVED + Actual Map Integration APPROVED`
 - **Navigation Design 상태:** `v1 / LOGIC_APPROVED`
-- **Navigation Graph 상태:** `navigation_graph_v1.json / GENERATED_AND_VALIDATED`
+- **Navigation Graph 상태:** `navigation_graph_v1_f5_v3.json / GENERATED_AND_VALIDATED / CANONICAL`
 - **Navigation v2 상태:** `REFERENCE_ONLY / SUPERSEDED_FOR_RUNTIME`
 - **Floor 1 Runtime Structure 상태:** `STRUCTURE_PLAYTEST_APPROVED`
-- **Floor 2~5 Tiled 상태:** `NOT_IMPLEMENTED`
+- **Floor 1~5 Tiled 상태:** `IMPLEMENTED_AND_VALIDATED` (headless actual-map runtime 연결 완료)
 - Core Learning Algorithm은 기존 multi-seed validation에서 `PASS_CANDIDATE`를 받았고 실제 Map Integration의 Base Engine으로 사용한다.
 - 5층의 논리 Navigation, 계단 구조, 층별 역할, 일반 Villain 배치, 5F Boss Search / 고정 Control Room 구조를 `navigation_design_v1.md`에 확정했다.
-- `navigation_graph_v1.json`과 1F~5F v1/v2 blockout reference는 생성/검증 완료했다.
-- 1F는 `floor_1_blockout.tmj`를 Runtime Spatial Source of Truth로 사용하며 Tiled/Collision/Navigation/Encounter/Transition 구조, Phaser debug route, 사용자 수동 playtest까지 통과했다.
-- 최신 Map Integration Extension으로 `VILLAIN_ENCOUNTER / BOSS_ENCOUNTER / ROBOT_DISABLED / Villain Mission Bonus`를 추가했다. 이 부분은 실제 Map Integration Validation 전이다.
-- **현재 핵심 작업은 1F visual implementation을 완료하고 final visual playtest를 거친 뒤, 같은 Tiled 제작 규칙을 2F~5F로 확장하는 것**이다.
+- `navigation_graph_v1_f5_v3.json`과 1F~5F v1/v2 blockout reference는 생성/검증 완료했다.
+- Floor 1~5 TMJ를 Runtime Spatial Source of Truth로 사용하며 Tiled/Collision/Navigation/Encounter/Transition validator를 통과한다.
+- `VILLAIN_ENCOUNTER / BOSS_ENCOUNTER / FORCE_PASS / MOBILITY_DAMAGE / ROBOT_DISABLED`를 actual-map runtime에 연결하고 confirmation을 완료했다.
+- **현재 핵심 작업은 Production Phaser Gameplay / Training UI 구현**이다.
 - Source of Truth:
-  1. `docs/modules/machine_learning/reinforcement/module_spec_v3.md`
-  2. `docs/modules/machine_learning/reinforcement/learning_engine_v1.md`
-  3. `docs/modules/machine_learning/reinforcement/navigation_design_v1.md`
-  4. `docs/modules/machine_learning/reinforcement/session_handoff_v3.md`
+  1. `docs/modules/machine_learning/reinforcement/map_integration_v1.md` (Map Integration 숫자)
+  2. `docs/modules/machine_learning/reinforcement/module_spec_v3.md`
+  3. `docs/modules/machine_learning/reinforcement/learning_engine_v1.md`
+  4. `docs/modules/machine_learning/reinforcement/navigation_design_v1.md`
+  5. `docs/modules/machine_learning/reinforcement/session_handoff_v3.md`
 - 이 문서는 다음 세션이 현재 결정 사항을 잃지 않고 바로 이어서 작업하기 위한 Handoff다.
 
 ## 현재까지 확정된 사항
@@ -370,16 +375,18 @@ Boss는 별도 추가 Reward를 주지 않는다.
 
 6. `VILLAIN_ENCOUNTER`
    - 확인된 악당과 마주친 상황
-   - 기본 Action 후보: `SUBDUE / DISTRACT / BYPASS / RETREAT`
+   - 기본 Action 후보: `SUBDUE / FORCE_PASS / DISTRACT / BYPASS / RETREAT`
    - 환경에 따라 unavailable Action 제거
-   - `SUBDUE` 성공 → `VILLAIN_NEUTRALIZED`
+   - `SUBDUE` 성공률: `map_integration_v1.md`의 Production Environment v1을 따름; 성공 → `VILLAIN_NEUTRALIZED`
    - `SUBDUE` 실패 → `ROBOT_DISABLED`
-   - Villain ×2가 ×1보다 위험해야 함
+   - `FORCE_PASS`는 neutralize하지 않으며 `BLOCKED / MOBILITY_DAMAGE` 가능
 
 7. `BOSS_ENCOUNTER`
    - 5F Search Room에서 Boss 발견 시 발생
    - 일반 Villain Encounter와 분리
    - 별도 전투 미니게임으로 확대하지 않음
+   - Action Pool: `SUBDUE / DISTRACT / RETREAT`, BYPASS 없음
+   - SUBDUE 성공률은 `map_integration_v1.md`의 Production Environment v1을 따름
    - 성공 → `BOSS_NEUTRALIZED` → Control Room Lock 해제
    - 실패 → `ROBOT_DISABLED` 가능
 
@@ -561,7 +568,7 @@ v1.2에서 SAFE/FAST 주요 행동 및 Route 방향과 Route saturation 수정�
 
 현재 제작 구조:
 - `navigation_design_v1.md` = 5층 논리 Navigation Source of Truth
-- `navigation_graph_v1.json` = 논리 Node / Edge / Route Context graph
+- `navigation_graph_v1_f5_v3.json` = canonical 논리 Node / Edge / Route Context graph
 - **Tiled = 실제 runtime geometry / collision / floor transition / encounter-zone Source of Truth**
 - 1F는 `public/maps/reinforcement/floor_1_blockout.tmj`를 사용하며 `STRUCTURE_PLAYTEST_APPROVED` 상태다.
 - structural visual asset(바닥/벽/코너/문/계단)은 가능한 한 32px grid 기반 deterministic tileset으로 제작한다.
@@ -577,30 +584,24 @@ v1.2에서 SAFE/FAST 주요 행동 및 Route 방향과 Route saturation 수정�
 3. 2F~5F Tiled의 실제 공간 배치 / x,y 좌표 / collision
 4. 1F final visual tileset과 최종 art 적용
 5. 2F~5F visual tileset / 층별 시각 차별화
-6. Route Trait 실제 numeric representation
-7. Action / Route 실제 `timeCost`
-8. Route별 Encounter 최종 발생 조건 / Environment Randomness 세기
-9. Episode 제한 시간
-10. 시민 오해 `TRACK 일정 시간` 기준
-11. `VILLAIN_ENCOUNTER`의 `SUBDUE / DISTRACT` 실제 성공률
-12. Villain ×1 / ×2 위험도 차이의 정확한 값
-13. `BOSS_ENCOUNTER` 최종 Action Pool / 성공률
-14. Villain Mission Bonus 세부 배분식
-15. 실제 Map에서 damage / risk Event 빈도와 normalization 적합성
-16. 실제 Map 기반 `5 Robots × 20 Rounds` Integration Validation
-17. Encounter Preference 상한 도달이 실제 gameplay 다양성에 미치는 영향
-18. 이벤트별 정확한 색상 / 아이콘 / Toast 시간
-19. Main / Sub View 실제 렌더링 구현 방식
-20. 오른쪽 상단 보조 패널 필요 여부와 역할
-21. 상단 전체 Sub View 레이아웃 최종 비율
-22. 중앙 AI / Ari 최종 Asset
-23. Event Detail / Micro Cutscene 재사용/추가 Asset
-24. Round Result Overlay 최종 시각 디자인
-25. Training Report 최종 지표
-26. 실제 작전의 세부 Animation
-27. 효과음 목록 및 Asset 경로
-28. 완료 후 다음 모듈 연결 방식
-29. Floor 1 debug camera zoom `1.0 → 약 1.3` 적용
+6. actual TMJ polyline 기반 Route timeCost / safe baseline 계산
+7. actual `timeLimit = longestSafeSuccessBaseline * 1.25`
+8. 실제 Map에서 damage / risk Event 빈도와 normalization 적합성
+9. 실제 Map 기반 `5 Robots × 20 Rounds` Integration Validation
+10. Villain Mission Bonus 세부 배분식
+11. Encounter Preference 상한 도달이 실제 gameplay 다양성에 미치는 영향
+12. 이벤트별 정확한 색상 / 아이콘 / Toast 시간
+13. Main / Sub View 실제 렌더링 구현 방식
+14. 오른쪽 상단 보조 패널 필요 여부와 역할
+15. 상단 전체 Sub View 레이아웃 최종 비율
+16. 중앙 AI / Ari 최종 Asset
+17. Event Detail / Micro Cutscene 재사용/추가 Asset
+18. Round Result Overlay 최종 시각 디자인
+19. Training Report 최종 지표
+20. 실제 작전의 세부 Animation
+21. 효과음 목록 및 Asset 경로
+22. 완료 후 다음 모듈 연결 방식
+23. Floor 1 debug camera zoom `1.0 → 약 1.3` 적용
 
 ## 보호해야 할 기존 기능
 
@@ -653,53 +654,11 @@ v1.2에서 SAFE/FAST 주요 행동 및 Route 방향과 Route saturation 수정�
 
 ## 다음 작업 순서
 
-### 1. Floor 1 Visual Implementation — 현재 다음 작업
+### 1. Actual Map Integration — 현재 다음 작업
 
-1F 구조는 이미 Tiled/Phaser 수동 playtest를 통과했다. 따라서 geometry를 다시 설계하지 않는다.
+`map_integration_v1.md` 계약대로 실제 Tiled polyline과 candidate Encounter zone을 Learning Engine에 연결한다. Route base time은 polyline length로 계산하고, actual longest safe successful baseline으로 timeLimit을 산출한다.
 
-현재 원칙:
-- `floor_1_blockout.tmj` geometry / collision / navigation / encounter / transition은 보호한다.
-- structural art는 32px orthogonal grid 기반 deterministic tileset으로 제작한다.
-- 전체 floor 이미지를 생성형 모델에게 맡겨 geometry를 다시 해석시키지 않는다.
-- Generative image tool은 필요할 경우 Reception, 정보 패널, 특수 콘솔 등 decorative / hero asset에 선택적으로 사용한다.
-
-완료 조건:
-- visual wall/floor/door/stair가 기존 collision과 일치
-- Reception / static prop visual이 collision과 일치
-- tile seam / layer order 문제 없음
-- 약 1.3× camera zoom 적용 여부 확인
-- final visual playtest PASS
-
-### 2. Floor 2~5 Tiled Runtime Map 구현
-
-1F에서 확정한 Tiled 제작 규칙을 재사용한다.
-
-층별 순서:
-```text
-논리 Navigation 확인
-→ Tiled geometry / collision / transition 구현
-→ validator
-→ Phaser debug playtest
-→ 사용자 수동 playtest
-→ STRUCTURE_PLAYTEST_APPROVED
-→ visual pass
-```
-
-`navigation_v2`의 spatial/clean 이미지는 건축 참고 자료로만 사용할 수 있으며 runtime geometry의 Source of Truth가 아니다.
-
-### 3. Route Trait / Environment Parameter 설계
-
-실제 Tiled 공간과 Graph를 기준으로:
-- `timeCost`
-- `citizenExposure`
-- `obstacleChance`
-- `ambiguousPersonChance`
-- `narrowness`
-- Encounter 위치 / 발생 조건
-
-을 구체화한다.
-
-### 4. Learning Engine v1.2 Integration Validation
+### 2. Learning Engine v1.2 Integration Validation
 
 실제 Navigation / Environment Parameter를 연결한 뒤:
 
@@ -720,7 +679,7 @@ v1.2에서 SAFE/FAST 주요 행동 및 Route 방향과 Route saturation 수정�
 - Villain Mission Bonus `0` vs `max +1`
 - SAFE / FAST Trade-off 유지
 
-### 5. Production Gameplay / Training UI Integration
+### 3. Production Gameplay / Training UI Integration
 
 - Main View 1 + Sub View 4
 - 실제 Simulation state/action과 map movement 연결
@@ -729,7 +688,7 @@ v1.2에서 SAFE/FAST 주요 행동 및 Route 방향과 Route saturation 수정�
 - Training Report
 - 실전 투입
 
-### 6. Browser / Regression 검증
+### 4. Browser / Regression 검증
 
 - Browser Smoke Test
 - AI Basics 회귀 확인
@@ -743,13 +702,14 @@ v1.2에서 SAFE/FAST 주요 행동 및 Route 방향과 Route saturation 수정�
 
 우선순위:
 
-1. `docs/modules/machine_learning/reinforcement/navigation_design_v1.md`
-2. `docs/modules/machine_learning/reinforcement/module_spec_v3.md`
-3. `docs/modules/machine_learning/reinforcement/learning_engine_v1.md`
-4. `docs/modules/machine_learning/reinforcement/session_handoff_v3.md`
-5. `docs/modules/machine_learning/reinforcement/validation/learning_engine_validation_v1_2.md`
-6. `docs/project/module_contract.md`
-7. `docs/modules/machine_learning/reinforcement/concept_rules.md`
+1. `docs/modules/machine_learning/reinforcement/map_integration_v1.md`
+2. `docs/modules/machine_learning/reinforcement/navigation_design_v1.md`
+3. `docs/modules/machine_learning/reinforcement/module_spec_v3.md`
+4. `docs/modules/machine_learning/reinforcement/learning_engine_v1.md`
+5. `docs/modules/machine_learning/reinforcement/session_handoff_v3.md`
+6. `docs/modules/machine_learning/reinforcement/validation/learning_engine_validation_v1_2.md`
+7. `docs/project/module_contract.md`
+8. `docs/modules/machine_learning/reinforcement/concept_rules.md`
 
 과거 validation 문서는 History 용도로만 사용한다.
 
@@ -757,6 +717,7 @@ v1.2에서 SAFE/FAST 주요 행동 및 Route 방향과 Route saturation 수정�
 
 ```text
 현재 사용자의 최신 지시
+→ map_integration_v1.md (Map Integration 숫자)
 → navigation_design_v1.md (Navigation / Map 논리)
 → module_spec_v3.md (Module 전체 설계)
 → learning_engine_v1.md (Engine 기술 규칙)
@@ -776,14 +737,17 @@ Reward 수식이나 3-Round Simulation을 다시 처음부터 논의하지 않�
 Learning Engine v1.2
 = APPROVED_FOR_INTEGRATION
 
+Map Integration v1 Contract
+= ACTUAL_MAP_LOGIC_INTEGRATION_APPROVED
+
 Navigation Design v1
 = LOGIC_APPROVED
 
-navigation_graph_v1.json
+navigation_graph_v1_f5_v3.json
 = GENERATED_AND_VALIDATED
 
-Floor 1 Runtime Structure
-= STRUCTURE_PLAYTEST_APPROVED
+Floor 1~5 Tiled Debug Structure
+= IMPLEMENTED_AND_VALIDATED
 
 navigation_v2
 = REFERENCE_ONLY / SUPERSEDED_FOR_RUNTIME
@@ -792,6 +756,7 @@ navigation_v2
 먼저 다음 문서를 읽는다.
 
 ```text
+map_integration_v1.md
 navigation_design_v1.md
 module_spec_v3.md
 learning_engine_v1.md
@@ -802,12 +767,9 @@ validation/learning_engine_validation_v1_2.md
 그 다음 바로:
 
 ```text
-1F visual implementation
-→ 1F final visual playtest
-→ 2F~5F Tiled structure + Phaser playtest
-→ Route Trait / Encounter 수치화
-→ 실제 Map 100-Experience Integration Validation
-→ Production Training UI / Gameplay 연결
+Production Phaser movement/rendering
+→ Training UI / Gameplay 연결
+→ animation/audio polish
 ```
 
 순서로 진행한다.

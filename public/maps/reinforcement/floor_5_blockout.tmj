@@ -2815,7 +2815,7 @@
                         {
                          "name":"actions",
                          "type":"string",
-                         "value":"SUBDUE,DISTRACT,RETREAT"
+                         "value":"SUBDUE,FORCE_PASS,DISTRACT,RETREAT"
                         }, 
                         {
                          "name":"bypassAvailable",
@@ -2868,7 +2868,7 @@
                         {
                          "name":"actions",
                          "type":"string",
-                         "value":"SUBDUE,DISTRACT,RETREAT"
+                         "value":"SUBDUE,FORCE_PASS,DISTRACT,RETREAT"
                         }, 
                         {
                          "name":"bypassAvailable",
@@ -2921,7 +2921,7 @@
                         {
                          "name":"actions",
                          "type":"string",
-                         "value":"SUBDUE,DISTRACT,RETREAT"
+                         "value":"SUBDUE,FORCE_PASS,DISTRACT,RETREAT"
                         }, 
                         {
                          "name":"bypassAvailable",
@@ -2974,7 +2974,7 @@
                         {
                          "name":"actions",
                          "type":"string",
-                         "value":"SUBDUE,DISTRACT,RETREAT"
+                         "value":"SUBDUE,FORCE_PASS,DISTRACT,RETREAT"
                         }, 
                         {
                          "name":"bypassAvailable",

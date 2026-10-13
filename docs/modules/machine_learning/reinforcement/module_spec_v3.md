@@ -6,7 +6,8 @@
 - **표시 제목:** 강화학습 *(최종 플레이어-facing 제목은 미확정)*
 - **핵심 질문:** 보상과 벌점으로 AI는 어떻게 더 나은 행동을 배울까?
 - **학습 목표:** 사용자가 로봇의 정답 경로나 행동을 직접 알려주는 것이 아니라, 어떤 결과를 중요하게 볼지 보상/벌점 중요도로 정하면 AI가 여러 행동을 시도하고 결과를 바탕으로 다음 행동 선택 경향을 바꾸는 과정을 체험한다.
-- **현재 상태:** `DESIGNING` — Learning Engine v1.2 Core Algorithm은 `APPROVED_FOR_INTEGRATION`, Navigation 논리는 `LOGIC_APPROVED`, `navigation_graph_v1.json`은 생성/검증 완료. 1F Tiled/Phaser Runtime Structure는 `STRUCTURE_PLAYTEST_APPROVED`, 2F~5F Tiled와 Learning Engine 실제 Map Integration은 미완료.
+- **현재 상태:** `ACTUAL_MAP_LOGIC_INTEGRATION_APPROVED` — actual TMJ adapter, Learning Engine 연결, Production Environment v1, 5-seed confirmation을 완료했다.
+- **Map Integration numeric Source of Truth:** `map_integration_v1.md`
 
 ---
 
@@ -86,7 +87,7 @@ AI는 현재 상황에서 가능한 여러 행동 중 하나를 선택한다.
 - 시민 근처에서 감속
 - 시민을 크게 우회
 - 잠시 대기
-- 확인된 악당에게 `SUBDUE / DISTRACT / BYPASS / RETREAT` 중 가능한 행동 선택
+- 확인된 악당에게 `SUBDUE / FORCE_PASS / DISTRACT / BYPASS / RETREAT` 중 가능한 행동 선택
 - 5층에서 아직 확인하지 않은 Search Room 선택
 - 이전에 좋은 평가를 받은 경로 일부 재사용
 - 새로운 경로 탐색
@@ -662,10 +663,10 @@ Route 자체가 즉시 `CITIZEN_RISK / FACILITY_DAMAGE`를 발생시키지는 �
 Action Pool 기본 후보:
 
 ```text
-DETOUR / PUSH / SQUEEZE / WAIT
+DETOUR / CLEAR / PUSH
 ```
 
-환경에 따라 가능한 Action만 사용한다. 시설물 파괴가 발생해도 Episode는 계속 진행한다.
+`SQUEEZE / WAIT`는 일반 OBSTACLE에서 unavailable이다. `PUSH`는 clean/damage/blocked 결과를 가지며 OBSTACLE은 `ROBOT_DISABLED`를 만들지 않는다. 상세 수치는 `map_integration_v1.md`를 따른다.
 
 #### `CITIZEN_NEARBY`
 
@@ -685,7 +686,7 @@ Action Pool 기본 후보:
 OBSERVE / BYPASS / TRACK / SUBDUE
 ```
 
-내부 실제 정체는 `CITIZEN | VILLAIN`이다. 시민에게 잘못된 `SUBDUE` 또는 기준을 넘는 `TRACK`을 수행하면 `CITIZEN_MISUNDERSTANDING`으로 종료될 수 있다.
+내부 실제 정체는 `CITIZEN | VILLAIN`이다. 시민에게 잘못된 `SUBDUE`, 또는 같은 Encounter에서 +3 TRACK을 누적해 6 이상이 되면 `CITIZEN_MISUNDERSTANDING`으로 종료된다.
 
 #### `VILLAIN_ENCOUNTER` — Integration Extension
 
@@ -694,18 +695,17 @@ OBSERVE / BYPASS / TRACK / SUBDUE
 기본 Action Pool:
 
 ```text
-SUBDUE / DISTRACT / BYPASS / RETREAT
+SUBDUE / FORCE_PASS / DISTRACT / BYPASS / RETREAT
 ```
 
 환경에 따라 unavailable Action은 제거한다.
 
-- `SUBDUE`: 가장 빠르지만 실패 위험이 있다. 성공 → `VILLAIN_NEUTRALIZED`, 실패 → `ROBOT_DISABLED`.
-- `DISTRACT`: 직접 제압하지 않고 시간을 지불해 통과를 시도한다.
+- `SUBDUE`: 성공률은 `map_integration_v1.md`의 Production Environment v1을 따른다. 성공 → `VILLAIN_NEUTRALIZED`, 실패 → `ROBOT_DISABLED`.
+- `FORCE_PASS`: neutralize하지 않고 통과/blocked/next-segment-only mobility damage 결과를 만든다.
+- `DISTRACT`: +4. 결과 확률은 `map_integration_v1.md`의 Production Environment v1을 따른다.
 - `BYPASS`: 실제 우회 공간이 있을 때만 제공한다.
 - `RETREAT`: 이전 Decision Node로 되돌아가며 시간 손실이 발생한다.
-- Villain 수가 2명인 Encounter는 1명보다 `SUBDUE` 위험이 높아야 한다.
-
-정확한 성공 확률과 timeCost는 Integration Validation에서 결정한다.
+- 오직 `SUBDUE` 성공만 해당 Villain을 Episode 동안 neutralized한다.
 
 #### `BOSS_ENCOUNTER` — Integration Extension
 
@@ -713,16 +713,7 @@ SUBDUE / DISTRACT / BYPASS / RETREAT
 
 일반 `VILLAIN_ENCOUNTER`와 분리하며 별도 전투 미니게임으로 확장하지 않는다.
 
-```text
-Boss 제압 성공
-→ BOSS_NEUTRALIZED
-→ Control Room Security Lock 해제
-
-Boss 대응 실패
-→ ROBOT_DISABLED 가능
-```
-
-정확한 Boss Action Pool / 성공 확률은 Blockout 이후 Integration 단계에서 확정한다.
+Action Pool은 `SUBDUE / DISTRACT / RETREAT`다. 성공률은 `map_integration_v1.md`의 Production Environment v1을 따르며 Boss BYPASS는 없다. `BOSS_NEUTRALIZED`는 Control Room Security Lock을 해제하지만 그 자체로 Episode를 종료하지 않는다.
 
 ### Episode 종료 / 계속 진행 규칙
 
@@ -808,7 +799,7 @@ Core Validation에서 SAFE/FAST의 시민 위험, 시설 파괴, 시간, `PUSH /
 
 ```text
 navigation_design_v1.md = LOGIC_APPROVED
-navigation_graph_v1.json = GENERATED_AND_VALIDATED
+navigation_graph_v1_f5_v3.json = GENERATED_AND_VALIDATED / CANONICAL
 Floor 1 Tiled/Phaser Structure = STRUCTURE_PLAYTEST_APPROVED
 → 1F visual implementation / final visual playtest
 → 2F~5F Tiled structure + playtest
@@ -998,12 +989,12 @@ docs/modules/machine_learning/reinforcement/navigation_design_v1.md
 
 ```text
 Navigation Logic = LOGIC_APPROVED
-navigation_graph_v1.json = GENERATED_AND_VALIDATED
-Floor 1 Runtime Structure = STRUCTURE_PLAYTEST_APPROVED
-Floor 2~5 Tiled = NOT_IMPLEMENTED
+navigation_graph_v1_f5_v3.json = GENERATED_AND_VALIDATED / CANONICAL
+Floor 1~5 Tiled Debug Structure = IMPLEMENTED_AND_VALIDATED
+Map Integration v1 Contract = READY
 ```
 
-1F의 실제 runtime spatial Source of Truth는 `public/maps/reinforcement/floor_1_blockout.tmj`다. 2F~5F는 1F에서 확정한 Tiled 제작 규칙을 순차 적용한다.
+각 Floor의 실제 runtime spatial Source of Truth는 `public/maps/reinforcement/floor_1_blockout.tmj`부터 `floor_5_blockout.tmj`까지의 TMJ다.
 
 ### Hub → Module
 
@@ -1038,7 +1029,7 @@ Floor 2~5 Tiled = NOT_IMPLEMENTED
 - 실전 투입 전/후 연출
 - 강화학습 건물의 시각 스타일 Reference
 
-다만 해당 배경 PNG만으로 실제 이동 / 학습 로직을 표현하지 않는다. 논리 구조는 `navigation_design_v1.md`와 이후 생성할 `navigation_graph_v1.json`을 기준으로 한다.
+다만 해당 배경 PNG만으로 실제 이동 / 학습 로직을 표현하지 않는다. 논리 구조는 `navigation_design_v1.md`와 canonical `navigation_graph_v1_f5_v3.json`을 기준으로 한다.
 
 ### 강화학습용 공간 데이터
 
@@ -1066,7 +1057,7 @@ Floor 2~5 Tiled = NOT_IMPLEMENTED
 구현 구조는 다음처럼 역할을 분리한다.
 
 - `navigation_design_v1.md` = 논리 Navigation Source of Truth
-- `navigation_graph_v1.json` = Node / Edge / Route Context graph
+- `navigation_graph_v1_f5_v3.json` = canonical Node / Edge / Route Context graph
 - **Tiled = runtime geometry / collision / floor transition / encounter-zone Source of Truth**
 - 1F는 `floor_1_blockout.tmj`로 실제 구현/검증 완료
 - `navigation_v2`는 Scenario 실험에서 생성한 architectural reference/history로 보존
@@ -1101,32 +1092,27 @@ Floor 2~5 Tiled = NOT_IMPLEMENTED
 4. Floor 1 debug camera zoom `1.0 → 약 1.3` 적용
 5. 2F~5F Tiled 실제 x/y 좌표, 방/복도 크기, collision
 6. 2F~5F final visual assets
-7. Route Trait의 실제 numeric representation
-8. Action / Route 실제 `timeCost`
-9. Route별 Encounter 배치의 최종 발생 조건 / Environment Randomness 세기
-10. Episode 제한 시간
-11. 시민 오해의 `TRACK 일정 시간` 기준
-12. `VILLAIN_ENCOUNTER`의 `SUBDUE / DISTRACT` 실제 성공률 및 Villain 수에 따른 위험도
-13. `BOSS_ENCOUNTER`의 최종 Action Pool / 성공률
-14. Villain Mission Bonus의 세부 배분식 (`GOAL_REACHED` Episode, 최대 +1 원칙은 확정)
-15. 실제 Map에서 damage / risk Event 빈도와 normalization 적합성
-16. 실제 Map 기반 `5 Robots × 20 Rounds` Integration Validation
-17. Encounter Preference 상한 도달이 실제 gameplay 다양성에 미치는 영향
-18. 이벤트별 정확한 색상 / 아이콘 / Toast 시간
-19. Main / Sub View 실제 렌더링 구현 방식
-20. 오른쪽 상단 보조 패널의 필요 여부와 역할
-21. 상단 전체를 Sub View로 사용할 경우 최종 화면 비율
-22. Ari 이미지 / 중앙 AI 이미지의 최종 Asset
-23. Event Detail / Micro Cutscene에 재사용할 기존 Cutscene과 추가 제작 Asset
-24. Round Result Overlay 최종 시각 디자인
-25. Training Report 최종 지표
-26. 실전 작전의 세부 Animation
-27. 효과음 목록 및 Asset 경로
-28. 다음 학습 모듈과의 Navigation 방식
+7. actual TMJ polyline 기반 Route timeCost와 longest safe success baseline
+8. `timeLimit = longestSafeSuccessBaseline * 1.25`의 actual 값
+9. 실제 Map에서 damage / risk Event 빈도와 normalization 적합성
+10. 실제 Map 기반 `5 Robots × 20 Rounds` Integration Validation
+11. Villain Mission Bonus의 세부 배분식 (`GOAL_REACHED` Episode, 최대 +1 원칙은 확정)
+12. Encounter Preference 상한 도달이 실제 gameplay 다양성에 미치는 영향
+13. 이벤트별 정확한 색상 / 아이콘 / Toast 시간
+14. Main / Sub View 실제 렌더링 구현 방식
+15. 오른쪽 상단 보조 패널의 필요 여부와 역할
+16. 상단 전체를 Sub View로 사용할 경우 최종 화면 비율
+17. Ari 이미지 / 중앙 AI 이미지의 최종 Asset
+18. Event Detail / Micro Cutscene에 재사용할 기존 Cutscene과 추가 제작 Asset
+19. Round Result Overlay 최종 시각 디자인
+20. Training Report 최종 지표
+21. 실전 작전의 세부 Animation
+22. 효과음 목록 및 Asset 경로
+23. 다음 학습 모듈과의 Navigation 방식
 
 Learning Engine v1.2 Core 수치와 5-Robot Round Update 구조는 `APPROVED_FOR_INTEGRATION` 상태다.
 
-`VILLAIN_ENCOUNTER / BOSS_ENCOUNTER / ROBOT_DISABLED / Villain Mission Bonus`는 최신 Map Integration Extension이며 실제 Navigation Graph와 연결한 Integration Validation이 아직 필요하다.
+Map Integration v1 pure contract는 준비됐지만 실제 Navigation Graph execution과 Integration Validation은 아직 필요하다.
 
 ## 보호해야 할 핵심 설계 원칙
 

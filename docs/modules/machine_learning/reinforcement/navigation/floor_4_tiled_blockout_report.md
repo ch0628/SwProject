@@ -9,7 +9,7 @@ Floor 4 구현과 자동 검증은 통과했다. 다만 현재 실행 환경에�
 ## 읽은 기준 자료
 
 - `navigation_design_v1.md`
-- `navigation_graph_v1.json`
+- `navigation_graph_v1_f5_v3.json`
 - `module_spec_v3.md`
 - `session_handoff_v3.md`
 - Floor 2 TMJ, report, `floor2Tiled.ts`, debug scene, validator, test
@@ -75,7 +75,7 @@ Floor 4 구현과 자동 검증은 통과했다. 다만 현재 실행 환경에�
 - LEFT PERIMETER mandatory encounter: 없음
 - MAGENTA room 2개: collision, `enterable=false`, node/edge/objective 없음
 - GREEN frontage: walkable recess 유지, SOUTH locked-door collision으로 room 진입 차단
-- CENTER guard: `villainCount=2`, `bypassAvailable=false`, actions `SUBDUE,DISTRACT,RETREAT`
+- CENTER guard: `villainCount=2`, `bypassAvailable=false`, actions `SUBDUE,FORCE_PASS,DISTRACT,RETREAT`
 - Collision-grid BFS guard bypass: LEFT/RIGHT 모두 BLOCKED
 - `F4_CENTER_STAIR_TRANSITION`: 정확히 1개, `targetFloor=5`, `targetSpawn=F5_SEARCH_HUB`
 

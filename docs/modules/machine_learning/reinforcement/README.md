@@ -4,18 +4,20 @@
 
 ## 현재 상태 요약
 
-- Module: `DESIGNING`
-- Learning Engine v1.2: `APPROVED_FOR_INTEGRATION`
+- Module: `ACTUAL_MAP_LOGIC_INTEGRATION_APPROVED`
+- Learning Engine: `v1.2 Core APPROVED + Actual Map Integration APPROVED`
 - Navigation Logic v1: `LOGIC_APPROVED`
-- `navigation_graph_v1.json`: `GENERATED_AND_VALIDATED`
-- Floor 1 Tiled/Phaser Runtime Structure: `STRUCTURE_PLAYTEST_APPROVED`
-- Floor 2~5 Tiled: `NOT_IMPLEMENTED`
+- `navigation_graph_v1_f5_v3.json`: `GENERATED_AND_VALIDATED` (canonical logical graph)
+- Floor 1~5 Tiled/Phaser Debug Structure: `IMPLEMENTED_AND_VALIDATED`
 - `navigation_v2`: `REFERENCE_ONLY / SUPERSEDED_FOR_RUNTIME`
-- 현재 다음 작업: **1F visual implementation → final visual playtest → 2F~5F Tiled 확장**
+- 현재 다음 작업: **Production Phaser Gameplay / Training UI 구현**
 
 ---
 
 ## 현재 Active 문서
+
+### `map_integration_v1.md`
+Map Integration v1의 Environment / Encounter / Simulation Time **numeric Source of Truth**.
 
 ### `module_spec_v3.md`
 강화학습 모듈의 **제품/게임 설계 기준 문서**.
@@ -34,7 +36,7 @@
 ### `learning_engine_v1.md`
 강화학습 모듈의 **Core Learning Algorithm 기술 명세**.
 
-현재 revision은 `v1.2`, 상태는 `APPROVED_FOR_INTEGRATION`.
+현재 Core revision은 `v1.2`; Actual Map Logic Integration 상태는 `ACTUAL_MAP_LOGIC_INTEGRATION_APPROVED`.
 
 핵심:
 - State / Action Pool
@@ -54,7 +56,7 @@
 - 1F~5F 층별 역할 / 계단 / Route Trade-off
 - Route Decision Context
 - Villain / Boss / Search Room / Control Room 규칙
-- `navigation_graph_v1.json`과 runtime Tiled의 역할 분리
+- `navigation_graph_v1_f5_v3.json`과 runtime Tiled의 역할 분리
 - 1F Tiled 실제 구현 상태
 - 현재 visual 제작 전략
 
@@ -75,7 +77,7 @@
 실제 Navigation Graph와 Floor runtime 구현/검증 기록을 둔다.
 
 핵심:
-- `navigation_graph_v1.json` — 논리 Node / Edge / Route Context graph
+- `navigation_graph_v1_f5_v3.json` — canonical 논리 Node / Edge / Route Context graph
 - `floor_1_tiled_blockout_report.md` — 1F Tiled geometry/collision/navigation 보고서
 - `floor_1_phaser_playtest_report.md` — 1F Phaser debug 및 사용자 수동 playtest 보고서
 
@@ -111,7 +113,7 @@ Scenario 구조 실험을 위해 만든 **architectural blockout reference/histo
 navigation_design_v1.md
 = 논리 Navigation
 
-navigation_graph_v1.json
+navigation_graph_v1_f5_v3.json
 = Node / Edge / Route Context
 
 Tiled
@@ -144,6 +146,34 @@ Learning Engine 검증 결과를 보관한다.
 
 최종 `PASS_CANDIDATE`; 현재 Engine을 실제 Map Integration의 Base로 사용하는 근거다.
 
+### `validation/actual_map_logic_integration_v1.md`
+
+Floor 1~5 actual TMJ를 pure headless adapter로 연결한 3-seed, 20-round 검증 결과.
+
+- actual route/context/transition/encounter/F5 search 연결
+- polyline 기반 movement time과 actual safe baseline/timeLimit
+- SAFE/FAST profile별 300 episodes
+- 최종 판정: `PASS_LOGIC_NEEDS_ENVIRONMENT_TUNING`
+
+### `validation/actual_map_environment_tuning_v1.md`
+
+동일 5개 seed로 SET_A~D 총 4,000 actual-map episodes를 비교한 environment-only sweep.
+
+- canonical graph filename 정합화
+- death source / round trend / Villain / F5 funnel 진단
+- SAFE/FAST 방향 및 normalization/preference saturation 검증
+- sweep 추천 `SET_D`는 사용자 승인 후 Production Environment v1로 반영됐다.
+- 최종 판정: `READY_FOR_USER_TUNING_DECISION`
+
+### `validation/actual_map_environment_confirmation_v1.md`
+
+승인된 SET_D를 production default로 적용하고 동일 5개 seed로 재실행한 최종 confirmation.
+
+- SAFE/FAST 각 500 episodes, 합계 1,000 episodes / 200 updates
+- production-default wiring, actual-map invariant, reproducibility 검증
+- SAFE/FAST 안전·행동 방향과 FAST successful-time 우위 확인
+- 최종 판정: `PASS_ACTUAL_MAP_INTEGRATION_V1`
+
 ### `validation/archive/`
 이전 validation 이력 보관.
 
@@ -175,11 +205,6 @@ Learning Engine 검증 결과를 보관한다.
 ## 현재 다음 작업
 
 ```text
-1F Structure / Manual Playtest = APPROVED
-→ 1F visual implementation
-→ 1F final visual playtest
-→ 2F~5F Tiled structure + Phaser manual playtest
-→ Route Trait / Encounter parameter 확정
-→ Learning Engine v1.2 실제 Map Integration Validation
-→ Production Training UI / Gameplay 구현
+Actual Map Logic Integration = ACTUAL_MAP_LOGIC_INTEGRATION_APPROVED
+→ Production Phaser Gameplay / Training UI 구현
 ```

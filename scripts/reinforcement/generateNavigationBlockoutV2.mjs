@@ -10,7 +10,7 @@ export const PNG_HEIGHT = 1440;
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 export const outputDir = resolve(scriptDir, "../../docs/modules/machine_learning/reinforcement/navigation_v2");
-const graphPath = resolve(scriptDir, "../../docs/modules/machine_learning/reinforcement/navigation/navigation_graph_v1.json");
+const graphPath = resolve(scriptDir, "../../docs/modules/machine_learning/reinforcement/navigation/navigation_graph_v1_f5_v3.json");
 
 const palettes = {
   clean: {

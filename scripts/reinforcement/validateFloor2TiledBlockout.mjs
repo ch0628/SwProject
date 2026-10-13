@@ -274,7 +274,7 @@ const guard = props(guardZones[0]);
 check(guard.encounterType === 'VILLAIN_ENCOUNTER', 'CENTER GUARD encounterType must be VILLAIN_ENCOUNTER');
 check(guard.villainCount === 2, 'CENTER GUARD villainCount must be 2');
 check(guard.bypassAvailable === false, 'CENTER GUARD bypassAvailable must be false');
-check(guard.actions === 'SUBDUE,DISTRACT,RETREAT', 'CENTER GUARD actions must be SUBDUE,DISTRACT,RETREAT');
+check(guard.actions === 'SUBDUE,FORCE_PASS,DISTRACT,RETREAT', 'CENTER GUARD actions must match Map Integration v1');
 
 const transitions = objects('FloorTransitions');
 check(transitions.length === 1 && transitions[0].name === 'F2_CENTER_STAIR_TRANSITION', 'F2_CENTER_STAIR_TRANSITION must exist exactly once');

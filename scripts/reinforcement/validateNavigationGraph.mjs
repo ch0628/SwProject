@@ -9,7 +9,7 @@ const navigationDir = resolve(
 );
 const graphPath = process.argv[2]
   ? resolve(process.cwd(), process.argv[2])
-  : resolve(navigationDir, "navigation_graph_v1.json");
+  : resolve(navigationDir, "navigation_graph_v1_f5_v3.json");
 
 const failures = [];
 const check = (condition, message) => {
@@ -246,7 +246,7 @@ if (failures.length) {
   for (const failure of failures) console.error(`- ${failure}`);
   process.exitCode = 1;
 } else {
-  console.log("PASS navigation_graph_v1");
+  console.log("PASS navigation_graph_v1_f5_v3");
   console.log(`nodes=${nodes.length} edges=${edges.length} verticalConnections=${vertical.length}`);
   console.log(`routeContextTemplates=${routeContexts.length} concreteRouteContexts=${concreteRouteContextCount}`);
   console.log(`generalVillains=${villainTotal}`);

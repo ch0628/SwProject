@@ -2,12 +2,15 @@
 
 ## Status
 
+- Map Integration contract: `ACTUAL_MAP_LOGIC_INTEGRATION_APPROVED`
+- Numeric Environment/Encounter Source of Truth: `map_integration_v1.md`
+
 - **State:** `LOGIC_APPROVED`
 - **Purpose:** 강화학습 모듈의 5층 제어 센터 Navigation 구조, 층간 연결, Route Decision Context, Encounter 배치의 기준 문서
 - **Scope:** 1F~5F 논리 Layout, 계단 연결, Route 성격, 일반 악당/Boss 배치, 5F Boss 탐색 구조
-- **Runtime implementation:** `navigation_graph_v1.json` 생성/검증 완료. 1F Tiled/Phaser 구조는 `STRUCTURE_PLAYTEST_APPROVED`, 2F~5F Tiled는 미구현.
-- **Non-goal:** 2F~5F 최종 x/y 좌표, 최종 Pixel Art, Action 성공 확률의 수치 확정
-- **Next step:** 1F visual implementation과 final visual playtest 후 1F에서 확정한 Tiled 제작 규칙을 2F~5F에 확장한다.
+- **Runtime implementation:** Floor 1~5 TMJ headless adapter와 Learning Engine actual-map 연결/confirmation 완료.
+- **Non-goal:** 최종 Pixel Art, production autonomous movement/UI
+- **Next step:** Production Phaser Gameplay / UI를 구현한다.
 
 ---
 
@@ -580,6 +583,7 @@ Boss 제압 후 추가 Villain Encounter를 새로 배치하지 않는다.
 
 ```text
 SUBDUE
+FORCE_PASS
 DISTRACT
 BYPASS
 RETREAT
@@ -600,6 +604,12 @@ RETREAT
 ```
 
 Villain 수가 많을수록 SUBDUE 위험은 증가한다.
+
+확정 성공률은 `map_integration_v1.md`의 Production Environment v1을 따른다.
+
+## FORCE_PASS
+
+악당을 neutralize하지 않고 돌파한다. Villain ×1은 `PASS/BLOCKED/MOBILITY_DAMAGE = 70/20/10%`, ×2는 `50/30/20%`다. MOBILITY_DAMAGE는 다음 Route Segment movement time만 ×1.35로 만든다.
 
 ## DISTRACT
 
@@ -669,6 +679,8 @@ BOSS_ENCOUNTER
 
 Boss 전투를 별도 전투 미니게임으로 확대하지 않는다.
 
+Action Pool은 `SUBDUE / DISTRACT / RETREAT`이며 BYPASS는 없다.
+
 현재 원칙:
 
 ```text
@@ -680,7 +692,7 @@ Boss 대응 실패
 → ROBOT_DISABLED 가능
 ```
 
-정확한 Action Pool과 성공 확률은 Blockout 이후 Integration 단계에서 확정한다.
+SUBDUE 성공률은 `map_integration_v1.md`의 Production Environment v1을 따른다. DISTRACT 자체는 Boss를 neutralize하지 않는다.
 
 ---
 
@@ -786,7 +798,7 @@ Boss = 1명
 Codex Blockout 단계 목표:
 
 ```text
-navigation_graph_v1.json
+navigation_graph_v1_f5_v3.json
 
 floor_1_blockout.svg
 floor_2_blockout.svg
@@ -812,7 +824,7 @@ Blockout에서 확인:
 ## Source of Truth 분리
 
 - `navigation_design_v1.md` = 5층 논리 Navigation 기준
-- `navigation_graph_v1.json` = 논리 Node / Edge / Route Context graph
+- `navigation_graph_v1_f5_v3.json` = canonical 논리 Node / Edge / Route Context graph
 - **Tiled map = 실제 runtime geometry / collision / floor transition / encounter-zone 기준**
 - 1F runtime map = `public/maps/reinforcement/floor_1_blockout.tmj`
 
@@ -868,13 +880,8 @@ Blockout에서 확인:
 - 1F debug camera zoom `1.0 → 약 1.3` 적용
 - 2F~5F Tiled x/y 좌표, 방 크기, 복도 폭, collision
 - 2F~5F final visual assets
-- `SUBDUE` 성공률
-- `DISTRACT` 성공률
-- Villain 수에 따른 정확한 위험도
-- Action별 정확한 `timeCost`
-- Encounter probability
-- Boss Encounter 세부 Action Pool
-- Boss 성공 확률
+- actual TMJ polyline 기반 Route timeCost / longest safe success baseline
+- actual graph 기반 Episode timeLimit
 - Villain Mission Bonus 세부식
 - Episode timeLimit
 

@@ -361,7 +361,7 @@ function pngForFloor(floor) {
 }
 
 function validateGraphWasNotRedesigned() {
-  const graph = JSON.parse(readFileSync(resolve(outputDir, "navigation_graph_v1.json"), "utf8"));
+  const graph = JSON.parse(readFileSync(resolve(outputDir, "navigation_graph_v1_f5_v3.json"), "utf8"));
   const nodeCounts = graph.floors.map(({ nodes }) => nodes.length);
   const edgeCounts = graph.floors.map(({ edges }) => edges.length);
   if (JSON.stringify(nodeCounts) !== JSON.stringify([5, 8, 7, 8, 15])) throw new Error("navigation node topology changed");

@@ -98,7 +98,8 @@ export function validateFloor5Map(map: TiledMapJson) {
   if (encounters.length !== 4 || FLOOR5_ROOMS.some(room => {
     const guard = encounters.find(item => properties(item).roomId === room);
     const values = guard ? properties(guard) : {};
-    return !guard || values.encounterType !== 'VILLAIN_ENCOUNTER' || values.villainCount !== 1 || values.bypassAvailable !== false;
+    return !guard || values.encounterType !== 'VILLAIN_ENCOUNTER' || values.villainCount !== 1
+      || values.bypassAvailable !== false || values.actions !== 'SUBDUE,FORCE_PASS,DISTRACT,RETREAT';
   })) throw new Error('Floor 5 debug: four room guard encounters are invalid');
 
   const debug = layerObjects(map, 'Debug');

@@ -61,7 +61,7 @@ Arrival, short-zone, long-zone Node 좌표는 `x_left + x_right = 2560`, `y_left
 
 ## 10. Encounter/guard
 
-기존 4개 Encounter 의미를 유지하고 corridor에 재배치했다. `F2_CENTER_GUARD_ZONE`은 `villainCount=2`, `bypassAvailable=false`, actions=`SUBDUE,DISTRACT,RETREAT`다. Guard를 제거한 graph에서는 어느 Arrival도 stair에 도달하지 못한다.
+기존 4개 Encounter 의미를 유지하고 corridor에 재배치했다. `F2_CENTER_GUARD_ZONE`은 `villainCount=2`, `bypassAvailable=false`, actions=`SUBDUE,FORCE_PASS,DISTRACT,RETREAT`다. Guard를 제거한 graph에서는 어느 Arrival도 stair에 도달하지 못한다.
 
 ## 11. Stair/transition
 

@@ -80,6 +80,7 @@ test('Floor 5 keeps four Villain ×1 guards and hidden seeded Boss policy', () =
     assert.equal(values.villainCount, 1);
     assert.equal(values.bypassAvailable, false);
     assert.equal(values.encounterType, 'VILLAIN_ENCOUNTER');
+    assert.equal(values.actions, 'SUBDUE,FORCE_PASS,DISTRACT,RETREAT');
   }
   const values = properties(map as never);
   assert.equal(values.locationSelection, 'SEEDED_RANDOM_PER_EPISODE');

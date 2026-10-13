@@ -2,22 +2,32 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   ACTIONS,
+  ENCOUNTER_RATES,
   PROFILES,
+  ROUTE_TRAITS,
+  availableVillainActions,
   calculateActionCredit,
   calculateLocalReturn,
   calculateRouteAdvantages,
   calculateSegmentReturn,
+  consumeMobilityDamage,
+  createEncounterDecider,
   createInitialPolicy,
   createSeededRandom,
   epsilonForRound,
   evaluateEpisode,
   isTerminalEvent,
+  navigationPolylineTime,
   normalizeReward,
   recenterRoutePreferences,
   runProfile,
   resolveAmbiguousPerson,
+  resolveBossEncounter,
+  resolveObstacle,
+  resolveVillainEncounter,
   softmaxWithExploration,
   chooseAction,
+  timeLimitFromSafeBaselines,
 } from '../src/modules/reinforcement/sim/learningEngine.ts';
 
 const successfulReward = (profile: keyof typeof PROFILES, kind: 'damage' | 'risk') => evaluateEpisode({
@@ -27,7 +37,7 @@ const successfulReward = (profile: keyof typeof PROFILES, kind: 'damage' | 'risk
   citizenRiskCount: Number(kind === 'risk'),
   citizenMisunderstanding: false,
   terminalReason: 'GOAL_REACHED',
-}, PROFILES[profile]);
+}, PROFILES[profile], 32);
 
 test('softmax plus exploration produces finite non-negative probabilities summing to one', () => {
   const policy = createInitialPolicy();
@@ -41,7 +51,7 @@ test('softmax plus exploration produces finite non-negative probabilities summin
 test('unavailable actions are removed before normalization and cannot be selected', () => {
   const policy = createInitialPolicy();
   policy.OBSTACLE.PUSH = 2;
-  const available = ['DETOUR', 'WAIT'] as const;
+  const available = ['DETOUR', 'CLEAR'] as const;
   const probabilities = softmaxWithExploration(policy.OBSTACLE, available, 0.35);
   assert.deepEqual(Object.keys(probabilities), available);
   const random = createSeededRandom(42);
@@ -74,12 +84,13 @@ test('failed episodes receive no speed reward', () => {
   }
 });
 
-test('only the three specified events are terminal', () => {
+test('only the four specified events are terminal', () => {
   assert.equal(isTerminalEvent('CITIZEN_RISK'), false);
   assert.equal(isTerminalEvent('FACILITY_DAMAGE'), false);
   assert.equal(isTerminalEvent('CITIZEN_MISUNDERSTANDING'), true);
   assert.equal(isTerminalEvent('GOAL_REACHED'), true);
   assert.equal(isTerminalEvent('TIMEOUT'), true);
+  assert.equal(isTerminalEvent('ROBOT_DISABLED'), true);
 });
 
 test('rounds use one shared immutable snapshot and update once after all five episodes', () => {
@@ -131,8 +142,8 @@ test('reward profiles create meaningfully different learned preferences', () => 
 });
 
 test('forced scenarios A-D: direct penalty credit is negative for SAFE and higher for FAST', () => {
-  const safePushLocal = calculateLocalReturn('OBSTACLE', 1, ['FACILITY_DAMAGE'], PROFILES.SAFE);
-  const fastPushLocal = calculateLocalReturn('OBSTACLE', 1, ['FACILITY_DAMAGE'], PROFILES.FAST);
+  const safePushLocal = calculateLocalReturn('OBSTACLE', 2, ['FACILITY_DAMAGE'], PROFILES.SAFE);
+  const fastPushLocal = calculateLocalReturn('OBSTACLE', 2, ['FACILITY_DAMAGE'], PROFILES.FAST);
   const safePushCredit = calculateActionCredit(successfulReward('SAFE', 'damage').episodeReturn, safePushLocal);
   const fastPushCredit = calculateActionCredit(successfulReward('FAST', 'damage').episodeReturn, fastPushLocal);
   assert.ok(safePushLocal < 0);
@@ -148,23 +159,29 @@ test('forced scenarios A-D: direct penalty credit is negative for SAFE and highe
   assert.ok(fastPassCredit > safePassCredit);
 });
 
-test('forced scenarios E-F: citizen SUBDUE and threshold TRACK terminate with strong negative SAFE credit', () => {
-  for (const action of ['SUBDUE', 'TRACK'] as const) {
-    const resolution = resolveAmbiguousPerson('CITIZEN', action);
-    assert.deepEqual(resolution.events, ['CITIZEN_MISUNDERSTANDING']);
-    assert.equal(isTerminalEvent(resolution.events[0]), true);
-    const reward = evaluateEpisode({
-      goalReached: false,
-      elapsedTime: resolution.elapsedCost,
-      facilityDamageCount: 0,
-      citizenRiskCount: 0,
-      citizenMisunderstanding: true,
-      terminalReason: 'CITIZEN_MISUNDERSTANDING',
-    }, PROFILES.SAFE);
-    const local = calculateLocalReturn('AMBIGUOUS_PERSON', resolution.elapsedCost, resolution.events, PROFILES.SAFE);
-    assert.equal(reward.speedValue, 0);
-    assert.ok(calculateActionCredit(reward.episodeReturn, local) <= -0.5);
-  }
+test('citizen SUBDUE is terminal while TRACK requires six cumulative simulation-time units', () => {
+  const subdued = resolveAmbiguousPerson('CITIZEN', 'SUBDUE');
+  assert.deepEqual(subdued.events, ['CITIZEN_MISUNDERSTANDING']);
+
+  const firstTrack = resolveAmbiguousPerson('CITIZEN', 'TRACK');
+  assert.equal(firstTrack.elapsedCost, 3);
+  assert.equal(firstTrack.cumulativeTrackTime, 3);
+  assert.deepEqual(firstTrack.events, []);
+  const secondTrack = resolveAmbiguousPerson('CITIZEN', 'TRACK', firstTrack.cumulativeTrackTime);
+  assert.equal(secondTrack.cumulativeTrackTime, 6);
+  assert.deepEqual(secondTrack.events, ['CITIZEN_MISUNDERSTANDING']);
+
+  const reward = evaluateEpisode({
+    goalReached: false,
+    elapsedTime: secondTrack.cumulativeTrackTime,
+    facilityDamageCount: 0,
+    citizenRiskCount: 0,
+    citizenMisunderstanding: true,
+    terminalReason: 'CITIZEN_MISUNDERSTANDING',
+  }, PROFILES.SAFE);
+  const local = calculateLocalReturn('AMBIGUOUS_PERSON', secondTrack.elapsedCost, secondTrack.events, PROFILES.SAFE);
+  assert.equal(reward.speedValue, 0);
+  assert.ok(calculateActionCredit(reward.episodeReturn, local) <= -0.5);
 });
 
 test('forced scenario G: timeout is a failed episode with no speed reward', () => {
@@ -281,5 +298,85 @@ test('20-round schedule, preferences, probabilities, snapshots, and exploration 
     }
     assert.equal(run.rounds.at(-1)!.epsilon, 0.10);
     assert.ok(Object.values(run.finalProbabilities).flatMap(Object.values).every((value) => value > 0));
+  }
+});
+
+test('Map Integration v1 exposes only the approved action pools and numeric traits', () => {
+  assert.deepEqual(ACTIONS.OBSTACLE, ['DETOUR', 'CLEAR', 'PUSH']);
+  assert.equal(ACTIONS.OBSTACLE.includes('SQUEEZE' as never), false);
+  assert.equal(ACTIONS.OBSTACLE.includes('WAIT' as never), false);
+  assert.deepEqual(ACTIONS.VILLAIN_ENCOUNTER, ['SUBDUE', 'FORCE_PASS', 'DISTRACT', 'BYPASS', 'RETREAT']);
+  assert.deepEqual(ACTIONS.BOSS_ENCOUNTER, ['SUBDUE', 'DISTRACT', 'RETREAT']);
+  assert.deepEqual(ROUTE_TRAITS, { NONE: 0, LOW: 0.25, MEDIUM: 0.5, HIGH: 0.75 });
+  assert.deepEqual(ENCOUNTER_RATES, { LOW: 0.25, MEDIUM: 0.5, HIGH: 0.75, MANDATORY: 1 });
+});
+
+test('navigation time comes from polyline tile length and timeLimit from the longest safe baseline', () => {
+  assert.equal(navigationPolylineTime([{ x: 0, y: 0 }, { x: 96, y: 0 }, { x: 96, y: 128 }]), 7);
+  assert.equal(timeLimitFromSafeBaselines([20, 24, 16]), 30);
+  assert.throws(() => timeLimitFromSafeBaselines([]));
+});
+
+test('OBSTACLE outcomes match DETOUR, CLEAR, and PUSH contract', () => {
+  assert.deepEqual(resolveObstacle('DETOUR'), { elapsedCost: 6, events: [], localOutcome: 'SAFE_PASS', passed: true, retry: false, neutralized: false, mobilityDamaged: false });
+  assert.deepEqual(resolveObstacle('CLEAR'), { elapsedCost: 4, events: [], localOutcome: 'OBSTACLE_CLEARED', passed: true, retry: false, neutralized: false, mobilityDamaged: false });
+  assert.equal(resolveObstacle('PUSH', 0.69).localOutcome, 'CLEAN_PASS');
+  assert.deepEqual(resolveObstacle('PUSH', 0.70).events, ['FACILITY_DAMAGE']);
+  assert.deepEqual(resolveObstacle('PUSH', 0.95), { elapsedCost: 4, events: ['BLOCKED'], localOutcome: 'BLOCKED', passed: false, retry: true, neutralized: false, mobilityDamaged: false });
+  assert.throws(() => resolveObstacle('DETOUR', 0, false), /unavailable/);
+});
+
+test('VILLAIN x1/x2 probabilities, persistence, and unavailable BYPASS match contract', () => {
+  assert.equal(resolveVillainEncounter(1, 'SUBDUE', 0.89).neutralized, true);
+  assert.deepEqual(resolveVillainEncounter(1, 'SUBDUE', 0.90).events, ['ROBOT_DISABLED']);
+  assert.equal(resolveVillainEncounter(2, 'SUBDUE', 0.79).neutralized, true);
+  assert.deepEqual(resolveVillainEncounter(2, 'SUBDUE', 0.80).events, ['ROBOT_DISABLED']);
+
+  assert.equal(resolveVillainEncounter(1, 'FORCE_PASS', 0.69).localOutcome, 'PASS');
+  assert.equal(resolveVillainEncounter(1, 'FORCE_PASS', 0.70).localOutcome, 'BLOCKED');
+  assert.equal(resolveVillainEncounter(1, 'FORCE_PASS', 0.90).localOutcome, 'MOBILITY_DAMAGE');
+  assert.equal(resolveVillainEncounter(2, 'FORCE_PASS', 0.49).localOutcome, 'PASS');
+  assert.equal(resolveVillainEncounter(2, 'FORCE_PASS', 0.50).localOutcome, 'BLOCKED');
+  assert.equal(resolveVillainEncounter(2, 'FORCE_PASS', 0.80).localOutcome, 'MOBILITY_DAMAGE');
+  assert.equal(resolveVillainEncounter(1, 'FORCE_PASS', 0).neutralized, false);
+  assert.equal(resolveVillainEncounter(1, 'DISTRACT', 0).neutralized, false);
+  assert.deepEqual(availableVillainActions(false), ['SUBDUE', 'FORCE_PASS', 'DISTRACT', 'RETREAT']);
+  assert.throws(() => resolveVillainEncounter(1, 'BYPASS'), /unavailable/);
+  assert.equal(resolveVillainEncounter(1, 'SUBDUE', 0.85, { subdueSuccessByCount: { 1: 0.90, 2: 0.80 } }).neutralized, true);
+  assert.equal(resolveVillainEncounter(2, 'SUBDUE', 0.75, { subdueSuccessByCount: { 1: 0.90, 2: 0.80 } }).neutralized, true);
+  assert.equal(resolveVillainEncounter(1, 'DISTRACT', 0.99, { distractPassSuccess: 1 }).passed, true);
+});
+
+test('MOBILITY_DAMAGE applies to the next route segment only', () => {
+  const first = consumeMobilityDamage(10, true);
+  assert.deepEqual(first, { elapsedCost: 13.5, mobilityDamaged: false });
+  assert.deepEqual(consumeMobilityDamage(10, first.mobilityDamaged), { elapsedCost: 10, mobilityDamaged: false });
+});
+
+test('BOSS SUBDUE is 80%, DISTRACT raises it to 95%, and BYPASS is absent', () => {
+  assert.equal(resolveBossEncounter('SUBDUE', 0.79).neutralized, true);
+  assert.deepEqual(resolveBossEncounter('SUBDUE', 0.80).events, ['ROBOT_DISABLED']);
+  assert.deepEqual(resolveBossEncounter('DISTRACT').events, ['BOSS_DISTRACTED']);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.94, true).neutralized, true);
+  assert.deepEqual(resolveBossEncounter('SUBDUE', 0.95, true).events, ['ROBOT_DISABLED']);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.75, false, 0, { baseSubdueSuccess: 0.80 }).neutralized, true);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.90, true, 0, { distractedSubdueSuccess: 0.95 }).neutralized, true);
+  assert.equal(ACTIONS.BOSS_ENCOUNTER.includes('BYPASS' as never), false);
+});
+
+test('episode-seeded Encounter decisions are reproducible and cached per zone', () => {
+  const first = createEncounterDecider(42);
+  const repeated = [first('ZONE_A', 'LOW'), first('ZONE_A', 'HIGH'), first('ZONE_A', 'MANDATORY')];
+  assert.equal(new Set(repeated).size, 1);
+  const left = createEncounterDecider(42);
+  const right = createEncounterDecider(42);
+  assert.deepEqual(['A', 'B', 'C'].map(zone => left(zone, 'MEDIUM')), ['A', 'B', 'C'].map(zone => right(zone, 'MEDIUM')));
+  assert.equal(left('MANDATORY', 'MANDATORY'), true);
+});
+
+test('simulation elapsedTime is the pure sum of movement and action costs, independent of UI time', () => {
+  const run = runProfile('SAFE', 42);
+  for (const episode of run.rounds.flatMap(round => round.episodes).filter(episode => episode.terminalReason === 'GOAL_REACHED')) {
+    assert.equal(episode.elapsedTime, episode.actionHistory.reduce((sum, action) => sum + action.elapsedCost, 0));
   }
 });
