@@ -18,6 +18,7 @@ import {
 } from './supervisedGameFlow';
 import { MONITORING_TARGET_IDS, round2ComparisonFor, type Round2TargetStatus } from './plazaRound2';
 import { AiBasicsApp } from './modules/ai-basics/AiBasicsApp';
+import { UnsupervisedApp } from './modules/unsupervised/UnsupervisedApp';
 import { ReinforcementFloor1DebugApp } from './modules/reinforcement/debug/ReinforcementFloor1DebugApp';
 import { ReinforcementFloor2DebugApp } from './modules/reinforcement/debug/ReinforcementFloor2DebugApp';
 import { ReinforcementFloor3DebugApp } from './modules/reinforcement/debug/ReinforcementFloor3DebugApp';
@@ -714,11 +715,12 @@ function Hub() {
     <img src={worldBackground} alt="" />
     <button type="button" className="hub-hotspot hub-ai-basics" aria-label="AI가 무엇인지 이해하기" onClick={() => window.location.assign('/?mode=ai-basics')} />
     <button type="button" className="hub-hotspot hub-supervised" aria-label="지도학습" onClick={() => window.location.assign('/?mode=supervised')} />
+    <button type="button" className="hub-hotspot hub-unsupervised" aria-label="비지도학습" onClick={() => window.location.assign('/?mode=unsupervised')}>비지도학습</button>
   </main>;
 }
 
 const entryParams = new URLSearchParams(window.location.search);
 const mode = entryParams.get('mode');
 createRoot(document.getElementById('root')!).render(
-  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' ? <App /> : mode === 'reinforcement-building-debug' ? <ReinforcementBuildingDebugApp /> : mode === 'reinforcement-floor1-debug' ? <ReinforcementFloor1DebugApp /> : mode === 'reinforcement-floor2-debug' ? <ReinforcementFloor2DebugApp /> : mode === 'reinforcement-floor3-debug' ? <ReinforcementFloor3DebugApp /> : mode === 'reinforcement-floor4-debug' ? <ReinforcementFloor4DebugApp /> : mode === 'reinforcement-floor5-debug' ? <ReinforcementFloor5DebugApp /> : <Hub />,
+  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' ? <App /> : mode === 'unsupervised' ? <UnsupervisedApp /> : mode === 'reinforcement-building-debug' ? <ReinforcementBuildingDebugApp /> : mode === 'reinforcement-floor1-debug' ? <ReinforcementFloor1DebugApp /> : mode === 'reinforcement-floor2-debug' ? <ReinforcementFloor2DebugApp /> : mode === 'reinforcement-floor3-debug' ? <ReinforcementFloor3DebugApp /> : mode === 'reinforcement-floor4-debug' ? <ReinforcementFloor4DebugApp /> : mode === 'reinforcement-floor5-debug' ? <ReinforcementFloor5DebugApp /> : <Hub />,
 );
