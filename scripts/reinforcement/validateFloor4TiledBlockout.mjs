@@ -220,7 +220,7 @@ check(!encounters.some(item => props(item).route === 'F4_PERIMETER_DETOUR_ROUTE'
 check(props(rightAmbiguous).encounterType === 'AMBIGUOUS_PERSON' && props(rightAmbiguous).route === 'F4_INNER_SECURITY_ROUTE', 'RIGHT INNER ambiguous candidate is invalid');
 check(props(serviceObstacle).encounterType === 'OBSTACLE' && props(serviceObstacle).route === 'F4_SERVICE_ROUTE' && props(serviceObstacle).facilityDamagePossible === true, 'RIGHT SERVICE obstacle candidate is invalid');
 check(props(guardZone).encounterType === 'VILLAIN_ENCOUNTER' && props(guardZone).villainCount === 2 && props(guardZone).bypassAvailable === false, 'CENTER GUARD contract is invalid');
-check(props(guardZone).actions === 'SUBDUE,DISTRACT,RETREAT', 'CENTER GUARD actions are invalid');
+check(props(guardZone).actions === 'SUBDUE,FORCE_PASS,DISTRACT,RETREAT', 'CENTER GUARD actions are invalid');
 for (const encounter of encounters) check(!collision.some(item => overlaps(item, encounter)), `${encounter.name} overlaps permanent Collision`);
 
 const transitions = objects('FloorTransitions');

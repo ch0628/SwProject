@@ -9,7 +9,7 @@ Floor 3만 구현했다. Floor 3 최종 PNG, 시각 폴리시, Floor 4 gameplay�
 ## 1. 확인한 기준 자료
 
 - `navigation_design_v1.md`
-- `navigation_graph_v1.json`
+- `navigation_graph_v1_f5_v3.json`
 - `module_spec_v3.md`
 - `session_handoff_v3.md`
 - 현재 Floor 2 Tiled blockout, report, TMJ, Phaser debug/playtest 구현

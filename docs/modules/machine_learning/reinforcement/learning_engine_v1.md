@@ -1,10 +1,10 @@
 # Reinforcement Learning — Learning Engine v1
 
-> **Current algorithm revision:** `v1.2`
+> **Current algorithm revision:** `v1.2 + Actual Map Logic Integration approved`
 
 ## Status
 
-- **State:** `APPROVED_FOR_INTEGRATION`
+- **State:** `ACTUAL_MAP_LOGIC_INTEGRATION_APPROVED`
 - **Algorithm revision:** `v1.2`
 - **Purpose:** 강화학습 모듈의 규칙 기반 Learning Engine 기술 명세
 - **Scope:** State, Action Pool, Outcome/Event, Reward 평가, Action/Route Preference Update, Exploration, 5-Robot Round 통합
@@ -12,8 +12,9 @@
 - **Validation:** SAFE / FAST / BALANCED × Seeds `7, 42, 1234`에서 20 Round 검증을 완료했고, v1.2는 `PASS_CANDIDATE` 판정을 받았다.
 - **Current meaning:** Mock/validation 환경의 Core Algorithm은 실제 Map과 연결하기 위한 Base Engine으로 사용한다.
 - **Navigation status:** `navigation_design_v1.md = APPROVED_FOR_BLOCKOUT`
-- **Integration extension:** `VILLAIN_ENCOUNTER / BOSS_ENCOUNTER / ROBOT_DISABLED / Villain Mission Bonus`를 실제 Map 통합 설계에 추가한다. 이 확장은 v1.2 Core Validation 결과에 소급해 검증 완료로 취급하지 않는다.
-- **Remaining gate:** 실제 5층 Navigation Graph의 stable Route Decision Context와 연결한 Integration Validation이 필요하다.
+- **Map Integration numeric contract:** `map_integration_v1.md`
+- **Integration extension:** `VILLAIN_ENCOUNTER / BOSS_ENCOUNTER / ROBOT_DISABLED / FORCE_PASS / MOBILITY_DAMAGE`를 actual TMJ runtime adapter에 연결하고 5-seed confirmation을 완료했다.
+- **Remaining gate:** Phaser Production Gameplay / UI 구현.
 
 ---
 
@@ -140,26 +141,14 @@ traits = {
 
 이동 경로에 장애물이 있는 상황.
 
-| Action | 시간 비용 | 시설물 파괴 위험 | 설명 |
-|---|---:|---:|---|
-| `DETOUR` | 큼 | 없음 | 우회 |
-| `PUSH` | 작음 | 높음 | 밀고 통과 |
-| `SQUEEZE` | 매우 작음 | 낮음~중간 | 좁은 틈 통과 |
-| `WAIT` | 중간 | 없음 | 이동 가능한 장애물이 비켜날 때까지 대기 |
+기본 Action Pool은 `DETOUR / CLEAR / PUSH`다. `SQUEEZE / WAIT`는 일반 OBSTACLE에서 제거됐다.
 
-모든 장애물에서 4개 Action이 항상 가능한 것은 아니다.
+- `DETOUR +6`: 실제 alternate route가 있을 때 100% safe pass
+- `CLEAR +4`: 100% obstacle cleared/pass
+- `PUSH +2`: 70% clean, 25% `FACILITY_DAMAGE`, 5% `BLOCKED`
+- `PUSH/BLOCKED`: 추가 +2 후 같은 State에서 재선택
 
-예:
-
-```text
-쓰러진 상자
-→ DETOUR / PUSH / SQUEEZE
-
-움직이는 운반 로봇
-→ DETOUR / WAIT / SQUEEZE
-```
-
-`시설물 파괴`가 발생해도 Episode는 계속 진행한다.
+OBSTACLE은 `ROBOT_DISABLED`를 만들지 않으며 permanent Collision wall이 아닌 runtime blocking entity다. 상세 수치/visual semantic은 `map_integration_v1.md`가 Source of Truth다.
 
 ---
 
@@ -203,7 +192,7 @@ Action Pool:
 |---|---:|---:|---|
 | `OBSERVE` | 중간 | 낮음 | 잠깐 관찰 후 판단 |
 | `BYPASS` | 중간 | 매우 낮음 | 거리를 두고 지나감 |
-| `TRACK` | 큼 | 있음 | 일정 시간 추적 |
+| `TRACK` | +3 | 있음 | 같은 Encounter에서 누적 6 이상이면 시민 오해 |
 | `SUBDUE` | 매우 작음 | 매우 높음 | 즉시 제압 |
 
 시민을 대상으로:
@@ -218,7 +207,7 @@ SUBDUE
 
 ```text
 TRACK
-→ 일정 시간 이상 잘못된 대상으로 추적
+→ 같은 Encounter에서 누적 simulation time 6 이상 잘못된 시민을 추적
 → 시민 오해
 → Episode 실패 종료
 ```
@@ -245,30 +234,15 @@ VILLAIN_ENCOUNTER
 
 기본 Action Pool:
 
-| Action | 시간 경향 | 핵심 결과 |
-|---|---:|---|
-| `SUBDUE` | 매우 작음 | 성공 시 `VILLAIN_NEUTRALIZED`, 실패 시 `ROBOT_DISABLED` |
-| `DISTRACT` | 중간 | 직접 제압하지 않고 통과를 시도 |
-| `BYPASS` | 큼 | 실제 우회 공간이 있을 때만 사용 가능 |
-| `RETREAT` | 큼 | 이전 Decision Node로 복귀 |
+`SUBDUE / FORCE_PASS / DISTRACT / BYPASS / RETREAT`
 
-원칙:
+- `SUBDUE +1`: Production Environment v1 확률은 `map_integration_v1.md`를 따른다. 실패는 `ROBOT_DISABLED`.
+- `FORCE_PASS +2`: ×1 pass/blocked/mobility=`70/20/10%`, ×2=`50/30/20%`
+- `DISTRACT +4`: Production Environment v1 결과 확률은 `map_integration_v1.md`를 따른다.
+- `BYPASS`: 실제 geometry가 있을 때만 safe deterministic
+- `RETREAT`: 이전 Decision Node까지 실제 polyline time
 
-- 모든 Encounter에서 네 Action을 전부 제공하지 않는다.
-- 계단 입구를 악당이 직접 막는 상황에서는 기본적으로 `BYPASS`를 제공하지 않는다.
-- Villain 수가 많을수록 `SUBDUE` 실패 위험이 높아야 한다.
-- 현재 Map 설계의 계단 경비는 주로 Villain ×2, 5F Search Room Guard는 Villain ×1이다.
-- 정확한 성공률 / timeCost는 Integration Validation에서 확정한다.
-- 직접 전투를 별도 미니게임으로 확대하지 않는다.
-
-`SUBDUE` 실패:
-
-```text
-SUBDUE
-→ 실패
-→ ROBOT_DISABLED
-→ Episode 실패 종료
-```
+오직 SUBDUE 성공만 Villain을 Episode 동안 neutralized한다. `MOBILITY_DAMAGE`는 다음 Route Segment에만 movement time `×1.35`를 적용한다. 상세 수치는 `map_integration_v1.md`를 따른다.
 
 ---
 
@@ -286,6 +260,11 @@ Boss 위치 = Episode마다 seeded random
 Control Room = 5F 안쪽 중앙의 고정 위치
 ```
 
+Action Pool은 `SUBDUE / DISTRACT / RETREAT`이며 Boss `BYPASS`는 없다.
+
+- 기본 및 `DISTRACT +4` 후 `SUBDUE` 성공률은 `map_integration_v1.md`를 따른다.
+- 실패 `SUBDUE`는 `ROBOT_DISABLED`
+
 Boss 제압 성공:
 
 ```text
@@ -296,11 +275,7 @@ BOSS_NEUTRALIZED
 → GOAL_REACHED
 ```
 
-Boss 대응 실패는 `ROBOT_DISABLED`를 만들 수 있다.
-
 Boss 전투를 별도 미니게임으로 확대하지 않는다.
-
-정확한 Boss Action Pool / 성공률은 Blockout 이후 Integration 단계에서 확정한다.
 
 ---
 
@@ -639,9 +614,8 @@ routeAdvantage =
 ```text
 OBSTACLE
 DETOUR   0
+CLEAR    0
 PUSH     0
-SQUEEZE  0
-WAIT     0
 ```
 
 한 Round가 끝나면 해당 Action을 실제 선택한 Experience들의 Action Credit 평균을 사용한다.
@@ -772,7 +746,7 @@ Central Policy
 
 로 둔다.
 
-Environment Randomness는 작게 유지한다.
+Candidate Encounter는 `LOW=25% / MEDIUM=50% / HIGH=75%`, Mandatory는 100%다. Episode seed 기반 deterministic random을 쓰며 같은 Episode의 같은 Encounter Zone 결과는 최초 draw 후 cache한다.
 
 이유:
 
@@ -915,7 +889,7 @@ Integration 단계에서 반드시 확인한다.
 3. 5F Boss Search에서 remaining-room set이 Context key에 안정적으로 반영되는가
 4. hidden `bossRoom`이 Policy 입력으로 새지 않는가
 5. 실제 Route Trait / timeCost / Encounter 배치가 Reward Profile별 차이를 유지하는가
-6. `VILLAIN_ENCOUNTER`에서 `SUBDUE / DISTRACT / BYPASS / RETREAT`가 환경 조건에 따라 올바르게 제한되는가
+6. `VILLAIN_ENCOUNTER`에서 `SUBDUE / FORCE_PASS / DISTRACT / BYPASS / RETREAT`가 환경 조건에 따라 올바르게 제한되는가
 7. Villain ×1 / ×2 차이가 위험도에 합리적으로 반영되는가
 8. `SUBDUE` 실패의 `ROBOT_DISABLED`가 terminal로 정상 처리되는가
 9. `BOSS_ENCOUNTER → BOSS_NEUTRALIZED → Control Room → GOAL_REACHED` 흐름이 정상 동작하는가
@@ -933,15 +907,10 @@ Core Algorithm의 기본 수치는 v1.2 Base Engine 값으로 고정한다.
 
 실제 Map과 연결하면서 확정할 항목:
 
-- `navigation_graph_v1.json`의 stable Route Decision Context key
-- Route Trait의 실제 numeric representation
-- Route별 실제 `timeCost`
-- Route별 Encounter 배치 / 발생 조건 / Environment Randomness 세기
-- Episode `timeLimit`
-- `AMBIGUOUS_PERSON`의 `TRACK` 시민 오해 시간 threshold
-- `VILLAIN_ENCOUNTER`의 `SUBDUE / DISTRACT` 성공률
-- Villain ×1 / ×2가 `SUBDUE` 위험에 주는 정확한 영향
-- `BOSS_ENCOUNTER`의 최종 Action Pool / 성공률
+- `navigation_graph_v1_f5_v3.json`의 stable Route Decision Context key
+- actual TMJ polyline에서 계산한 Route별 실제 `timeCost`
+- actual graph의 `longestSafeSuccessBaseline * 1.25`로 산출할 Episode `timeLimit`
+- 실제 Route별 Encounter 배치
 - Villain Mission Bonus의 세부 배분식 (`GOAL_REACHED`에서 최대 +1 원칙은 확정)
 - 실제 Map에서 damage / risk Event 빈도가 현재 normalization과 맞는지
 - Encounter Preference가 clamp 상한에 도달했을 때 실제 행동 다양성이 충분한지
@@ -962,7 +931,7 @@ DRAFT / VALIDATING
 → APPROVED_FOR_INTEGRATION
 → navigation_design_v1.md 작성 / 검토
 → APPROVED_FOR_BLOCKOUT
-→ navigation_graph_v1.json + 1F~5F SVG Blockout
+→ navigation_graph_v1_f5_v3.json + 1F~5F SVG Blockout
 → Blockout 검토 / 수정
 → 실제 Map 연결
 → VILLAIN/BOSS/ROBOT_DISABLED/Mission Bonus 포함 100-Experience Integration Validation

@@ -13,7 +13,7 @@ test('Floor 4 debug runtime contract matches the Tiled map', () => {
   assert.deepEqual([result.spawns.RIGHT.x, result.spawns.RIGHT.y], [2256, 1120]);
   assert.equal(properties(result.transitions[0]).targetSpawn, 'F5_SEARCH_HUB');
   assert.deepEqual(properties(result.encounters.find(object => object.name === 'F4_CENTER_GUARD_ZONE')!), {
-    actions: 'SUBDUE,DISTRACT,RETREAT', bypassAvailable: false, encounterType: 'VILLAIN_ENCOUNTER', floor: 4,
+    actions: 'SUBDUE,FORCE_PASS,DISTRACT,RETREAT', bypassAvailable: false, encounterType: 'VILLAIN_ENCOUNTER', floor: 4,
     mandatory: true, route: 'F4_CENTER_STAIR_PASS', villainCount: 2, zoneId: 'F4_CENTER_GUARD_ZONE',
   });
 });

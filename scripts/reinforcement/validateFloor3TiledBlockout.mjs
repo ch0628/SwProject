@@ -196,7 +196,7 @@ for (const side of ['LEFT', 'RIGHT']) {
   const guard = encounters.find(item => item.name === `F3_${side}_GUARD_ZONE`);
   const values = props(guard);
   check(values.encounterType === 'VILLAIN_ENCOUNTER' && values.villainCount === 2 && values.bypassAvailable === false, `${side} guard contract is invalid`);
-  check(values.actions === 'SUBDUE,DISTRACT,RETREAT', `${side} guard actions are invalid`);
+  check(values.actions === 'SUBDUE,FORCE_PASS,DISTRACT,RETREAT', `${side} guard actions are invalid`);
   const blockedByGuard = guard ? [...collision, guard] : collision;
   check(!physicalReachable(nodeById.get('F3_CENTER_ARRIVAL'), nodeById.get(`F3_${side}_STAIR`), blockedByGuard), `${side} stair has a physical guard bypass`);
 }
