@@ -104,7 +104,7 @@ Traffic density 추가 탐색이나 Navigation topology 변경을 기본 next st
 
 - `docs/shared/technical/ml_prototype_technical_requirements.md`
 - `docs/shared/graphics/graphics_character_asset_spec.md`
-- `docs/modules/machine_learning/unsupervised/concept_rules.md`
+- `docs/modules/machine_learning/unsupervised/prd/unsupervised_prd_v1.0.0.md`
 
 지도학습 Character/Map asset을 재사용할 때 필요한 관련 문서만 추가한다.
 

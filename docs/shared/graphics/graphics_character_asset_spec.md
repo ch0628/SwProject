@@ -203,6 +203,8 @@ Color Variation
 
 # 6. Species와 비지도학습 Feature의 분리
 
+> 비지도학습은 PRD v1.0.0(prd/unsupervised_prd_v1.0.0.md) 기준으로 변경되어 이 절은 갱신 필요
+
 비지도학습 Feature:
 1. 체격·무게
 2. 장비 신호
