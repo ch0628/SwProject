@@ -1,7 +1,7 @@
 // 비지도학습 화면 (1차 뼈대). sceneFlow 상태를 그대로 그리는 얇은 뷰이며, 진행 로직은 sceneFlow.ts에만 있다.
 // 이 파일의 로컬 상태는 아직 확정되지 않은 특징 체크박스 선택(pending)뿐이다.
-import { useEffect, useState, type ReactNode } from 'react';
-import { PORTRAITS } from './assets';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { PORTRAITS, SCENE8_ARI } from './assets';
 import { CoordinatePlane } from './CoordinatePlane';
 import { FEATURE_KEYS, summarizeCluster, type FeatureKey } from './sim/clusteringEngine';
 import {
@@ -55,7 +55,8 @@ export function UnsupervisedApp() {
     dispatch(step === 'CLUSTER_REVIEW' ? { type: 'INSPECT_CLUSTER', clusterId } : { type: 'SELECT_CLUSTER', clusterId });
 
   return <main className={`stage unsup-stage scene-${PRD_SCENE[step]}`}>
-    <header className="unsup-scene-title">SCENE {PRD_SCENE[step]} | {SCENE_TITLE[step]}</header>
+    {step !== 'TITLE' && <header className="unsup-scene-title">SCENE {PRD_SCENE[step]} | {SCENE_TITLE[step]}</header>}
+    {step === 'TITLE' && <TitleCard onStart={() => dispatch({ type: 'PROCEED' })} />}
 
     {step === 'INCIDENT' && <aside className="unsup-side"><CluePanel title="발견된 단서" /></aside>}
     {step === 'EXPLAIN' && <ExplainPanel />}
@@ -94,9 +95,12 @@ export function UnsupervisedApp() {
       <p className="unsup-result is-alert">숨겨진 악당을 찾았어요!</p>
       <MemberList ids={findCluster(flow.selectedClusterId)!.memberIds} villains={flow.revealedVillainIds} />
     </section></aside>}
-    {step === 'COMPLETE' && <LearningPanel />}
+    {step === 'COMPLETE' && <>
+      <VillageCrowd />
+      <LearningPanel state={flow} />
+    </>}
 
-    {!flow.finished && <DialogueBox line={currentLine(flow)}>
+    {!flow.finished && step !== 'TITLE' && <DialogueBox line={currentLine(flow)!}>
       {!done
         ? <button type="button" onClick={() => dispatch({ type: 'NEXT_LINE' })}>다음</button>
         : <SceneActions flow={flow} pending={pending} dispatch={dispatch} />}
@@ -213,10 +217,39 @@ function MemberList({ ids, villains }: { ids: readonly string[]; villains: reado
   })}</ul>;
 }
 
-function LearningPanel() {
+/** PRD 2.2.1 제목·부제목. 지도학습 시작 오버레이(제목 + 문구 + 시작 버튼)와 같은 구성. */
+function TitleCard({ onStart }: { onStart: () => void }) {
+  return <div className="unsup-title-card" role="dialog" aria-labelledby="unsup-title">
+    <section className="unsup-panel">
+      <p className="unsup-subtitle">머신러닝(비지도학습) - AI가 학습하는 방법</p>
+      <h1 id="unsup-title">수상한 무리를 찾아라!</h1>
+      <button type="button" className="unsup-primary" onClick={onStart}>시작</button>
+    </section>
+  </div>;
+}
+
+/** Scene 8: 밝아진 마을에 아리와 주민들이 등장한다. PRD 이미지 기준으로 붙잡힌 악당은 제외한다. */
+function VillageCrowd() {
+  const citizens = RESIDENTS.filter((resident) => !resident.isVillain);
+  return <section className="unsup-crowd" aria-label="아리와 마을 주민들">
+    <figure className="unsup-crowd-ari"><img src={SCENE8_ARI} alt="" /><figcaption>아리</figcaption></figure>
+    {citizens.map((resident, index) => <figure key={resident.id} style={{ '--cheer-delay': `${(index % 4) * 120}ms` } as CSSProperties}>
+      <img src={resident.sprite} alt="" /><figcaption>{SPECIES_NAME[resident.species]}</figcaption>
+    </figure>)}
+  </section>;
+}
+
+function LearningPanel({ state }: { state: FlowState }) {
   return <section className="unsup-panel unsup-learning">
     <h2>학습 내용</h2>
     <p className="unsup-learning-title">비지도학습</p>
     <ol><li>정답 없이</li><li>특징을 비교하고</li><li>비슷한 것끼리 묶기</li></ol>
+    {state.clusterResult && state.selectedFeatures && <div className="unsup-learning-plane">
+      <CoordinatePlane compact pair={state.selectedFeatures} residents={RESIDENTS}
+        points={state.clusterResult.points} clusters={state.clusterResult.clusters}
+        blurry={false} clickable={false} activeClusterId={state.selectedClusterId}
+        clearedClusterIds={[]} revealedVillainIds={state.revealedVillainIds} investigating={false}
+        onClusterClick={() => {}} />
+    </div>}
   </section>;
 }

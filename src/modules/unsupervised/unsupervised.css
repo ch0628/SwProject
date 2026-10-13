@@ -136,6 +136,7 @@
 .unsup-resident.is-villain figcaption { transition-delay: 1.2s; }
 
 @media (prefers-reduced-motion: reduce) {
+  .unsup-crowd figure { animation: none; }
   .unsup-resident, .unsup-resident figcaption { transition: none; }
   .unsup-plane.is-investigating .unsup-cluster.is-active, .unsup-magnifier i, .unsup-resident.is-villain img { animation: none; }
 }
@@ -162,12 +163,44 @@
 .unsup-result { font-size: 1.6cqw; font-weight: 700; }
 .unsup-result.is-alert { color: #ff8a80; }
 
-/* Scene 8 */
-.unsup-learning { position: absolute; top: 5cqw; left: 50%; transform: translateX(-50%); width: 60cqw; text-align: center; }
-.unsup-learning-title { font-size: 2cqw; font-weight: 700; color: #ffe39a; }
-.unsup-learning ol { display: flex; justify-content: center; gap: 1.5cqw; margin: .8cqw 0 0; padding: 0; list-style: none; }
-.unsup-learning li { padding: .8cqw 1.4cqw; border-radius: .7cqw; background: #26384f; font-size: 1.6cqw; font-weight: 700; }
+/* 타이틀 카드 (PRD 2.2.1) */
+.unsup-title-card { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; }
+.unsup-title-card .unsup-panel { width: 58cqw; padding: 3cqw 3cqw 2.6cqw; text-align: center; }
+.unsup-subtitle { margin: 0 0 1cqw; color: #b9d5ed; font-size: 1.6cqw; }
+.unsup-title-card h1 { margin: 0 0 2.2cqw; color: #ffe39a; font-size: 4cqw; letter-spacing: .1cqw; }
+.unsup-title-card button { min-width: 16cqw; padding: .8cqw 2cqw; border-radius: .7cqw; font-size: 1.9cqw; }
+
+/* Scene 8: 왼쪽 아리와 주민들, 오른쪽 학습 패널 */
+.unsup-crowd {
+  position: absolute; left: 2cqw; top: 6cqw; width: 56cqw; height: 34cqw;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; justify-items: center; row-gap: 1cqw;
+}
+.unsup-crowd figure { margin: 0; display: flex; flex-direction: column; align-items: center; animation: unsup-cheer 1.4s ease-in-out var(--cheer-delay, 0ms) infinite; }
+.unsup-crowd img { height: 11cqw; image-rendering: pixelated; filter: drop-shadow(0 .4cqw .3cqw #0004); }
+.unsup-crowd figcaption { margin-top: .2cqw; padding: 0 .5cqw; border-radius: .4cqw; background: #172637cc; font-size: 1.05cqw; }
+.unsup-crowd-ari img { height: 12cqw; }
+@keyframes unsup-cheer { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-.8cqw); } 45% { transform: translateY(0); } }
+
+.unsup-learning { position: absolute; top: 4.5cqw; right: 1.5cqw; width: 36cqw; text-align: center; }
+.unsup-learning-title { margin: 0; font-size: 1.8cqw; font-weight: 700; color: #ffe39a; }
+.unsup-learning ol { display: flex; justify-content: center; gap: .6cqw; margin: .6cqw 0 .8cqw; padding: 0; list-style: none; }
+.unsup-learning li { padding: .5cqw .8cqw; border-radius: .6cqw; background: #26384f; font-size: 1.2cqw; font-weight: 700; white-space: nowrap; }
 .unsup-learning li + li::before { content: '→ '; color: #9ed9ff; }
+/* 평면 비율(62:36.5)을 본 화면과 같게 유지해야 표시 배치(layout.ts)가 그대로 맞는다 */
+.unsup-learning-plane { width: 33cqw; height: calc(33cqw * 36.5 / 62); margin: 0 auto; }
+
+/* CoordinatePlane compact 옵션: 크기만 줄이고 상호작용·이름표·애니메이션 없음 */
+.unsup-plane.is-compact { border-width: .12cqw; border-radius: .6cqw; background-size: 1.6cqw 1.6cqw; pointer-events: none; }
+.unsup-plane.is-compact * { pointer-events: none; transition: none !important; animation: none !important; }
+.unsup-plane.is-compact .unsup-axis-x { height: .08cqw; }
+.unsup-plane.is-compact .unsup-axis-y { width: .08cqw; }
+.unsup-plane.is-compact .unsup-axis-name { padding: 0 .35cqw; border-width: .08cqw; border-radius: .3cqw; font-size: .7cqw; }
+.unsup-plane.is-compact .unsup-axis-end { font-size: .65cqw; }
+.unsup-plane.is-compact .unsup-cluster { border-width: .13cqw; }
+.unsup-plane.is-compact .unsup-cluster.is-active { border-width: .2cqw; box-shadow: 0 0 .6cqw #ff8a80aa; }
+.unsup-plane.is-compact .unsup-cluster-name { padding: 0 .25cqw; font-size: .65cqw; }
+.unsup-plane.is-compact .unsup-resident img { height: 1.7cqw; }
+.unsup-plane.is-compact .unsup-resident figcaption { display: none; }
 
 /* 대사 박스 */
 .unsup-dialogue {

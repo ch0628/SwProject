@@ -17,6 +17,7 @@ const line = (speaker: Speaker, text: string, source: DialogueLine['source'] = '
   Object.freeze({ speaker, text, source, ...(highlights ? { highlights: Object.freeze([...highlights]) } : {}) });
 
 export const DIALOGUE: Readonly<Record<FlowStep, readonly DialogueLine[]>> = Object.freeze({
+  TITLE: [], // 타이틀 카드: 대사 없음 (제목·부제목은 화면에서 표시)
   INCIDENT: [
     line('아리', '큰일이에요! 어젯밤 마을 창고에 누군가 몰래 들어왔어요.'),
     line('아리', '현장에는 고기를 먹은 흔적이 남아 있었고, 경비병은 수상한 그림자가 밤늦게 움직이는 모습을 목격했어요.', 'PRD', ['고기를 먹은 흔적', '밤늦게 움직이는 모습']),

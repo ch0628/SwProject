@@ -9,6 +9,7 @@ export const SPECIES_NAME: Readonly<Record<ResidentSpecies, string>> = Object.fr
 
 /** PRD 스토리보드 이미지의 장면 제목 */
 export const SCENE_TITLE: Readonly<Record<FlowStep, string>> = Object.freeze({
+  TITLE: '수상한 무리를 찾아라!',
   INCIDENT: '사건 발생',
   EXPLAIN: '비지도학습 설명',
   FEATURE_SELECT: '분석 기준 선택',
