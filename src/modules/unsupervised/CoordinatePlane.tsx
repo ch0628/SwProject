@@ -30,10 +30,12 @@ type Props = {
   /** Scene 6 조사 결과 / Scene 7: 선택한 무리를 강조한다 */
   investigating: boolean;
   onClusterClick: (clusterId: string) => void;
+  /** 작은 요약용 표시 (Scene 8 학습 패널). 크기만 줄이고 상호작용·이름표·애니메이션을 끈다. 기본값 false = 기존 동작 */
+  compact?: boolean;
 };
 
 export function CoordinatePlane(props: Props) {
-  const { pair, residents, points, clusters, blurry, clickable, activeClusterId, clearedClusterIds, revealedVillainIds, investigating, onClusterClick } = props;
+  const { pair, residents, points, clusters, blurry, clickable, activeClusterId, clearedClusterIds, revealedVillainIds, investigating, onClusterClick, compact = false } = props;
   const [xKey, yKey] = pair;
   const xDef = FEATURE_DEFINITIONS[xKey];
   const yDef = FEATURE_DEFINITIONS[yKey];
@@ -54,7 +56,7 @@ export function CoordinatePlane(props: Props) {
     if (clickable && clusterId && !clearedClusterIds.includes(clusterId)) onClusterClick(clusterId);
   };
 
-  const planeClass = ['unsup-plane', blurry ? 'is-blurry' : '', investigating ? 'is-investigating' : ''].join(' ');
+  const planeClass = ['unsup-plane', blurry ? 'is-blurry' : '', investigating ? 'is-investigating' : '', compact ? 'is-compact' : ''].join(' ');
   return <section className={planeClass} aria-label={`좌표평면: 가로 ${xDef.label}, 세로 ${yDef.label}`}>
     <div className="unsup-axis unsup-axis-x" />
     <div className="unsup-axis unsup-axis-y" />

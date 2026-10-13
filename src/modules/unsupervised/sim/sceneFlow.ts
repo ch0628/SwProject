@@ -13,11 +13,12 @@ import {
   type FeaturePair,
   type ResidentId,
 } from './clusteringEngine.ts';
-import { DIALOGUE } from '../data/dialogue.ts';
+import { DIALOGUE, type DialogueLine } from '../data/dialogue.ts';
 import { INCIDENT_CLUE } from '../data/features.ts';
 import { RESIDENTS, toClusterInput, type ResidentDefinition } from '../data/residents.ts';
 
 export type FlowStep =
+  | 'TITLE'             // 타이틀 카드 (PRD 2.2.1 제목·부제목)
   | 'INCIDENT'          // Scene 1 사건 발생
   | 'EXPLAIN'           // Scene 2 비지도학습 설명
   | 'FEATURE_SELECT'    // Scene 3 분석 기준 선택
@@ -30,18 +31,19 @@ export type FlowStep =
   | 'COMPLETE';         // Scene 8 학습 및 마무리
 
 export const FLOW_STEPS: readonly FlowStep[] = [
-  'INCIDENT', 'EXPLAIN', 'FEATURE_SELECT', 'PATTERN_FIND', 'CLUSTER_REVIEW',
+  'TITLE', 'INCIDENT', 'EXPLAIN', 'FEATURE_SELECT', 'PATTERN_FIND', 'CLUSTER_REVIEW',
   'FEATURE_FEEDBACK', 'CLUE_COMPARE', 'ORDINARY_RESULT', 'INVESTIGATE', 'COMPLETE',
 ];
 
+/** PRD 스토리보드 장면 번호. 타이틀 카드는 장면 번호가 없어 0이다. */
 export const PRD_SCENE: Readonly<Record<FlowStep, number>> = Object.freeze({
-  INCIDENT: 1, EXPLAIN: 2, FEATURE_SELECT: 3, PATTERN_FIND: 4, CLUSTER_REVIEW: 5,
+  TITLE: 0, INCIDENT: 1, EXPLAIN: 2, FEATURE_SELECT: 3, PATTERN_FIND: 4, CLUSTER_REVIEW: 5,
   FEATURE_FEEDBACK: 5, CLUE_COMPARE: 6, ORDINARY_RESULT: 6, INVESTIGATE: 7, COMPLETE: 8,
 });
 
 export type FlowEvent =
   | { type: 'NEXT_LINE' }                                       // 다음 대사
-  | { type: 'PROCEED' }                                         // 장면 버튼: 단서 확인 완료 / 분석 시작 / 군집 살펴보기 / 확인 / 완료
+  | { type: 'PROCEED' }                                         // 장면 버튼: 시작 / 단서 확인 완료 / 분석 시작 / 군집 살펴보기 / 확인 / 완료
   | { type: 'SELECT_FEATURES'; features: readonly FeatureKey[] } // [특징 선택 완료]
   | { type: 'FIND_PATTERNS' }                                   // [패턴 찾기]
   | { type: 'INSPECT_CLUSTER'; clusterId: string }              // Scene 5 군집 클릭
@@ -81,7 +83,7 @@ export const DEFAULT_FLOW_CONTEXT: FlowContext = Object.freeze({
 
 export function createInitialFlowState(): FlowState {
   return Object.freeze({
-    step: 'INCIDENT',
+    step: 'TITLE',
     lineIndex: 0,
     selectedFeatures: null,
     clusterResult: null,
@@ -123,6 +125,8 @@ export function transition(state: FlowState, event: FlowEvent, context: FlowCont
   if (!isDialogueDone(state, context)) return state;
 
   switch (state.step) {
+    case 'TITLE':
+      return event.type === 'PROCEED' ? goTo(state, 'INCIDENT') : state;
     case 'INCIDENT':
       return event.type === 'PROCEED' ? goTo(state, 'EXPLAIN') : state;
     case 'EXPLAIN':
@@ -175,6 +179,7 @@ function investigate(state: FlowState, context: FlowContext): FlowState {
   return goTo(state, 'INVESTIGATE', { revealedVillainIds: Object.freeze(selected.memberIds.filter((id) => villains.has(id))) });
 }
 
-export function currentLine(state: FlowState) {
-  return DIALOGUE[state.step][state.lineIndex];
+/** 현재 대사. 대사가 없는 단계(타이틀 카드)는 null. */
+export function currentLine(state: FlowState): DialogueLine | null {
+  return DIALOGUE[state.step][state.lineIndex] ?? null;
 }

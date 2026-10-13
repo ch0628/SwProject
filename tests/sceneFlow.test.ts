@@ -35,7 +35,7 @@ const suspectId = (state: FlowState) => nearestClusterToClue(state.clusterResult
 const innocentId = (state: FlowState) => state.clusterResult!.clusters.find((cluster) => cluster.id !== suspectId(state))!.id;
 
 function toClusterReview(features: readonly FeatureKey[], state = createInitialFlowState()): FlowState {
-  if (state.step === 'INCIDENT') state = act(act(state, { type: 'PROCEED' }), { type: 'PROCEED' });
+  if (state.step === 'TITLE') state = act(act(act(state, { type: 'PROCEED' }), { type: 'PROCEED' }), { type: 'PROCEED' });
   state = act(state, { type: 'SELECT_FEATURES', features });
   state = act(state, { type: 'FIND_PATTERNS' });
   return act(state, { type: 'PROCEED' });
@@ -46,6 +46,7 @@ function playHappyPath() {
   let state = createInitialFlowState();
   const record = (next: FlowState) => { if (steps.at(-1) !== next.step) steps.push(next.step); state = next; };
   record(state);
+  record(act(state, { type: 'PROCEED' }));
   record(act(state, { type: 'PROCEED' }));
   record(act(state, { type: 'PROCEED' }));
   record(act(state, { type: 'SELECT_FEATURES', features: CORRECT }));
@@ -60,10 +61,10 @@ function playHappyPath() {
   return { state, steps };
 }
 
-test('정상 경로: Scene 1~8을 순서대로 지나 완료되고, 조사한 군집의 일부만 악당으로 공개된다', () => {
+test('정상 경로: 타이틀 카드 → Scene 1~8을 순서대로 지나 완료되고, 조사한 군집의 일부만 악당으로 공개된다', () => {
   const { state, steps } = playHappyPath();
-  assert.deepEqual(steps, ['INCIDENT', 'EXPLAIN', 'FEATURE_SELECT', 'PATTERN_FIND', 'CLUSTER_REVIEW', 'CLUE_COMPARE', 'INVESTIGATE', 'COMPLETE']);
-  assert.deepEqual(steps.map((step) => PRD_SCENE[step]), [1, 2, 3, 4, 5, 6, 7, 8]);
+  assert.deepEqual(steps, ['TITLE', 'INCIDENT', 'EXPLAIN', 'FEATURE_SELECT', 'PATTERN_FIND', 'CLUSTER_REVIEW', 'CLUE_COMPARE', 'INVESTIGATE', 'COMPLETE']);
+  assert.deepEqual(steps.map((step) => PRD_SCENE[step]), [0, 1, 2, 3, 4, 5, 6, 7, 8]);
   assert.equal(state.finished, true);
   assert.equal(state.featureAttempts, 1);
   assert.equal(isBlurry(state), false);
@@ -112,8 +113,21 @@ test('틀린 군집: 평범한 주민으로 판명되고 페널티 없이 다시
   assert.deepEqual(state.revealedVillainIds, ['R10', 'R11', 'R12']);
 });
 
+test('타이틀 카드: 대사가 없고 [시작](PROCEED)으로만 Scene 1로 넘어간다', () => {
+  const title = createInitialFlowState();
+  assert.equal(title.step, 'TITLE');
+  assert.equal(currentLine(title), null);
+  assert.equal(isDialogueDone(title), true);
+  for (const event of [{ type: 'NEXT_LINE' }, { type: 'SELECT_FEATURES', features: CORRECT }, { type: 'FIND_PATTERNS' }, { type: 'INVESTIGATE' }] as const) {
+    assert.equal(transition(title, event), title, event.type);
+  }
+  const incident = transition(title, { type: 'PROCEED' });
+  assert.equal(incident.step, 'INCIDENT');
+  assert.equal(incident.lineIndex, 0);
+});
+
 test('허용되지 않은 이벤트는 무시된다 (같은 상태 객체를 돌려줌)', () => {
-  const initial = createInitialFlowState();
+  const initial = transition(createInitialFlowState(), { type: 'PROCEED' });
   assert.equal(transition(initial, { type: 'PROCEED' }), initial, '대사 중 장면 버튼');
   const intro = finishDialogue(initial);
   assert.equal(transition(intro, { type: 'NEXT_LINE' }), intro, '마지막 대사 뒤 다음 대사');
@@ -155,7 +169,7 @@ test('결정성: 같은 이벤트 순서는 같은 결과, 특징 선택 순서�
 });
 
 test('대사 데이터: 모든 단계에 대사가 있고 승인된 수정 2건이 반영되어 있다', () => {
-  for (const step of FLOW_STEPS) assert.ok(DIALOGUE[step].length > 0, step);
+  for (const step of FLOW_STEPS) assert.ok(step === 'TITLE' ? DIALOGUE[step].length === 0 : DIALOGUE[step].length > 0, step);
   const allText = FLOW_STEPS.flatMap((step) => DIALOGUE[step].map((line) => line.text)).join('\n');
   assert.ok(DIALOGUE.PATTERN_FIND[0].text.includes('[패턴 찾기]'));
   assert.ok(!allText.includes('[분류 시작]'));
