@@ -19,6 +19,7 @@ export type RuntimeStateChange =
   | 'OBSTACLE_BLOCKED'
   | 'VILLAIN_NEUTRALIZED'
   | 'VILLAIN_FORCE_PASSED'
+  | 'VILLAIN_DISTRACTED'
   | 'F5_DOOR_OPEN'
   | 'NO_BOSS'
   | 'BOSS_FOUND'
@@ -237,6 +238,7 @@ function actionCommands(
     if (action.localOutcome === 'BLOCKED' && zone.kind === 'OBSTACLE') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'OBSTACLE_BLOCKED', location: zone.id, position: base.position });
     if (action.immediateEvents.includes('VILLAIN_NEUTRALIZED')) commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'VILLAIN_NEUTRALIZED', location: zone.id, position: base.position, villainVariant: variant });
     if (zone.kind === 'VILLAIN_ENCOUNTER' && action.action === 'FORCE_PASS' && (action.localOutcome === 'PASS' || action.localOutcome === 'MOBILITY_DAMAGE')) commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'VILLAIN_FORCE_PASSED', location: zone.id, position: base.position, villainVariant: variant });
+    if (zone.kind === 'VILLAIN_ENCOUNTER' && action.action === 'DISTRACT' && action.localOutcome === 'PASS') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'VILLAIN_DISTRACTED', location: zone.id, position: base.position, villainVariant: variant });
   }
   if (!actions.some(action => isTerminal(action.immediateEvents))) commands.push({ type: 'ENCOUNTER', phase: 'END', simulationTime: actionEndTimes.get(actions.at(-1)!) ?? 0, ...base });
   return commands;

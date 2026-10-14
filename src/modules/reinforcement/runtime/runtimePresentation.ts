@@ -7,6 +7,7 @@ import {
   type RuntimeFootprint,
   type RuntimePoint,
 } from './runtimeCommands.ts';
+import { runtimeVisualFootprint } from './runtimeMovement.ts';
 
 export type RuntimeEntityKind = 'OBSTACLE' | 'CITIZEN' | 'AMBIGUOUS' | 'VILLAIN' | 'GUARD' | 'BOSS';
 export type RuntimeEntityVisualState = 'NORMAL' | 'NEUTRALIZED' | 'CLEARED';
@@ -22,6 +23,9 @@ export type RuntimePresentedEntity = {
   pushedPosition: RuntimePoint;
   pushIntermediate: RuntimePoint;
   forcePassPosition: RuntimePoint;
+  distractPosition: RuntimePoint;
+  distractReactionLeft: RuntimePoint;
+  distractReactionRight: RuntimePoint;
   routePosition: RuntimePoint;
   stagingPosition: RuntimePoint;
   contactPosition: RuntimePoint;
@@ -37,11 +41,21 @@ export type RuntimePresentationState = {
   entities: Record<string, RuntimePresentedEntity>;
   openDoors: F5Room[];
   securityLockOpen: boolean;
+  coreState: RuntimeCoreState;
 };
 
+export type RuntimeCoreState = 'CORE_OFF' | 'CORE_POWERING' | 'CORE_ON';
+
 export type RuntimePresentationMotion = {
-  kind: 'PUSH' | 'CLEAR' | 'FORCE_PASS';
-  entities: Array<{ id: string; from: RuntimePoint; via?: RuntimePoint; to: RuntimePoint }>;
+  kind: 'PUSH' | 'CLEAR' | 'FORCE_PASS' | 'DISTRACT';
+  entities: Array<{
+    id: string;
+    from: RuntimePoint;
+    via?: RuntimePoint;
+    to: RuntimePoint;
+    reactionLeft?: RuntimePoint;
+    reactionRight?: RuntimePoint;
+  }>;
   direction?: RuntimePoint;
   robotCoupled?: boolean;
   robotStaging?: RuntimePoint;
@@ -76,15 +90,7 @@ const add = (point: RuntimePoint, direction: RuntimePoint, distance: number): Ru
 const normalFor = (direction: RuntimePoint) => ({ x: -direction.y, y: direction.x });
 const projectedHalfExtent = (footprint: RuntimeFootprint, direction: RuntimePoint) =>
   Math.abs(direction.x) * footprint.width / 2 + Math.abs(direction.y) * footprint.height / 2;
-const footprintFor = (kind: RuntimeEntityKind): RuntimeFootprint => kind === 'OBSTACLE'
-  ? RUNTIME_CONTACT_FOOTPRINTS.OBSTACLE
-  : kind === 'BOSS'
-    ? RUNTIME_CONTACT_FOOTPRINTS.BOSS_ENCOUNTER
-    : kind === 'CITIZEN'
-      ? RUNTIME_CONTACT_FOOTPRINTS.CITIZEN_NEARBY
-      : kind === 'AMBIGUOUS'
-        ? RUNTIME_CONTACT_FOOTPRINTS.AMBIGUOUS_PERSON
-        : RUNTIME_CONTACT_FOOTPRINTS.VILLAIN_ENCOUNTER;
+const footprintFor = (kind: RuntimeEntityKind): RuntimeFootprint => runtimeVisualFootprint(kind);
 
 const rectFor = (point: RuntimePoint, footprint: RuntimeFootprint) => ({
   x: point.x - footprint.width / 2,
@@ -225,6 +231,9 @@ export function createRuntimePresentation(
         pushedPosition: command.clearedPosition,
         pushIntermediate: position,
         forcePassPosition: position,
+        distractPosition: position,
+        distractReactionLeft: position,
+        distractReactionRight: position,
         routePosition: command.routePosition,
         stagingPosition: kind === 'OBSTACLE'
           ? approachPoints[0] ?? add(contactPosition, command.incomingDirection, -RUNTIME_STAGING_GAP)
@@ -309,9 +318,44 @@ export function createRuntimePresentation(
         entity.clearedPosition = candidates[index];
       });
     }
+
+    const reaction = (side: -1 | 1) => [8, 6, 4, 2].map(distance => group.map(entity => ({
+      x: entity.originalPosition.x + side * distance,
+      y: entity.originalPosition.y,
+    }))).find(points => points.every((point, index) => validMotion(map, [group[index].originalPosition, point], footprint, [
+      ...occupied,
+      ...points.filter((_other, otherIndex) => otherIndex !== index).map(other => ({ point: other, footprint })),
+    ]))) ?? group.map(entity => entity.originalPosition);
+    const leftReaction = reaction(-1);
+    const rightReaction = reaction(1);
+    group.forEach((entity, index) => {
+      entity.distractReactionLeft = leftReaction[index];
+      entity.distractReactionRight = rightReaction[index];
+    });
+
+    const lateral = group.map((entity, index) => {
+      const offset = (entity.originalPosition.x - entity.routePosition.x) * normal.x
+        + (entity.originalPosition.y - entity.routePosition.y) * normal.y;
+      return Math.sign(offset) || (index === 0 ? -1 : 1);
+    });
+    const sidePlans = group.length === 1 ? [lateral, lateral.map(side => -side)] : [lateral];
+    const distractCandidates = sidePlans.flatMap(sides => [32, 24, 16].map(distance => group.map((entity, index) =>
+      add(entity.originalPosition, normal, distance * sides[index]))));
+    const distracted = distractCandidates.find(points => points.every((point, index) =>
+      !routeOverlap(point, group[index].routePosition, group[index].incomingDirection, footprint)
+      && validMotion(map, [group[index].originalPosition, point], footprint, [
+        ...occupied,
+        ...points.filter((_other, otherIndex) => otherIndex !== index).map(other => ({ point: other, footprint })),
+      ])));
+    if (distracted) group.forEach((entity, index) => { entity.distractPosition = distracted[index]; });
   }
-  return { entities, openDoors: [], securityLockOpen: false };
+  return { entities, openDoors: [], securityLockOpen: false, coreState: 'CORE_OFF' };
 }
+
+export const setRuntimeCoreState = (
+  state: RuntimePresentationState,
+  coreState: RuntimeCoreState,
+): RuntimePresentationState => ({ ...state, coreState });
 
 export function presentationMotionForCommand(
   state: RuntimePresentationState,
@@ -344,6 +388,18 @@ export function presentationMotionForCommand(
     kind: 'FORCE_PASS',
     entities: matching.map(entity => ({ id: entity.id, from: entity.position, to: entity.forcePassPosition })),
   };
+  if (command.change === 'VILLAIN_DISTRACTED') return {
+    kind: 'DISTRACT',
+    direction: matching[0]?.incomingDirection,
+    robotStaging: matching[0]?.stagingPosition,
+    entities: matching.map(entity => ({
+      id: entity.id,
+      from: entity.position,
+      to: entity.distractPosition,
+      reactionLeft: entity.distractReactionLeft,
+      reactionRight: entity.distractReactionRight,
+    })),
+  };
   return undefined;
 }
 
@@ -357,6 +413,7 @@ export function applyRuntimePresentationCommand(
     entities,
     openDoors: [...state.openDoors],
     securityLockOpen: state.securityLockOpen,
+    coreState: state.coreState,
   };
   const matching = Object.values(entities).filter(entity => entity.zoneId === command.location);
 
@@ -384,6 +441,12 @@ export function applyRuntimePresentationCommand(
   if (command.change === 'VILLAIN_FORCE_PASSED') {
     for (const entity of matching) entity.position = entity.forcePassPosition;
   }
+  if (command.change === 'VILLAIN_DISTRACTED') {
+    for (const entity of matching) {
+      entity.position = entity.distractPosition;
+      entity.blocking = false;
+    }
+  }
   if (command.change === 'VILLAIN_NEUTRALIZED') {
     for (const entity of matching) {
       entity.position = entity.clearedPosition;
@@ -403,6 +466,7 @@ export function applyRuntimePresentationCommand(
   }
   if (command.change === 'F5_DOOR_OPEN' && command.room && !next.openDoors.includes(command.room)) next.openDoors.push(command.room);
   if (command.change === 'SECURITY_LOCK_OPEN') next.securityLockOpen = true;
+  if (command.change === 'SYSTEM_RESTORED') next.coreState = 'CORE_ON';
   return next;
 }
 

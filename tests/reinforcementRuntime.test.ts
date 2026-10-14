@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import { axisAlignedBounds, properties } from '../src/modules/reinforcement/debug/floor1Tiled.ts';
+import { axisAlignedBounds, decompressTileLayers, properties } from '../src/modules/reinforcement/debug/floor1Tiled.ts';
 import { episodeSeed } from '../src/modules/reinforcement/sim/learningEngine.ts';
 import { ACTUAL_GRAPH_FILE, ACTUAL_MAP_FILES, buildActualMapEnvironment } from '../src/modules/reinforcement/sim/actualMapEnvironment.ts';
 import { runActualMapProfile } from '../src/modules/reinforcement/sim/actualMapSimulation.ts';
@@ -24,7 +24,24 @@ import {
   entitiesForFloor,
   presentationMotionForCommand,
   resolveRuntimePublicPath,
+  setRuntimeCoreState,
 } from '../src/modules/reinforcement/runtime/runtimePresentation.ts';
+import {
+  forwardRejoinPolyline,
+  movementPathIsClear,
+  planDistractMovement,
+  planLocalMovement,
+  projectRouteProgress,
+  runtimeVisualFootprint,
+} from '../src/modules/reinforcement/runtime/runtimeMovement.ts';
+import {
+  RUNTIME_BASE_DISPLAY_HEIGHT,
+  RUNTIME_CHARACTER_SCALE,
+  RUNTIME_ENVIRONMENT_VISUAL_CONFIG,
+  RUNTIME_VISUAL_CONFIG,
+  planSecureEntrance,
+  runtimeSearchDoorTexture,
+} from '../src/modules/reinforcement/runtime/runtimeVisualConfig.ts';
 
 const readJson = (path: string) => JSON.parse(fs.readFileSync(path, 'utf8'));
 const mapSources = ACTUAL_MAP_FILES.map(readJson);
@@ -482,6 +499,286 @@ test('CLEAR is continuous, persists the obstacle, and BLOCKED preserves its coll
   const blockedObstacle = Object.values(blocked.entities).find(entity => entity.zoneId === clear.location)!;
   assert.equal(blockedObstacle.blocking, true);
   assert.deepEqual(blockedObstacle.position, blockedObstacle.originalPosition);
+});
+
+test('forward rejoin keeps persistent route progress monotonic after PUSH or CLEAR displacement', () => {
+  const route = [{ x: 0, y: 100 }, { x: 200, y: 100 }];
+  let persistentProgress = 72;
+  for (const current of [{ x: 72, y: 132 }, { x: 96, y: 68 }]) {
+    const resumed = forwardRejoinPolyline(route, current, persistentProgress);
+    const projected = resumed.points.map(point => projectRouteProgress(route, point, persistentProgress).progress);
+    assert.ok(projected.every(progress => progress >= persistentProgress));
+    assert.ok(resumed.routeProgress >= persistentProgress);
+    persistentProgress = resumed.routeProgress;
+  }
+});
+
+test('Citizen and Tiger local avoidance detours around visual footprints and rejoins forward', () => {
+  const route = [{ x: 20, y: 100 }, { x: 220, y: 100 }];
+  const bounds = { x: 0, y: 0, width: 240, height: 200 };
+  for (const kind of ['CITIZEN', 'AMBIGUOUS'] as const) {
+    const blockers = [{ id: kind, point: { x: 120, y: 100 }, footprint: runtimeVisualFootprint(kind) }];
+    const planned = planLocalMovement(route, route[0], bounds, [], blockers);
+    assert.ok(planned.points.length > route.length, kind);
+    assert.equal(movementPathIsClear(planned.points, runtimeVisualFootprint('ROBOT'), bounds, [], blockers), true, kind);
+    assert.deepEqual(planned.points.at(-1), route.at(-1), kind);
+    const progress = planned.points.map(point => projectRouteProgress(route, point).progress);
+    assert.ok(progress.every((value, index) => index === 0 || value + 0.001 >= progress[index - 1]), kind);
+  }
+});
+
+test('local avoidance selects a collision-free side and never crosses a static wall', () => {
+  const route = [{ x: 20, y: 100 }, { x: 220, y: 100 }];
+  const bounds = { x: 0, y: 0, width: 240, height: 200 };
+  const walls = [{ x: 70, y: 108, width: 100, height: 60 }];
+  const blockers = [{ id: 'citizen', point: { x: 120, y: 100 }, footprint: runtimeVisualFootprint('CITIZEN') }];
+  const planned = planLocalMovement(route, route[0], bounds, walls, blockers);
+  assert.equal(movementPathIsClear(planned.points, runtimeVisualFootprint('ROBOT'), bounds, walls, blockers), true);
+  assert.ok(planned.points.slice(1, -1).some(point => point.y < route[0].y));
+});
+
+test('DISTRACT PASS animates Robot and both Villains, opens the lane, and rejoins forward', () => {
+  const option = environment.contexts.flatMap(context => context.options).find(candidate =>
+    candidate.encounterZoneIds.some(id => {
+      const candidateZone = environment.zones.find(zone => zone.id === id);
+      return candidateZone?.kind === 'VILLAIN_ENCOUNTER' && candidateZone.villainCount === 2;
+    }))!;
+  const zone = option.encounterZoneIds.map(id => environment.zones.find(candidate => candidate.id === id)!)
+    .find(candidate => candidate.kind === 'VILLAIN_ENCOUNTER' && candidate.villainCount === 2)!;
+  const routeTemplate = structuredClone(episode.actionHistory.find(action => action.state === 'ROUTE_CHOICE')!);
+  const villainTemplate = structuredClone(episode.actionHistory.find(action => action.state === 'VILLAIN_ENCOUNTER')!);
+  const syntheticEpisode = structuredClone(episode);
+  syntheticEpisode.actionHistory = [
+    { ...routeTemplate, action: option.action, location: option.id, routeContext: option.contextId, routeOptions: [option.action], elapsedCost: 1, immediateEvents: [], localOutcome: 'MOVING' },
+    { ...villainTemplate, action: 'DISTRACT', location: zone.id, elapsedCost: 1, immediateEvents: [], localOutcome: 'PASS' },
+  ];
+  syntheticEpisode.elapsedTime = 2;
+  syntheticEpisode.actual.reachedFloors = [option.floor];
+  const replay = createRuntimeCommands(environment, syntheticEpisode, seed);
+  const distract = replay.find(command => command.type === 'STATE_CHANGE' && command.change === 'VILLAIN_DISTRACTED');
+  assert.ok(distract);
+  const initial = createRuntimePresentation(replay, mapSources);
+  const motion = presentationMotionForCommand(initial, distract);
+  assert.equal(motion?.kind, 'DISTRACT');
+  assert.equal(motion?.entities.length, 2);
+  assert.ok(motion?.entities.every(entity => entity.reactionLeft && entity.reactionRight));
+  for (const entity of motion!.entities) {
+    assert.ok(entity.reactionLeft!.x < entity.from.x);
+    assert.ok(entity.reactionRight!.x > entity.from.x);
+  }
+
+  const map = mapSources[distract.floor - 1];
+  const walls = map.layers.find(layer => layer.name === 'Collision')!.objects!
+    .filter(object => properties(object).blocksRobot !== false && object.width > 0 && object.height > 0)
+    .map(axisAlignedBounds);
+  const bounds = { x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight };
+  const robotPlan = planDistractMovement(motion!.robotStaging!, bounds, walls);
+  assert.deepEqual(robotPlan.points[0], motion!.robotStaging);
+  assert.deepEqual(robotPlan.points.at(-1), motion!.robotStaging);
+  assert.deepEqual(robotPlan.points.slice(1).map((point, index) => directionForSegment(robotPlan.points[index], point)), ['LEFT', 'RIGHT', 'LEFT']);
+  assert.ok(robotPlan.distance > 0 && robotPlan.distance <= 24);
+  assert.equal(movementPathIsClear(robotPlan.points, runtimeVisualFootprint('ROBOT'), bounds, walls), true);
+  const duration = (robotPlan.points.length - 1) * RUNTIME_VISUAL_CONFIG.distractSideDurationMs
+    + RUNTIME_VISUAL_CONFIG.distractFinalDurationMs;
+  assert.ok(duration >= 800 && duration <= 1500);
+
+  const next = applyRuntimePresentationCommand(initial, distract);
+  const moved = Object.values(next.entities).filter(entity => entity.zoneId === zone.id);
+  assert.equal(moved.length, 2);
+  for (const entity of moved) {
+    const distance = Math.hypot(entity.position.x - entity.originalPosition.x, entity.position.y - entity.originalPosition.y);
+    assert.ok(distance >= 16 - 0.001 && distance <= 32 + 0.001);
+    assert.equal(entity.visualState, 'NORMAL');
+    assert.equal(entity.blocking, false);
+  }
+  const normal = { x: -moved[0].incomingDirection.y, y: moved[0].incomingDirection.x };
+  const sides = moved.map(entity => Math.sign((entity.position.x - entity.routePosition.x) * normal.x
+    + (entity.position.y - entity.routePosition.y) * normal.y));
+  assert.deepEqual([...sides].sort(), [-1, 1]);
+  const forward = forwardRejoinPolyline([{ x: 0, y: 100 }, { x: 200, y: 100 }], { x: 80, y: 100 }, 80);
+  assert.ok(forward.routeProgress >= 80);
+  assert.deepEqual(forward.points[0], { x: 80, y: 100 });
+});
+
+test('DISTRACT presentation is success-only, supports one Villain, and does not affect other actions', () => {
+  const floor5Start = commands.find(command => command.type === 'ENCOUNTER'
+    && command.phase === 'START' && command.encounter === 'VILLAIN_ENCOUNTER' && command.floor === 5)!;
+  const stateChange = { type: 'STATE_CHANGE', floor: 5, simulationTime: 0, change: 'VILLAIN_DISTRACTED', location: floor5Start.zoneId } as const;
+  const oneVillain = createRuntimePresentation([floor5Start], mapSources);
+  const oneMotion = presentationMotionForCommand(oneVillain, stateChange);
+  assert.equal(oneMotion?.kind, 'DISTRACT');
+  assert.equal(oneMotion?.entities.length, 1);
+  assert.notDeepEqual(oneMotion!.entities[0].to, oneMotion!.entities[0].from);
+  const oneEntity = Object.values(applyRuntimePresentationCommand(oneVillain, stateChange).entities)[0];
+  const oneDistance = Math.hypot(oneEntity.position.x - oneEntity.originalPosition.x, oneEntity.position.y - oneEntity.originalPosition.y);
+  assert.ok(oneDistance >= 16 - 0.001 && oneDistance <= 32 + 0.001);
+  const oneNormal = { x: -oneEntity.incomingDirection.y, y: oneEntity.incomingDirection.x };
+  const perpendicular = Math.abs((oneEntity.position.x - oneEntity.routePosition.x) * oneNormal.x
+    + (oneEntity.position.y - oneEntity.routePosition.y) * oneNormal.y);
+  const villainFootprint = runtimeVisualFootprint('VILLAIN');
+  const robotFootprint = runtimeVisualFootprint('ROBOT');
+  const requiredLane = (Math.abs(oneNormal.x) * villainFootprint.width + Math.abs(oneNormal.y) * villainFootprint.height
+    + Math.abs(oneNormal.x) * robotFootprint.width + Math.abs(oneNormal.y) * robotFootprint.height) / 2;
+  assert.ok(perpendicular >= requiredLane);
+
+  const nonDistractChanges = ['VILLAIN_NEUTRALIZED', 'VILLAIN_FORCE_PASSED'] as const;
+  for (const change of nonDistractChanges) {
+    assert.notEqual(presentationMotionForCommand(oneVillain, { ...stateChange, change })?.kind, 'DISTRACT');
+  }
+
+  const routeTemplate = structuredClone(episode.actionHistory.find(action => action.state === 'ROUTE_CHOICE')!);
+  const villainTemplate = structuredClone(episode.actionHistory.find(action => action.state === 'VILLAIN_ENCOUNTER')!);
+  const option = environment.contexts.flatMap(context => context.options).find(candidate =>
+    candidate.encounterZoneIds.some(id => environment.zones.find(zone => zone.id === id)?.kind === 'VILLAIN_ENCOUNTER'))!;
+  const zone = option.encounterZoneIds.map(id => environment.zones.find(candidate => candidate.id === id)!)
+    .find(candidate => candidate.kind === 'VILLAIN_ENCOUNTER')!;
+  for (const [action, localOutcome, immediateEvents] of [
+    ['SUBDUE', 'PASS', []],
+    ['SUBDUE', 'ROBOT_DISABLED', ['ROBOT_DISABLED']],
+    ['FORCE_PASS', 'PASS', []],
+    ['RETREAT', 'RETREAT', []],
+    ['DISTRACT', 'BLOCKED', []],
+  ] as const) {
+    const syntheticEpisode = structuredClone(episode);
+    syntheticEpisode.actionHistory = [
+      { ...routeTemplate, action: option.action, location: option.id, routeContext: option.contextId, routeOptions: [option.action], elapsedCost: 1, immediateEvents: [], localOutcome: 'MOVING' },
+      { ...villainTemplate, action, location: zone.id, elapsedCost: 1, immediateEvents: [...immediateEvents], localOutcome },
+    ];
+    syntheticEpisode.elapsedTime = 2;
+    syntheticEpisode.actual.reachedFloors = [option.floor];
+    const replay = createRuntimeCommands(environment, syntheticEpisode, seed);
+    assert.equal(replay.some(command => command.type === 'STATE_CHANGE' && command.change === 'VILLAIN_DISTRACTED'), false, action);
+  }
+});
+
+test('DISTRACT Robot motion falls back to one safe side or no lateral motion in tight collision', () => {
+  const center = { x: 100, y: 100 };
+  const bounds = { x: 0, y: 0, width: 200, height: 200 };
+  const leftWall = { x: 70, y: 80, width: 21, height: 40 };
+  const oneSide = planDistractMovement(center, bounds, [leftWall]);
+  assert.deepEqual(oneSide.points, [center, { x: 116, y: 100 }, center]);
+  assert.equal(movementPathIsClear(oneSide.points, runtimeVisualFootprint('ROBOT'), bounds, [leftWall]), true);
+
+  const rightWall = { x: 109, y: 80, width: 21, height: 40 };
+  const blocked = planDistractMovement(center, bounds, [leftWall, rightWall]);
+  assert.equal(blocked.distance, 0);
+  assert.deepEqual(blocked.points, [center]);
+});
+
+test('runtime character scale ratios are centralized and neutralized characters keep the same display height', () => {
+  assert.equal(RUNTIME_CHARACTER_SCALE.ROBOT, 0.85);
+  assert.equal(RUNTIME_CHARACTER_SCALE.CITIZEN, 1.2);
+  assert.equal(RUNTIME_CHARACTER_SCALE.AMBIGUOUS, 1.2);
+  assert.equal(RUNTIME_CHARACTER_SCALE.VILLAIN, 1.2);
+  assert.equal(RUNTIME_CHARACTER_SCALE.BOSS, 1.2);
+  assert.equal(RUNTIME_VISUAL_CONFIG.robotDisplayHeight / RUNTIME_BASE_DISPLAY_HEIGHT.ROBOT, 0.85);
+  assert.equal(RUNTIME_VISUAL_CONFIG.citizenDisplayHeight / RUNTIME_BASE_DISPLAY_HEIGHT.CITIZEN, 1.2);
+  assert.equal(RUNTIME_VISUAL_CONFIG.ambiguousDisplayHeight / RUNTIME_BASE_DISPLAY_HEIGHT.AMBIGUOUS, 1.2);
+  assert.equal(RUNTIME_VISUAL_CONFIG.villainDisplayHeight / RUNTIME_BASE_DISPLAY_HEIGHT.VILLAIN, 1.2);
+  assert.equal(RUNTIME_VISUAL_CONFIG.bossDisplayHeight / RUNTIME_BASE_DISPLAY_HEIGHT.BOSS, 1.2);
+});
+
+test('F5 doors use explicit closed/open assets at frame size and Secure entrance repeats native tiles across the TMJ span', () => {
+  assert.equal(runtimeSearchDoorTexture(false), 'runtime-door-closed');
+  assert.equal(runtimeSearchDoorTexture(true), 'runtime-door-open');
+  assert.deepEqual(RUNTIME_ENVIRONMENT_VISUAL_CONFIG.searchDoor, { width: 64, height: 64 });
+
+  const collision = mapSources[4].layers.find(layer => layer.name === 'Collision')!.objects!;
+  const doors = collision.filter(object => properties(object).dynamicDoor === true);
+  assert.equal(doors.length, 4);
+  for (const door of doors) assert.deepEqual({ width: door.width, height: door.height }, { width: 64, height: 32 });
+
+  const lock = collision.find(object => properties(object).dynamicLock === true)!;
+  const tiles = planSecureEntrance(axisAlignedBounds(lock));
+  assert.deepEqual(tiles.map(tile => tile.texture), [
+    'runtime-secure-left',
+    'runtime-secure-glass',
+    'runtime-secure-glass',
+    'runtime-secure-glass',
+    'runtime-secure-glass',
+    'runtime-secure-right',
+  ]);
+  assert.ok(tiles.every(tile => tile.width === 32 && tile.height === 64));
+  assert.equal(tiles[0].x - tiles[0].width / 2, lock.x);
+  assert.equal(tiles.at(-1)!.x + tiles.at(-1)!.width / 2, lock.x + lock.width);
+  assert.ok(tiles.slice(1).every((tile, index) => tile.x - tile.width / 2 === tiles[index].x + tiles[index].width / 2));
+
+  const sceneSource = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
+  const gates = sceneSource.slice(sceneSource.indexOf('private createF5Gates'), sceneSource.indexOf('private execute'));
+  assert.match(gates, /runtimeSearchDoorTexture\(false\)/);
+  assert.match(gates, /runtimeSearchDoorTexture\(true\)/);
+  assert.match(gates, /collider\.body!\.enable = false/);
+  assert.doesNotMatch(gates, /RUNTIME_CHARACTER_SCALE|RUNTIME_VISUAL_CONFIG/);
+});
+
+test('Floor 5 Core keeps the authored placement and swaps only after the powered presentation state', async () => {
+  const map = await decompressTileLayers(mapSources[4]);
+  const manualReference = map.tilesets.find(reference => reference.source?.includes('floor5_room_shell_manual'))!;
+  const tilesetPath = path.resolve(path.dirname(ACTUAL_MAP_FILES[4]), manualReference.source!);
+  const tileset = readJson(tilesetPath);
+  const off = tileset.tiles.find((tile: { type: string }) => tile.type === 'F5_CORE');
+  const on = tileset.tiles.find((tile: { type: string }) => tile.type === 'F5_CORE_2');
+  assert.equal(off.image, 'F5_CORE.png');
+  assert.equal(on.image, 'F5_CORE_2.png');
+  assert.equal(fs.existsSync(path.resolve(path.dirname(tilesetPath), off.image)), true);
+  assert.equal(fs.existsSync(path.resolve(path.dirname(tilesetPath), on.image)), true);
+  assert.deepEqual({ width: off.imagewidth, height: off.imageheight }, { width: 64, height: 64 });
+  assert.deepEqual({ width: on.imagewidth, height: on.imageheight }, { width: 64, height: 64 });
+
+  const offGid = manualReference.firstgid + off.id;
+  const onGid = manualReference.firstgid + on.id;
+  const placements = map.layers.flatMap(layer => {
+    if (layer.type !== 'tilelayer' || !Array.isArray(layer.data)) return [];
+    return layer.data.flatMap((rawGid, cell) => (rawGid & 0x0fffffff) === offGid ? [{
+      layer: layer.name,
+      x: (cell % map.width) * map.tilewidth + off.imagewidth / 2,
+      y: Math.floor(cell / map.width) * map.tileheight + map.tileheight - off.imageheight / 2,
+    }] : []);
+  });
+  assert.deepEqual(placements, [
+    { layer: 'Ground', x: 1056, y: 128 },
+    { layer: 'Ground', x: 1280, y: 128 },
+    { layer: 'Ground', x: 1504, y: 128 },
+  ]);
+  assert.equal(map.layers.some(layer => layer.type === 'tilelayer' && Array.isArray(layer.data)
+    && layer.data.some(rawGid => (rawGid & 0x0fffffff) === onGid)), false);
+
+  const goal = map.layers.find(layer => layer.name === 'NavigationNodes')!.objects!
+    .find(object => properties(object).nodeId === 'F5_GOAL')!;
+  const selected = placements.reduce((nearest, candidate) =>
+    Math.hypot(candidate.x - goal.x, candidate.y - goal.y) < Math.hypot(nearest.x - goal.x, nearest.y - goal.y)
+      ? candidate : nearest);
+  assert.deepEqual(selected, { layer: 'Ground', x: 1280, y: 128 });
+});
+
+test('Core power-on state and timing hold the terminal command until the visual queue completes', () => {
+  const restoredIndex = commands.findIndex(command => command.type === 'STATE_CHANGE' && command.change === 'SYSTEM_RESTORED');
+  const terminalIndex = commands.findIndex(command => command.type === 'TERMINAL');
+  assert.ok(restoredIndex >= 0 && terminalIndex > restoredIndex);
+
+  const initial = createRuntimePresentation(commands, mapSources);
+  assert.equal(initial.coreState, 'CORE_OFF');
+  const beforeRestore = commands.slice(0, restoredIndex).reduce(applyRuntimePresentationCommand, initial);
+  assert.equal(beforeRestore.coreState, 'CORE_OFF');
+  const powering = setRuntimeCoreState(beforeRestore, 'CORE_POWERING');
+  assert.equal(powering.coreState, 'CORE_POWERING');
+  const powered = applyRuntimePresentationCommand(powering, commands[restoredIndex]);
+  assert.equal(powered.coreState, 'CORE_ON');
+  assert.equal(createRuntimePresentation(commands, mapSources).coreState, 'CORE_OFF');
+
+  assert.deepEqual(RUNTIME_VISUAL_CONFIG.corePowerOn, {
+    arrivalPauseMs: 500,
+    poweringMs: 850,
+    poweredHoldMs: 700,
+  });
+  assert.ok(RUNTIME_VISUAL_CONFIG.corePowerOn.poweringMs >= 700 && RUNTIME_VISUAL_CONFIG.corePowerOn.poweringMs <= 1000);
+  assert.ok(RUNTIME_VISUAL_CONFIG.corePowerOn.poweredHoldMs >= 700);
+
+  const sceneSource = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
+  const powerOn = sceneSource.slice(sceneSource.indexOf('private async animateCorePowerOn'), sceneSource.indexOf('private async animatePresentation'));
+  assert.match(powerOn, /arrivalPauseMs[\s\S]*CORE_POWERING[\s\S]*poweringMs[\s\S]*showPoweredCore\(true\)[\s\S]*poweredHoldMs/);
+  assert.match(sceneSource, /this\.paused \|\| this\.terminal \|\| this\.presentationBusy/);
+  assert.match(sceneSource, /animateCorePowerOn\(command\)[\s\S]*presentationBusy = false[\s\S]*nextCommandAt = this\.time\.now/);
 });
 
 test('visual planning does not mutate headless actions, outcomes, rewards, route length, or simulation time', () => {

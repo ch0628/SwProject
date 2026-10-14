@@ -82,25 +82,27 @@ export const RUNTIME_ASSETS = {
     CLOSED: '/assets/environment/reinforcement/floor5_room_shell_manual/F5_DOOR_CLOSE.png',
     OPEN: '/assets/environment/reinforcement/floor5_room_shell_manual/F5_DOOR_OPEN.png',
   },
+  F5_SECURE_ENTRANCE: {
+    LEFT: '/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE.png',
+    CENTER: '/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE_GLASS.png',
+    RIGHT: '/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE_2.png',
+  },
   F5_SECURITY_LOCK: {
     CLOSED: '/assets/environment/reinforcement/floor5_room_shell_manual/F5_SECURE_RIGHT.png',
     OPEN: '/assets/environment/reinforcement/floor5_room_shell_manual/F5_SECURE_RIGHT_2.png',
   },
+  F5_CORE: {
+    OFF: '/assets/environment/reinforcement/floor5_room_shell_manual/F5_CORE.png',
+    ON: '/assets/environment/reinforcement/floor5_room_shell_manual/F5_CORE_2.png',
+  },
 } as const;
 
-export const RUNTIME_VISUAL_CONFIG = {
-  animationFps: 9,
-  movementPixelsPerSecond: 420,
-  pushDurationMs: 380,
-  clearDurationMs: 320,
-  forcePassDurationMs: 280,
-  robotDisplayHeight: 72,
-  robotFootprint: { width: 20, height: 12 },
-  citizenDisplayHeight: 74,
-  ambiguousDisplayHeight: 80,
-  villainDisplayHeight: 82,
-  bossDisplayHeight: 96,
-} as const;
+export {
+  RUNTIME_CHARACTER_SCALE,
+  RUNTIME_BASE_DISPLAY_HEIGHT,
+  RUNTIME_ENVIRONMENT_VISUAL_CONFIG,
+  RUNTIME_VISUAL_CONFIG,
+} from './runtimeVisualConfig.ts';
 
 for (const direction of Object.keys(robot.walk) as RuntimeDirection[]) {
   if (robot.walk[direction].length !== 6) throw new Error(`Robot ${direction} walk must contain 6 frames`);
