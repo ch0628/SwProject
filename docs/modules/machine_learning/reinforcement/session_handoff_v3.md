@@ -773,3 +773,32 @@ Production Phaser movement/rendering
 ```
 
 순서로 진행한다.
+
+## Production Phaser Runtime Phase 1 — 2026-10-14
+
+현재 상태:
+
+```text
+Runtime Asset Registry
+= IMPLEMENTED
+
+Single Robot Production Runtime
+= IMPLEMENTED / USER_PLAYTEST_PENDING
+
+Actual polyline command replay
+= TESTED
+
+F1→F5 + F5 Boss/Lock/Control flow
+= IMPLEMENTED
+
+5-Robot Runtime Controller foundation
+= IMPLEMENTED
+```
+
+Debug entry:
+
+```text
+http://127.0.0.1:5173/?mode=reinforcement-runtime-debug&seed=2
+```
+
+검증 결과는 `validation/production_runtime_phase1_report.md`를 따른다. 전체 자동 테스트 `196/196`과 TypeScript typecheck는 PASS다. Vite production build는 코드 진단이 아니라 실행 환경의 Windows `realpath EPERM`으로 중단됐고, 브라우저 직접 검증은 Computer Use 승인 시간 초과 및 localhost socket 제한으로 `USER_MANUAL_PENDING`이다.

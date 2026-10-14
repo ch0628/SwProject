@@ -39,6 +39,7 @@ export type ActualEdge = {
   pixelLength: number;
   tileLength: number;
   simulationTime: number;
+  points: Array<{ x: number; y: number }>;
 };
 
 export type ActualEncounterZone = {
@@ -51,6 +52,8 @@ export type ActualEncounterZone = {
   villainCount?: 1 | 2;
   bypassAvailable: boolean;
   roomId?: F5Room;
+  x: number;
+  y: number;
 };
 
 export type ActualRouteOption = {
@@ -174,6 +177,7 @@ export function buildActualMapEnvironment(maps: readonly TiledMapJson[], graph: 
         id: String(values.edgeId ?? object.name), floor, from: String(values.from), to: String(values.to),
         routeId: values.route as string | undefined, availability: String(values.availability ?? 'ALWAYS'),
         pixelLength: tileLength * 32, tileLength, simulationTime: tileLength,
+        points: points.map(point => ({ x: object.x + point.x, y: object.y + point.y })),
       });
     }
     for (const object of transitionObjects) {
@@ -198,7 +202,7 @@ export function buildActualMapEnvironment(maps: readonly TiledMapJson[], graph: 
     if (!routeId) return undefined;
     return semanticRoutes.find(route => route.floor === floor && normalizeRoute(route.route) === normalizeRoute(routeId))?.traits;
   };
-  const zones: ActualEncounterZone[] = rawZones.map(({ values }) => {
+  const zones: ActualEncounterZone[] = rawZones.map(({ object, values }) => {
     const floor = Number(values.floor ?? (values.roomId ? 5 : 0));
     const routeId = values.route as string | undefined;
     const kind = String(values.encounterType ?? values.state) as EncounterKind;
@@ -212,6 +216,8 @@ export function buildActualMapEnvironment(maps: readonly TiledMapJson[], graph: 
       villainCount: values.villainCount as 1 | 2 | undefined,
       bypassAvailable: values.bypassAvailable === true,
       roomId: values.roomId as F5Room | undefined,
+      x: object.x + object.width / 2,
+      y: object.y + object.height / 2,
     };
   });
 

@@ -54,6 +54,7 @@ export type Policy = Record<DecisionState, Record<string, number>>;
 export type ActionExperience = {
   state: DecisionState;
   action: Action;
+  location?: string;
   elapsedCost: number;
   immediateEvents: EventType[];
   localOutcome: string;
