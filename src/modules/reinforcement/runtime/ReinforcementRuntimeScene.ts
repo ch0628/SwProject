@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import { BuildingTransitionGate } from '../debug/buildingTransitions.ts';
+import type { F5Room } from '../sim/actualMapEnvironment.ts';
 import {
   TILE_LAYERS,
   axisAlignedBounds,
@@ -22,9 +23,23 @@ import {
   entitiesForFloor,
   presentationMotionForCommand,
   resolveRuntimePublicPath,
+  setRuntimeCoreState,
   type RuntimePresentationState,
   type RuntimePresentedEntity,
 } from './runtimePresentation.ts';
+import {
+  planDistractMovement,
+  planLocalMovement,
+  projectRouteProgress,
+  runtimeVisualFootprint,
+  type RuntimeRect,
+  type RuntimeRouteCursor,
+} from './runtimeMovement.ts';
+import {
+  planSecureEntrance,
+  RUNTIME_ENVIRONMENT_VISUAL_CONFIG,
+  runtimeSearchDoorTexture,
+} from './runtimeVisualConfig.ts';
 
 type ManualTile = { id: number; class?: string; type?: string; image: string; imagewidth: number; imageheight: number };
 type ManualTileset = { tiles?: ManualTile[] };
@@ -39,21 +54,6 @@ const MAP_URLS = Array.from({ length: 5 }, (_, index) => `/maps/reinforcement/fl
 const LAYER_DEPTHS: Record<(typeof TILE_LAYERS)[number], number> = { Ground: 0, FloorDetail: 1, Walls: 2, StaticProps: 3, WallTop: 5 };
 const EVENT_DELAY = 420;
 
-const resumePolyline = (points: readonly RuntimePoint[], current: RuntimePoint): RuntimePoint[] => {
-  let best = { segment: 1, error: Number.POSITIVE_INFINITY };
-  for (let index = 1; index < points.length; index++) {
-    const from = points[index - 1];
-    const to = points[index];
-    const dx = to.x - from.x;
-    const dy = to.y - from.y;
-    const lengthSquared = dx * dx + dy * dy;
-    const ratio = lengthSquared ? Math.max(0, Math.min(1, ((current.x - from.x) * dx + (current.y - from.y) * dy) / lengthSquared)) : 0;
-    const error = Math.hypot(from.x + dx * ratio - current.x, from.y + dy * ratio - current.y);
-    if (error < best.error) best = { segment: index, error };
-  }
-  return [{ ...current }, ...points.slice(best.segment)];
-};
-
 export class ReinforcementRuntimeScene extends Phaser.Scene {
   private maps: TiledMapJson[];
   private commands: RuntimeCommand[];
@@ -67,14 +67,29 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   private paused = false;
   private terminal = false;
   private presentationBusy = false;
-  private resumeFromPresentation = false;
   private playbackSpeed = 1;
   private nextCommandAt = 0;
-  private move?: { command: Extract<RuntimeCommand, { type: 'MOVE' }>; points: RuntimePoint[]; index: number };
+  private move?: {
+    command: Extract<RuntimeCommand, { type: 'MOVE' }>;
+    points: RuntimePoint[];
+    macroPoints: RuntimePoint[];
+    progressBase: number;
+    index: number;
+  };
+  private routeCursor: RuntimeRouteCursor = { segment: 0, progress: 0, worldPosition: { x: 0, y: 0 } };
   private presentation: RuntimePresentationState;
   private entities = new Map<string, Phaser.GameObjects.Sprite | Phaser.Physics.Arcade.Image>();
   private doors = new Map<string, { visual: Phaser.GameObjects.Image; collider: Phaser.Physics.Arcade.Image }>();
-  private securityLock?: { visual: Phaser.GameObjects.Image; collider: Phaser.Physics.Arcade.Image };
+  private securityLock?: { collider: Phaser.Physics.Arcade.Image };
+  private core?: {
+    visual: Phaser.GameObjects.Image;
+    offTexture: string;
+    displayWidth: number;
+    displayHeight: number;
+    originX: number;
+    originY: number;
+    depth: number;
+  };
   private lastDirection: RuntimeDirection = 'DOWN';
   private transitionGate = new BuildingTransitionGate();
 
@@ -102,8 +117,10 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     Object.entries(RUNTIME_ASSETS.OBSTACLE).forEach(([key, url]) => loadImage(`runtime-obstacle-${key}`, url));
     loadImage('runtime-door-closed', RUNTIME_ASSETS.F5_SEARCH_DOOR.CLOSED);
     loadImage('runtime-door-open', RUNTIME_ASSETS.F5_SEARCH_DOOR.OPEN);
-    loadImage('runtime-lock-closed', RUNTIME_ASSETS.F5_SECURITY_LOCK.CLOSED);
-    loadImage('runtime-lock-open', RUNTIME_ASSETS.F5_SECURITY_LOCK.OPEN);
+    loadImage('runtime-secure-left', RUNTIME_ASSETS.F5_SECURE_ENTRANCE.LEFT);
+    loadImage('runtime-secure-glass', RUNTIME_ASSETS.F5_SECURE_ENTRANCE.CENTER);
+    loadImage('runtime-secure-right', RUNTIME_ASSETS.F5_SECURE_ENTRANCE.RIGHT);
+    loadImage('runtime-core-on', RUNTIME_ASSETS.F5_CORE.ON);
   }
 
   create() {
@@ -200,6 +217,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     this.entities.clear();
     this.doors.clear();
     this.securityLock = undefined;
+    this.core = undefined;
     this.robot?.destroy();
     this.robot = undefined;
   }
@@ -213,6 +231,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     const worldHeight = map.height * map.tileheight;
     this.floorObjects.push(this.add.rectangle(worldWidth / 2, worldHeight / 2, worldWidth, worldHeight, 0x101820).setDepth(-5));
     const tilesets = this.tilesets.get(floor)!;
+    const coreCandidates: Phaser.GameObjects.Image[] = [];
     for (const name of TILE_LAYERS) {
       const layer = map.layers.find(candidate => candidate.name === name && candidate.type === 'tilelayer');
       if (!layer || !Array.isArray(layer.data)) throw new Error(`Floor ${floor}: tile layer ${name} is unavailable`);
@@ -225,16 +244,36 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         if (!tile) throw new Error(`Floor ${floor}: tile gid ${gid.gid} is missing`);
         const cellX = (cell % map.width) * map.tilewidth;
         const cellY = Math.floor(cell / map.width) * map.tileheight;
-        this.floorObjects.push(this.add.image(cellX + tile.imagewidth / 2, cellY + map.tileheight - tile.imageheight / 2, tile.texture)
+        const visual = this.add.image(cellX + tile.imagewidth / 2, cellY + map.tileheight - tile.imageheight / 2, tile.texture)
           .setRotation(gid.rotation).setFlipX(gid.flipped).setAlpha(layer.opacity ?? 1)
-          .setDepth(LAYER_DEPTHS[name] + (tileset.manual && map.tilesets.length > 1 ? 6 : 0)));
+          .setDepth(LAYER_DEPTHS[name] + (tileset.manual && map.tilesets.length > 1 ? 6 : 0));
+        this.floorObjects.push(visual);
+        if (floor === 5 && tile.type === 'F5_CORE') coreCandidates.push(visual);
       });
     }
 
     const objects = (name: string) => map.layers.find(layer => layer.name === name)?.objects ?? [];
+    if (floor === 5) {
+      const goal = objects('NavigationNodes').find(object => properties(object).nodeId === 'F5_GOAL');
+      if (!goal || !coreCandidates.length) throw new Error('Floor 5: final Core visual is missing');
+      const visual = coreCandidates.reduce((nearest, candidate) =>
+        Phaser.Math.Distance.Between(candidate.x, candidate.y, goal.x, goal.y)
+          < Phaser.Math.Distance.Between(nearest.x, nearest.y, goal.x, goal.y) ? candidate : nearest);
+      this.core = {
+        visual,
+        offTexture: visual.texture.key,
+        displayWidth: visual.displayWidth,
+        displayHeight: visual.displayHeight,
+        originX: visual.originX,
+        originY: visual.originY,
+        depth: visual.depth,
+      };
+      this.showPoweredCore(this.presentation.coreState === 'CORE_ON');
+    }
     const spawn = objects('SpawnPoints').find(object => properties(object).spawnId === spawnId) ?? objects('SpawnPoints')[0];
     if (!spawn) throw new Error(`Floor ${floor}: spawn ${spawnId} is missing`);
     this.createRobot(spawn.x, spawn.y);
+    this.routeCursor = { ...this.routeCursor, edgeId: undefined, segment: 0, worldPosition: { x: spawn.x, y: spawn.y } };
     this.createCollision(objects('Collision'));
     if (floor === 5) this.createF5Gates(objects('Collision'));
     this.restoreFloorEntities(floor);
@@ -272,24 +311,24 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       if (values.dynamicDoor !== true && values.dynamicLock !== true) continue;
       const bounds = axisAlignedBounds(object);
       const isLock = values.dynamicLock === true;
-      const key = isLock ? 'runtime-lock-closed' : 'runtime-door-closed';
-      const visual = this.add.image(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2, key).setDepth(18);
-      visual.setDisplaySize(bounds.width, Math.max(bounds.height, 48));
       const collider = this.physics.add.staticImage(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2, 'runtime-collider').setVisible(false);
       collider.setDisplaySize(bounds.width, bounds.height).refreshBody();
       this.physics.add.collider(this.robot!, collider);
-      this.floorObjects.push(visual, collider);
       if (isLock) {
-        this.securityLock = { visual, collider };
-        if (this.presentation.securityLockOpen) {
-          visual.setTexture('runtime-lock-open');
-          collider.body!.enable = false;
-        }
+        const architecture = planSecureEntrance(bounds).map(tile => this.add.image(tile.x, tile.y, tile.texture)
+          .setOrigin(0.5, 1).setDisplaySize(tile.width, tile.height).setDepth(18));
+        this.floorObjects.push(...architecture, collider);
+        this.securityLock = { collider };
+        if (this.presentation.securityLockOpen) collider.body!.enable = false;
       } else {
+        const size = RUNTIME_ENVIRONMENT_VISUAL_CONFIG.searchDoor;
+        const visual = this.add.image(bounds.x + bounds.width / 2, bounds.y + bounds.height, runtimeSearchDoorTexture(false))
+          .setOrigin(0.5, 1).setDisplaySize(size.width, size.height).setDepth(18);
+        this.floorObjects.push(visual, collider);
         const room = String(values.roomId);
         this.doors.set(room, { visual, collider });
         if (this.presentation.openDoors.some(openRoom => openRoom === room)) {
-          visual.setTexture('runtime-door-open');
+          visual.setTexture(runtimeSearchDoorTexture(true));
           collider.body!.enable = false;
         }
       }
@@ -299,12 +338,18 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   private execute(command: RuntimeCommand, time: number) {
     this.emitStatus(this.describe(command), command.simulationTime);
     if (command.type === 'MOVE') {
-      const points = this.resumeFromPresentation && this.robot
-        ? resumePolyline(command.points, { x: this.robot.x, y: this.robot.y })
-        : command.points;
-      this.resumeFromPresentation = false;
-      this.move = { command, points, index: 1 };
-      if (this.robot && points.length && Phaser.Math.Distance.Between(this.robot.x, this.robot.y, points[0].x, points[0].y) > 3) this.robot.setPosition(points[0].x, points[0].y);
+      const current = { x: this.robot!.x, y: this.robot!.y };
+      const map = this.maps[command.floor - 1];
+      const bounds = { x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight };
+      const plan = planLocalMovement(command.points, current, bounds, this.movementWalls(command.floor), this.movementBlockers(command.floor));
+      const progressBase = this.routeCursor.progress;
+      this.routeCursor = {
+        edgeId: command.edgeIds[0],
+        segment: plan.segment,
+        progress: progressBase,
+        worldPosition: current,
+      };
+      this.move = { command, points: plan.points, macroPoints: command.points, progressBase, index: 1 };
       return;
     }
     if (command.type === 'ENCOUNTER') this.handleEncounter(command);
@@ -328,6 +373,9 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     if (!target) {
       this.robot.setVelocity(0, 0).anims.stop();
       this.robot.setTexture(`runtime-robot-idle-${this.lastDirection}`);
+      const total = projectRouteProgress(this.move.macroPoints, this.move.macroPoints.at(-1)!).total;
+      this.routeCursor.progress = Math.max(this.routeCursor.progress, this.move.progressBase + total);
+      this.routeCursor.worldPosition = { x: this.robot.x, y: this.robot.y };
       this.move = undefined;
       this.nextCommandAt = this.time.now + 80 / this.playbackSpeed;
       return;
@@ -344,7 +392,31 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       const direction = new Phaser.Math.Vector2(target.x - from.x, target.y - from.y).normalize().scale(RUNTIME_VISUAL_CONFIG.movementPixelsPerSecond * this.playbackSpeed);
       this.robot.setVelocity(direction.x, direction.y);
     }
+    const position = { x: this.robot.x, y: this.robot.y };
+    const projection = projectRouteProgress(this.move.macroPoints, position);
+    this.routeCursor.segment = projection.segment;
+    this.routeCursor.progress = Math.max(this.routeCursor.progress, this.move.progressBase + projection.progress);
+    this.routeCursor.worldPosition = position;
     this.robot.setDepth(this.robot.y + 20);
+  }
+
+  private movementWalls(floor: number): RuntimeRect[] {
+    const objects = this.maps[floor - 1].layers.find(layer => layer.name === 'Collision')?.objects ?? [];
+    return objects.filter(object => {
+      const values = properties(object);
+      if (values.blocksRobot === false || object.width <= 0 || object.height <= 0) return false;
+      if (values.dynamicLock === true) return !this.presentation.securityLockOpen;
+      if (values.dynamicDoor === true) return !this.presentation.openDoors.includes(String(values.roomId) as F5Room);
+      return true;
+    }).map(axisAlignedBounds);
+  }
+
+  private movementBlockers(floor: number) {
+    return entitiesForFloor(this.presentation, floor).map(entity => ({
+      id: entity.id,
+      point: entity.position,
+      footprint: runtimeVisualFootprint(entity.kind),
+    }));
   }
 
   private handleEncounter(command: Extract<RuntimeCommand, { type: 'ENCOUNTER' }>) {
@@ -352,6 +424,14 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   }
 
   private handleStateChange(command: Extract<RuntimeCommand, { type: 'STATE_CHANGE' }>) {
+    if (command.change === 'SYSTEM_RESTORED') {
+      this.presentationBusy = true;
+      void this.animateCorePowerOn(command).then(() => {
+        this.presentationBusy = false;
+        this.nextCommandAt = this.time.now;
+      });
+      return true;
+    }
     const motion = presentationMotionForCommand(this.presentation, command);
     if (motion?.entities.length) {
       this.presentationBusy = true;
@@ -368,12 +448,11 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     if (command.change === 'F5_DOOR_OPEN' && command.room) {
       const door = this.doors.get(command.room);
       if (door) {
-        door.visual.setTexture('runtime-door-open');
+        door.visual.setTexture(runtimeSearchDoorTexture(true));
         door.collider.body!.enable = false;
       }
     }
     if (command.change === 'SECURITY_LOCK_OPEN' && this.securityLock) {
-      this.securityLock.visual.setTexture('runtime-lock-open');
       this.securityLock.collider.body!.enable = false;
     }
     return false;
@@ -388,6 +467,35 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       ease: 'Sine.easeInOut',
       onComplete: () => resolve(),
     }));
+  }
+
+  private presentationDelay(duration: number) {
+    const timer = { progress: 0 };
+    return new Promise<void>(resolve => this.tweens.add({
+      targets: timer,
+      progress: 1,
+      duration: duration / this.playbackSpeed,
+      onComplete: () => resolve(),
+    }));
+  }
+
+  private showPoweredCore(powered: boolean) {
+    if (!this.core) return;
+    const { visual, offTexture, displayWidth, displayHeight, originX, originY, depth } = this.core;
+    visual.setTexture(powered ? 'runtime-core-on' : offTexture)
+      .setOrigin(originX, originY)
+      .setDisplaySize(displayWidth, displayHeight)
+      .setDepth(depth);
+  }
+
+  private async animateCorePowerOn(command: Extract<RuntimeCommand, { type: 'STATE_CHANGE' }>) {
+    const timing = RUNTIME_VISUAL_CONFIG.corePowerOn;
+    await this.presentationDelay(timing.arrivalPauseMs);
+    this.presentation = setRuntimeCoreState(this.presentation, 'CORE_POWERING');
+    await this.presentationDelay(timing.poweringMs);
+    this.presentation = applyRuntimePresentationCommand(this.presentation, command);
+    this.showPoweredCore(true);
+    await this.presentationDelay(timing.poweredHoldMs);
   }
 
   private async animatePresentation(motion: NonNullable<ReturnType<typeof presentationMotionForCommand>>) {
@@ -421,10 +529,40 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       await this.tweenTo(targets[0], entity.to, RUNTIME_VISUAL_CONFIG.pushDurationMs * 0.25);
       this.robot.anims.stop();
       this.robot.setTexture(`runtime-robot-idle-${this.lastDirection}`);
-      this.resumeFromPresentation = true;
       return;
     }
-    const duration = motion.kind === 'CLEAR' ? RUNTIME_VISUAL_CONFIG.clearDurationMs : RUNTIME_VISUAL_CONFIG.forcePassDurationMs;
+    if (motion.kind === 'DISTRACT' && this.robot) {
+      const center = { x: this.robot.x, y: this.robot.y };
+      const map = this.maps[this.floor - 1];
+      const bounds = { x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight };
+      const targetIds = new Set(motion.entities.map(entity => entity.id));
+      const blockers = entitiesForFloor(this.presentation, this.floor)
+        .filter(entity => entity.blocking && !targetIds.has(entity.id))
+        .map(entity => ({ id: entity.id, point: entity.position, footprint: runtimeVisualFootprint(entity.kind) }));
+      const plan = planDistractMovement(center, bounds, this.movementWalls(this.floor), blockers);
+      this.robot.setVelocity(0, 0).anims.stop();
+      for (const point of plan.points.slice(1)) {
+        const direction = directionForSegment({ x: this.robot.x, y: this.robot.y }, point);
+        this.lastDirection = direction;
+        this.robot.play(`runtime-robot-walk-${direction}`, true);
+        await Promise.all([
+          this.tweenTo(this.robot, point, RUNTIME_VISUAL_CONFIG.distractSideDurationMs),
+          ...motion.entities.map((entity, index) => this.tweenTo(
+            targets[index],
+            direction === 'LEFT' ? entity.reactionLeft! : entity.reactionRight!,
+            RUNTIME_VISUAL_CONFIG.distractSideDurationMs,
+          )),
+        ]);
+      }
+      this.robot.anims.stop();
+      this.robot.setPosition(center.x, center.y).setTexture(`runtime-robot-idle-${this.lastDirection}`);
+      await Promise.all(motion.entities.map((entity, index) =>
+        this.tweenTo(targets[index], entity.to, RUNTIME_VISUAL_CONFIG.distractFinalDurationMs)));
+      return;
+    }
+    const duration = motion.kind === 'CLEAR'
+      ? RUNTIME_VISUAL_CONFIG.clearDurationMs
+      : RUNTIME_VISUAL_CONFIG.forcePassDurationMs;
     await Promise.all(motion.entities.map((entity, index) => this.tweenTo(targets[index], entity.to, duration)));
   }
 
@@ -457,9 +595,11 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         body.refreshBody();
       } else if (entity.kind === 'BOSS') {
         sprite.setTexture(entity.visualState === 'NEUTRALIZED' ? 'runtime-boss-neutralized' : 'runtime-boss-DOWN');
+        this.scaleSprite(sprite, RUNTIME_VISUAL_CONFIG.bossDisplayHeight);
       } else if (entity.kind === 'VILLAIN' || entity.kind === 'GUARD') {
         const suffix = entity.visualState === 'NEUTRALIZED' ? 'neutralized' : 'DOWN';
         sprite.setTexture(`runtime-villain-${entity.variant ?? 1}-${suffix}`);
+        this.scaleSprite(sprite, RUNTIME_VISUAL_CONFIG.villainDisplayHeight);
       }
     }
   }
