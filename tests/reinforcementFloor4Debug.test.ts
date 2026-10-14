@@ -60,10 +60,12 @@ test('Floor 4 has no persistent route-semantic rectangle overlay', () => {
   assert.match(sceneSource, /collisionOverlay = .*\.setVisible\(false\)/);
 });
 
-test('Floor 4 manual tileset starts empty with the filename/Class contract', () => {
+test('Floor 4 manual tileset contains the approved 16 filename/Class entries', () => {
   const tileset = JSON.parse(readFileSync('public/assets/environment/reinforcement/floor4_room_shell_manual/floor4_room_shell_manual.tsj', 'utf8'));
   assert.equal(tileset.name, 'floor4_room_shell_manual');
   assert.deepEqual(tileset.grid, { height: 32, orientation: 'orthogonal', width: 32 });
-  assert.deepEqual(tileset.tiles, []);
-  assert.match(sceneSource, /const ASSET_IDS = \[\s*\/\/ Add each F4 PNG filename stem/);
+  assert.equal(tileset.tilecount, 16);
+  assert.equal(tileset.tiles.length, 16);
+  assert.equal(new Set(tileset.tiles.map((tile: { class?: string; type?: string }) => tile.class ?? tile.type)).size, 16);
+  assert.match(sceneSource, /'F4_CABINET'/);
 });

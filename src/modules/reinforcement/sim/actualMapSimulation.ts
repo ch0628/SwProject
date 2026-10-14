@@ -172,7 +172,7 @@ function simulateActualEpisode(
     elapsedTime += elapsedCost;
     for (const event of events) recordEvent(event, location, action);
     const experience: ActionExperience = {
-      state, action, elapsedCost, immediateEvents: events, localOutcome: outcome,
+      state, action, location, elapsedCost, immediateEvents: events, localOutcome: outcome,
       localReturn: state === 'ROUTE_CHOICE' ? 0 : calculateLocalReturn(state, elapsedCost, events, weights),
       actionCredit: 0,
     };
