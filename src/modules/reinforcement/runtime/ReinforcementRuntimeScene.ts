@@ -400,7 +400,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       this.move = { command, points: plan.points, macroPoints: command.points, progressBase, index: 1, lastDistance: Number.POSITIVE_INFINITY, stalledMs: 0 };
       return;
     }
-    if (command.type === 'ENCOUNTER') this.handleEncounter(command);
+    if (command.type === 'ENCOUNTER' && this.handleEncounter(command)) return;
     if (command.type === 'ACTION') {
       this.faceEncounter(command.zoneId);
       if (command.action === 'SUBDUE') {
@@ -415,6 +415,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       }
       if (command.state === 'OBSTACLE' && (command.action === 'PUSH' || command.action === 'CLEAR')) this.setRobotVisualState('WORK');
     }
+    if (command.type === 'OUTCOME' && this.handleOutcomeFeedback(command)) return;
     if (command.type === 'LOCAL_RETREAT' || command.type === 'LOCAL_BYPASS') {
       this.presentationBusy = true;
       void this.animateLocalMotion(command).then(() => {
@@ -553,15 +554,73 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     if (command.phase === 'START') {
       this.restoreFloorEntities(command.floor);
       this.faceEncounter(command.zoneId, command.position);
+      this.presentationBusy = true;
+      void this.animateEncounterFocus(command).then(() => {
+        this.presentationBusy = false;
+        this.nextCommandAt = this.time.now;
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
+      return true;
     }
+    return false;
+  }
+
+  private handleOutcomeFeedback(command: Extract<RuntimeCommand, { type: 'OUTCOME' }>) {
+    const isCitizen = command.state === 'CITIZEN_NEARBY'
+      || (command.state === 'AMBIGUOUS_PERSON' && (command.outcome.includes('CITIZEN') || command.events.some(event => event.includes('CITIZEN'))));
+    const isVillain = command.state === 'AMBIGUOUS_PERSON'
+      && (command.outcome.includes('VILLAIN') || command.events.some(event => event.includes('VILLAIN')));
+    if (!isCitizen && !isVillain) return false;
+    this.presentationBusy = true;
+    const target = this.encounterPosition(command.zoneId) ?? (this.robot ? { x: this.robot.x, y: this.robot.y - 30 } : { x: 0, y: 0 });
+    void this.showWorldCallout(isCitizen ? '시민이에요!' : '악당이에요!', target, isCitizen ? 0x69a879 : 0xc9685d, 520).then(() => {
+      this.presentationBusy = false;
+      this.nextCommandAt = this.time.now;
+      this.completeCommand(command);
+    }).catch(error => this.failRuntime(error));
+    return true;
   }
 
   private faceEncounter(zoneId: string, fallback?: RuntimePoint) {
     if (!this.robot) return;
-    const target = Object.values(this.presentation.entities).find(entity => entity.zoneId === zoneId && entity.visible)?.position ?? fallback;
+    const target = this.encounterPosition(zoneId) ?? fallback;
     if (!target) return;
     this.lastDirection = directionTowardTarget({ x: this.robot.x, y: this.robot.y }, target, this.lastDirection);
     this.showRobotVisual();
+  }
+
+  private encounterPosition(zoneId: string): RuntimePoint | undefined {
+    return Object.values(this.presentation.entities).find(entity => entity.zoneId === zoneId && entity.visible)?.position;
+  }
+
+  private reducedMotion() {
+    return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  private async animateEncounterFocus(command: Extract<RuntimeCommand, { type: 'ENCOUNTER' }>) {
+    const target = this.encounterPosition(command.zoneId) ?? command.position;
+    const color = command.encounter === 'CITIZEN_NEARBY' ? 0x69a879
+      : command.encounter === 'AMBIGUOUS_PERSON' ? 0xe0aa3e : 0xc9685d;
+    const indicator = this.add.circle(target.x, target.y - 18, 21, color, 0.08)
+      .setStrokeStyle(3, color, 0.9).setDepth(target.y + 60);
+    const question = command.encounter === 'AMBIGUOUS_PERSON'
+      ? this.add.text(target.x, target.y - 62, '?', { color: '#5b4620', backgroundColor: '#fff4c7', fontFamily: 'sans-serif', fontSize: '22px', fontStyle: 'bold', padding: { x: 8, y: 3 } })
+        .setOrigin(0.5).setDepth(target.y + 61)
+      : undefined;
+    if (!this.reducedMotion()) this.tweens.add({ targets: indicator, scale: 1.18, alpha: 0.45, duration: 260 / this.eventPlaybackSpeed, yoyo: true });
+    await this.presentationDelay(this.reducedMotion() ? 80 : 280);
+    indicator.destroy();
+    question?.destroy();
+  }
+
+  private async showWorldCallout(text: string, point: RuntimePoint, color: number, duration = 620) {
+    const callout = this.add.text(point.x, point.y - 62, text, {
+      color: '#2f2b26', backgroundColor: '#fffaf0', fontFamily: 'sans-serif', fontSize: '18px', fontStyle: 'bold',
+      padding: { x: 10, y: 6 }, stroke: `#${color.toString(16).padStart(6, '0')}`, strokeThickness: 1,
+    }).setOrigin(0.5).setDepth(point.y + 80);
+    if (!this.reducedMotion()) this.tweens.add({ targets: callout, y: callout.y - 6, duration: duration / this.eventPlaybackSpeed, ease: 'Sine.easeOut' });
+    await this.presentationDelay(this.reducedMotion() ? Math.min(duration, 180) : duration);
+    callout.destroy();
   }
 
   private handleStateChange(command: Extract<RuntimeCommand, { type: 'STATE_CHANGE' }>) {
@@ -570,8 +629,13 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       this.robot?.setVelocity(0, 0).anims.stop();
       this.robotVisualState = 'NEUTRALIZED';
       this.robot?.setTexture('runtime-robot-neutralized-DOWN');
-      void this.presentationDelay(RUNTIME_VISUAL_CONFIG.recoveryVisualMs).then(() => {
+      const recoveryPoint = command.position ?? (this.robot ? { x: this.robot.x, y: this.robot.y } : { x: 0, y: 0 });
+      void Promise.all([
+        this.presentationDelay(RUNTIME_VISUAL_CONFIG.recoveryVisualMs),
+        this.showWorldCallout('다시 일어나고 있어요...', recoveryPoint, 0x53799a, RUNTIME_VISUAL_CONFIG.recoveryVisualMs),
+      ]).then(() => {
         this.setRobotVisualState('COMBAT');
+        this.faceEncounter(command.location, command.position);
         this.presentationBusy = false;
         this.nextCommandAt = this.time.now;
         this.completeCommand(command);
@@ -591,6 +655,42 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       this.presentation = applyRuntimePresentationCommand(this.presentation, command);
       this.presentationBusy = true;
       void this.animateSecurityEntranceOpen().then(() => {
+        this.presentationBusy = false;
+        this.nextCommandAt = this.time.now;
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
+      return true;
+    }
+    if (command.change === 'BOSS_FOUND') {
+      this.presentation = applyRuntimePresentationCommand(this.presentation, command);
+      this.restoreFloorEntities(command.floor);
+      this.presentationBusy = true;
+      const point = command.position ?? this.encounterPosition(command.location) ?? { x: this.robot?.x ?? 0, y: this.robot?.y ?? 0 };
+      void this.animateBossReveal(point).then(() => {
+        this.presentationBusy = false;
+        this.nextCommandAt = this.time.now;
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
+      return true;
+    }
+    if (command.change === 'NO_BOSS') {
+      this.presentation = applyRuntimePresentationCommand(this.presentation, command);
+      this.restoreFloorEntities(command.floor);
+      this.presentationBusy = true;
+      const point = command.position ?? { x: this.robot?.x ?? 0, y: this.robot?.y ?? 0 };
+      void this.showWorldCallout('여기에는 보스가 없어요.', point, 0x6f7b83, 620).then(() => {
+        this.presentationBusy = false;
+        this.nextCommandAt = this.time.now;
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
+      return true;
+    }
+    if (command.change === 'BOSS_NEUTRALIZED') {
+      this.presentation = applyRuntimePresentationCommand(this.presentation, command);
+      this.restoreFloorEntities(command.floor);
+      this.presentationBusy = true;
+      const point = command.position ?? this.encounterPosition(command.location) ?? { x: this.robot?.x ?? 0, y: this.robot?.y ?? 0 };
+      void this.showWorldCallout('보스를 제압했어요!', point, 0x69a879, 720).then(() => {
         this.presentationBusy = false;
         this.nextCommandAt = this.time.now;
         this.completeCommand(command);
@@ -681,7 +781,24 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     this.robot?.setVelocity(0, 0);
     await this.presentationDelay(timing.unlockPauseMs);
     this.showSecurityEntranceOpen();
-    await this.presentationDelay(timing.openHoldMs);
+    if (!this.reducedMotion()) this.cameras.main.flash(130 / this.eventPlaybackSpeed, 255, 222, 116, false);
+    const point = this.securityLock ? { x: this.securityLock.collider.x, y: this.securityLock.collider.y } : { x: this.robot?.x ?? 0, y: this.robot?.y ?? 0 };
+    await Promise.all([
+      this.presentationDelay(timing.openHoldMs),
+      this.showWorldCallout('제어실로 가는 길이 열렸어요!', point, 0xe0aa3e, timing.openHoldMs),
+    ]);
+  }
+
+  private async animateBossReveal(point: RuntimePoint) {
+    this.robot?.setVelocity(0, 0);
+    const boss = Object.values(this.presentation.entities).find(entity => entity.kind === 'BOSS' && entity.visible);
+    if (boss) this.faceEncounter(boss.zoneId, boss.position);
+    if (!this.reducedMotion()) {
+      this.cameras.main.flash(140 / this.eventPlaybackSpeed, 255, 218, 150, false);
+      const sprite = boss ? this.entities.get(boss.id) : undefined;
+      if (sprite) this.tweens.add({ targets: sprite, alpha: { from: 0.25, to: 1 }, scaleX: sprite.scaleX * 1.06, scaleY: sprite.scaleY * 1.06, duration: 360 / this.eventPlaybackSpeed, yoyo: true });
+    }
+    await this.showWorldCallout('보스를 찾았어!', point, 0xc9685d, this.reducedMotion() ? 220 : 900);
   }
 
   private async animateSubdueAttempt(zoneId: string, repetitions: number) {
@@ -710,10 +827,34 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     this.robot.setVelocity(0, 0);
     for (let repetition = 0; repetition < repetitions; repetition++) {
       await this.tweenTo(this.robot, target, RUNTIME_VISUAL_CONFIG.subdueLunge.forwardMs);
+      this.animateImpact(encounter.position);
       await this.presentationDelay(RUNTIME_VISUAL_CONFIG.subdueLunge.impactHoldMs);
       await this.tweenTo(this.robot, start, RUNTIME_VISUAL_CONFIG.subdueLunge.returnMs);
+      if (repetitions > 1 && repetition === 0) await this.presentationDelay(this.reducedMotion() ? 30 : 120);
     }
     this.showRobotVisual();
+  }
+
+  private animateImpact(point: RuntimePoint) {
+    const flash = this.add.circle(point.x, point.y - 20, 8, 0xffd56a, 0.8).setDepth(point.y + 90);
+    this.tweens.add({
+      targets: flash, scale: this.reducedMotion() ? 1.25 : 2.2, alpha: 0,
+      duration: (this.reducedMotion() ? 70 : 120) / this.eventPlaybackSpeed,
+      onComplete: () => flash.destroy(),
+    });
+    if (!this.reducedMotion()) this.cameras.main.shake(70 / this.eventPlaybackSpeed, 0.0012);
+  }
+
+  private animateWorkParticles(point: RuntimePoint) {
+    if (this.reducedMotion()) return;
+    for (const [index, offset] of [-12, 0, 12].entries()) {
+      const particle = this.add.circle(point.x + offset, point.y - 16, 2.5, index === 1 ? 0xffd56a : 0xd7b689, 0.85).setDepth(point.y + 70);
+      this.tweens.add({
+        targets: particle, x: particle.x + offset * 0.5, y: particle.y - 12 - index * 3, alpha: 0,
+        duration: (260 + index * 50) / this.eventPlaybackSpeed,
+        onComplete: () => particle.destroy(),
+      });
+    }
   }
 
   private async animateLocalMotion(command: Extract<RuntimeCommand, { type: 'LOCAL_RETREAT' | 'LOCAL_BYPASS' }>) {
@@ -762,18 +903,26 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
 
   private async animateCorePowerOn(command: Extract<RuntimeCommand, { type: 'STATE_CHANGE' }>) {
     const timing = RUNTIME_VISUAL_CONFIG.corePowerOn;
+    this.setRobotVisualState('WORK');
     await this.presentationDelay(timing.arrivalPauseMs);
     this.presentation = setRuntimeCoreState(this.presentation, 'CORE_POWERING');
     await this.presentationDelay(timing.poweringMs);
     this.presentation = applyRuntimePresentationCommand(this.presentation, command);
     this.showPoweredCore(true);
-    await this.presentationDelay(timing.poweredHoldMs);
+    if (!this.reducedMotion()) this.cameras.main.flash(180 / this.eventPlaybackSpeed, 255, 232, 156, false);
+    const point = this.cores[0] ? { x: this.cores[0].visual.x, y: this.cores[0].visual.y } : { x: this.robot?.x ?? 0, y: this.robot?.y ?? 0 };
+    await Promise.all([
+      this.presentationDelay(timing.poweredHoldMs),
+      this.showWorldCallout('제어 시스템 복구 완료!', point, 0x69a879, timing.poweredHoldMs),
+    ]);
+    this.setRobotVisualState('NORMAL');
   }
 
   private async animatePresentation(motion: NonNullable<ReturnType<typeof presentationMotionForCommand>>) {
     const targets = motion.entities.map(entity => this.entities.get(entity.id))
       .filter((sprite): sprite is Phaser.GameObjects.Sprite | Phaser.Physics.Arcade.Image => Boolean(sprite));
     if (!targets.length) return;
+    if (motion.kind === 'PUSH' || motion.kind === 'CLEAR') this.animateWorkParticles({ x: targets[0].x, y: targets[0].y });
     if (motion.kind === 'PUSH' && this.robot && motion.direction) {
       const entity = motion.entities[0];
       const contact = motion.robotContact!;
@@ -846,7 +995,16 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     this.transitionGate.consume(null);
     const destination = this.transitionGate.consume(object);
     if (!destination || destination.targetFloor !== command.targetFloor || destination.targetSpawn !== command.targetSpawn) throw new Error(`Runtime transition ${command.transitionId} contract mismatch`);
+    const fadeMs = this.reducedMotion() ? 60 : 190;
+    this.cameras.main.fadeOut(fadeMs / this.eventPlaybackSpeed, 32, 29, 25);
+    await this.presentationDelay(fadeMs);
     await this.renderFloor(destination.targetFloor, destination.targetSpawn);
+    this.cameras.main.fadeIn(fadeMs / this.eventPlaybackSpeed, 32, 29, 25);
+    const floorPoint = this.robot ? { x: this.robot.x, y: this.robot.y } : { x: 0, y: 0 };
+    await Promise.all([
+      this.presentationDelay(fadeMs),
+      this.showWorldCallout(`${destination.targetFloor}층`, floorPoint, 0xe0aa3e, this.reducedMotion() ? 100 : 360),
+    ]);
     this.nextCommandAt = this.time.now + EVENT_DELAY / this.eventPlaybackSpeed;
   }
 

@@ -210,7 +210,7 @@ test('P: hidden rounds show status only while Phaser runtimes remain limited to 
   assert.deepEqual(OBSERVATION_ROUNDS, [1, 5, 10, 15, 20]);
   const app = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementTrainingApp.tsx', 'utf8');
   assert.match(app, /HEADLESS_LEARNING/);
-  assert.match(app, /다음 관찰을 위해 로봇들이 학습하고 있어요/);
+  assert.match(app, /로봇들이 경험을 정리하고 있어요/);
   assert.match(app, /requestAnimationFrame\(\(\) => requestAnimationFrame/);
   assert.doesNotMatch(app, /setTimeout/);
 });
