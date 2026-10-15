@@ -18,7 +18,7 @@ import type { RuntimeCommand } from './runtimeCommands.ts';
 import { failureReview, REWARD_LABELS, rewardAdvice, trainingLabel, WEIGHT_LEVEL_LABELS } from './trainingLabels.ts';
 
 type Phase = 'TUTORIAL' | 'SETTING' | 'PREPARING' | 'RUNTIME' | 'RESULT' | 'COMPLETE'
-  | 'ACTUAL_PREPARING' | 'ACTUAL_RUNTIME' | 'ACTUAL_RESULT';
+  | 'HEADLESS_LEARNING' | 'ACTUAL_PREPARING' | 'ACTUAL_RUNTIME' | 'ACTUAL_RESULT';
 type RuntimeStatus = { floor: number; trace: string; simulationTime: number; command?: RuntimeCommand };
 type TutorialTarget = 'start' | 'rewards' | 'runtime' | 'action' | 'results' | 'failure' | 'actual';
 
@@ -267,7 +267,11 @@ export function ReinforcementTrainingApp() {
     const active = controllerRef.current;
     if (!active) return;
     if (active.trainingComplete) { setReviewRobot(null); setPhase('COMPLETE'); return; }
-    active.nextRound(); setReviewRobot(null); setReadyRobots([]); setError(''); setVersion(value => value + 1); setPhase('PREPARING');
+    setReviewRobot(null); setReadyRobots([]); setError(''); setPhase('HEADLESS_LEARNING');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (controllerRef.current !== active) return;
+      active.nextRound(); setVersion(value => value + 1); setPhase('PREPARING');
+    }));
   };
   const startActualMission = () => {
     const active = controllerRef.current;
@@ -306,6 +310,9 @@ export function ReinforcementTrainingApp() {
   </div></main>;
 
   if (!controller) return <main className="reinforcement-training noto-font"><PreparationScreen ready={0} error={error} onBack={restart} /></main>;
+  if (phase === 'HEADLESS_LEARNING') return <main className="reinforcement-training noto-font"><section className="preparation-overlay" role="status">
+    <h1>다음 관찰을 위해 로봇들이 학습하고 있어요...</h1>
+  </section></main>;
   if (phase === 'COMPLETE') return <TrainingResult controller={controller} onActual={startActualMission} />;
 
   if (actualRobot && ['ACTUAL_PREPARING', 'ACTUAL_RUNTIME', 'ACTUAL_RESULT'].includes(phase)) return <main className="reinforcement-training actual-mission-screen noto-font" data-version={version}>

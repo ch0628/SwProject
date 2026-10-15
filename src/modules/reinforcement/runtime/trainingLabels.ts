@@ -54,7 +54,6 @@ const LABELS: Record<string, string> = {
   CLEAN_PASS: '안전하게 지나갔어요',
   SAFE_PASS: '안전하게 돌아갔어요',
   SAFE_BYPASS: '안전하게 피했어요',
-  RETREAT_TO_SEARCH: '다른 길을 찾아봤어요',
   BOSS_DISTRACTED: '보스의 주의를 돌렸어요',
 };
 
@@ -131,6 +130,8 @@ export const importantActionMessage = (command?: RuntimeCommand): string => {
   if (command.type === 'ACTION') return `${trainingLabel(command.action)} 행동을 하고 있어요!`;
   if (command.type === 'OUTCOME') return trainingLabel(command.outcome);
   if (command.type === 'STATE_CHANGE') return trainingLabel(command.change);
+  if (command.type === 'LOCAL_RETREAT') return '잠시 물러난 뒤 다시 판단하고 있어요!';
+  if (command.type === 'LOCAL_BYPASS') return '대상을 피해 안전하게 지나가고 있어요!';
   return command.reason === 'GOAL_REACHED' ? '임무를 성공했어요!' : terminalReasonSentence(command.reason);
 };
 

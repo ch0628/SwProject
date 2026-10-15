@@ -418,7 +418,10 @@ function simulateActualEpisode(
       if (transitionCount > 1 && !failedTransitions.has(transitionId)) {
         failedTransitions.add(transitionId);
         actual.failedTransitions.push(transitionId);
-        if (failedTransitions.size < transitionCount) {
+        const contextFailedCount = new Set(context?.options
+          .filter(candidate => failedTransitions.has(candidate.transitionId))
+          .map(candidate => candidate.transitionId) ?? []).size;
+        if (contextFailedCount < transitionCount) {
           actual.stairReroutes++;
           return 'REROUTE';
         }
@@ -434,6 +437,7 @@ function simulateActualEpisode(
   };
 
   const contextById = new Map(environment.contexts.map(context => [context.id, context]));
+  const contextAttempts = new Map<string, number>();
   let context: ActualRouteContext | undefined = contextById.get('F1_ENTRY_SPLIT');
   while (context && !terminalReason) {
     const eligibleOptions = context.options.filter(option => !failedTransitions.has(option.transitionId));
@@ -441,11 +445,14 @@ function simulateActualEpisode(
     const actions = candidateOptions.map(option => option.action);
     const action = chooseAction(policy, 'ROUTE_CHOICE', actions, random, epsilon) as ActualRouteOption['action'];
     const option = candidateOptions.find(candidate => candidate.action === action)!;
-    const movement = consumeMobilityDamage(option.movementTime, mobilityDamaged);
+    const fromDecision = (contextAttempts.get(context.id) ?? 0) > 0;
+    const movement = consumeMobilityDamage(fromDecision ? option.decisionMovementTime : option.movementTime, mobilityDamaged);
     mobilityDamaged = movement.mobilityDamaged;
     const routeExperience = recordAction('ROUTE_CHOICE', action, movement.elapsedCost, [], 'MOVING', option.id);
     routeExperience.routeContext = context.id;
+    routeExperience.routeStartNode = fromDecision ? option.decisionNodeId : option.startNodeId;
     routeExperience.routeOptions = actions;
+    contextAttempts.set(context.id, (contextAttempts.get(context.id) ?? 0) + 1);
     actual.routeChoices.push(option.id);
     if (terminalReason) break;
     let outcome: 'PASS' | 'RETREAT' | 'REROUTE' | 'TERMINAL' = 'PASS';
@@ -494,7 +501,7 @@ function simulateActualEpisode(
       continue;
     }
 
-    let distracted = false;
+    const distracted = false;
     const createBossEncounter = (): CombatEncounterDiagnostic => {
       const diagnostic: CombatEncounterDiagnostic = {
         enemyType: 'BOSS', zoneId: `F5_BOSS_${roomPath.room}`, attempts: 0, subdueFailures: 0,
@@ -509,8 +516,7 @@ function simulateActualEpisode(
     let bossHadSubdueFailure = false;
     while (!terminalReason && !actual.bossNeutralized) {
       const bossAction = chooseAction(policy, 'BOSS_ENCOUNTER', ACTIONS.BOSS_ENCOUNTER, random, epsilon) as (typeof ACTIONS.BOSS_ENCOUNTER)[number];
-      const retreatCost = environment.edges.find(edge => edge.id === roomPath.noBossReturnEdgeId)!.simulationTime + roomPath.movementTime;
-      const resolution = resolveBossEncounter(bossAction, random(), distracted, retreatCost, {
+      const resolution = resolveBossEncounter(bossAction, random(), distracted, {
         baseSubdueSuccess: parameters.bossSubdue,
         distractedSubdueSuccess: parameters.bossDistractedSubdue,
         combatSkill,
@@ -521,38 +527,31 @@ function simulateActualEpisode(
       });
       const bossExperience = recordAction('BOSS_ENCOUNTER', bossAction, resolution.elapsedCost, resolution.events, resolution.localOutcome, roomPath.room, resolution.robotDamageDelta);
       actual.bossActions++;
-      if (bossAction === 'SUBDUE') {
-        actual.subdueOpportunities++;
-        actual.subdueSelections++;
-        bossEncounter.attempts++;
-        bossEncounter.retryBonusTotal += bossRetryCombatBonus;
-        combatExperience += resolution.combatExperience ?? 0;
-        if (resolution.neutralized) {
-          actual.subdueSuccesses++;
-          actual.bossSuccesses++;
-          successfulNeutralizations++;
-          bossEncounter.firstAttemptSuccess = bossEncounter.attempts === 1;
-          bossEncounter.retrySuccess = bossEncounter.attempts > 1;
-          bossEncounter.finalNeutralization = true;
-          bossEncounter.recoveredThenNeutralized = bossHadSubdueFailure;
-          if (bossHadSubdueFailure) actual.recoveryNeutralizations++;
-        } else {
-          actual.bossFailures++;
-          if (resolution.subdueFailed) {
-            bossHadSubdueFailure = true;
-            bossEncounter.subdueFailures++;
-            actual.subdueFailureRecoveries++;
-            bossRetryCombatBonus = Math.min(
-              parameters.retryCombatBonusCap ?? 0.05,
-              bossRetryCombatBonus + (parameters.retryCombatBonusStep ?? 0.025),
-            );
-          }
-        }
+      actual.subdueOpportunities++;
+      actual.subdueSelections++;
+      bossEncounter.attempts++;
+      bossEncounter.retryBonusTotal += bossRetryCombatBonus;
+      combatExperience += resolution.combatExperience ?? 0;
+      if (resolution.neutralized) {
+        actual.subdueSuccesses++;
+        actual.bossSuccesses++;
+        successfulNeutralizations++;
+        bossEncounter.firstAttemptSuccess = bossEncounter.attempts === 1;
+        bossEncounter.retrySuccess = bossEncounter.attempts > 1;
+        bossEncounter.finalNeutralization = true;
+        bossEncounter.recoveredThenNeutralized = bossHadSubdueFailure;
+        if (bossHadSubdueFailure) actual.recoveryNeutralizations++;
       } else {
-        actual.f5Retreats++;
-        bossRetryCombatBonus = 0;
-        bossHadSubdueFailure = false;
-        if (!terminalReason) bossEncounter = createBossEncounter();
+        actual.bossFailures++;
+        if (resolution.subdueFailed) {
+          bossHadSubdueFailure = true;
+          bossEncounter.subdueFailures++;
+          actual.subdueFailureRecoveries++;
+          bossRetryCombatBonus = Math.min(
+            parameters.retryCombatBonusCap ?? 0.05,
+            bossRetryCombatBonus + (parameters.retryCombatBonusStep ?? 0.025),
+          );
+        }
       }
       if (terminalReason === 'ROBOT_DISABLED') bossEncounter.disabledCaused = true;
       if (resolution.neutralized) {

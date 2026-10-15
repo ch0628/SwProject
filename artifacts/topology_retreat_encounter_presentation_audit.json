@@ -1,0 +1,123 @@
+{
+  "generatedAt": "2026-10-16",
+  "purpose": "Topology-aware retreat and encounter presentation learning audit; no tuning performed",
+  "training": {
+    "seed": 42,
+    "rounds": 20,
+    "robotsPerRound": 5,
+    "rewardStars": {
+      "speed": 1,
+      "judgment": 3,
+      "threat": 2
+    },
+    "rewardWeights": {
+      "goal": 3,
+      "speed": 1,
+      "judgment": 5,
+      "threat": 2.5
+    },
+    "environment": "ACTUAL_ENVIRONMENT_PRODUCTION_V3"
+  },
+  "evaluation": {
+    "episodesPerCheckpoint": 500,
+    "exploration": 0,
+    "seedFormula": "100000 + checkpointRound * 1000 + evaluationIndex",
+    "checkpoints": [
+      {
+        "round": 1,
+        "evaluationEpisodes": 500,
+        "terminalCounts": {
+          "GOAL_REACHED": 85,
+          "TIMEOUT": 100,
+          "ROBOT_DISABLED": 268,
+          "MISUNDERSTANDING": 47
+        },
+        "goalRate": 0.17,
+        "averageSimulationTime": 586.8583036059993,
+        "averageRobotDamage": 0.7803599999999999,
+        "combatSkillSnapshot": 0.1322,
+        "subdueSuccessRate": 0.591095489162273,
+        "bossReachRate": 0.332,
+        "bossNeutralizationRate": 0.192,
+        "bossRetreatSelections": 0,
+        "bossNoBossReturnUsage": 0
+      },
+      {
+        "round": 5,
+        "evaluationEpisodes": 500,
+        "terminalCounts": {
+          "GOAL_REACHED": 183,
+          "TIMEOUT": 47,
+          "ROBOT_DISABLED": 237,
+          "MISUNDERSTANDING": 33
+        },
+        "goalRate": 0.366,
+        "averageSimulationTime": 548.4050656839993,
+        "averageRobotDamage": 0.7372800000000006,
+        "combatSkillSnapshot": 0.2722,
+        "subdueSuccessRate": 0.6737967914438503,
+        "bossReachRate": 0.482,
+        "bossNeutralizationRate": 0.388,
+        "bossRetreatSelections": 0,
+        "bossNoBossReturnUsage": 0
+      },
+      {
+        "round": 10,
+        "evaluationEpisodes": 500,
+        "terminalCounts": {
+          "GOAL_REACHED": 287,
+          "TIMEOUT": 8,
+          "ROBOT_DISABLED": 178,
+          "MISUNDERSTANDING": 27
+        },
+        "goalRate": 0.574,
+        "averageSimulationTime": 516.2897909899984,
+        "averageRobotDamage": 0.6819600000000007,
+        "combatSkillSnapshot": 0.44720000000000015,
+        "subdueSuccessRate": 0.7404526166902404,
+        "bossReachRate": 0.674,
+        "bossNeutralizationRate": 0.582,
+        "bossRetreatSelections": 0,
+        "bossNoBossReturnUsage": 0
+      },
+      {
+        "round": 15,
+        "evaluationEpisodes": 500,
+        "terminalCounts": {
+          "GOAL_REACHED": 375,
+          "TIMEOUT": 3,
+          "ROBOT_DISABLED": 102,
+          "MISUNDERSTANDING": 20
+        },
+        "goalRate": 0.75,
+        "averageSimulationTime": 529.8482262839976,
+        "averageRobotDamage": 0.5366199999999998,
+        "combatSkillSnapshot": 0.6222000000000003,
+        "subdueSuccessRate": 0.8267028330319469,
+        "bossReachRate": 0.848,
+        "bossNeutralizationRate": 0.758,
+        "bossRetreatSelections": 0,
+        "bossNoBossReturnUsage": 0
+      },
+      {
+        "round": 20,
+        "evaluationEpisodes": 500,
+        "terminalCounts": {
+          "GOAL_REACHED": 459,
+          "TIMEOUT": 0,
+          "ROBOT_DISABLED": 24,
+          "MISUNDERSTANDING": 17
+        },
+        "goalRate": 0.918,
+        "averageSimulationTime": 533.0808616239973,
+        "averageRobotDamage": 0.33899999999999963,
+        "combatSkillSnapshot": 0.7972000000000005,
+        "subdueSuccessRate": 0.9049200120736492,
+        "bossReachRate": 0.952,
+        "bossNeutralizationRate": 0.922,
+        "bossRetreatSelections": 0,
+        "bossNoBossReturnUsage": 0
+      }
+    ]
+  }
+}

@@ -13,6 +13,7 @@ import { RUNTIME_ASSETS, RUNTIME_VISUAL_CONFIG } from './runtimeAssets.ts';
 import {
   applyRuntimeCommand,
   directionForSegment,
+  directionTowardTarget,
   initialRuntimePlaybackState,
   RUNTIME_CONTACT_FOOTPRINTS,
   type RuntimeCommand,
@@ -32,6 +33,8 @@ import {
 } from './runtimePresentation.ts';
 import {
   movementPathIsClear,
+  planLocalBypass,
+  planLocalRetreat,
   planDistractMovement,
   planLocalMovement,
   projectRouteProgress,
@@ -107,7 +110,6 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     right: Phaser.GameObjects.Image;
   };
   private robotVisualState: RuntimeRobotVisualState = 'NORMAL';
-  private lastAction?: Extract<RuntimeCommand, { type: 'ACTION' }>;
   private cores: Array<{
     visual: Phaser.GameObjects.Image;
     offTexture: string;
@@ -400,8 +402,27 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     }
     if (command.type === 'ENCOUNTER') this.handleEncounter(command);
     if (command.type === 'ACTION') {
-      this.lastAction = command;
+      this.faceEncounter(command.zoneId);
+      if (command.action === 'SUBDUE') {
+        this.presentationBusy = true;
+        const repetitions = command.state === 'BOSS_ENCOUNTER' ? 2 : 1;
+        void this.animateSubdueAttempt(command.zoneId, repetitions).then(() => {
+          this.presentationBusy = false;
+          this.nextCommandAt = this.time.now;
+          this.completeCommand(command);
+        }).catch(error => this.failRuntime(error));
+        return;
+      }
       if (command.state === 'OBSTACLE' && (command.action === 'PUSH' || command.action === 'CLEAR')) this.setRobotVisualState('WORK');
+    }
+    if (command.type === 'LOCAL_RETREAT' || command.type === 'LOCAL_BYPASS') {
+      this.presentationBusy = true;
+      void this.animateLocalMotion(command).then(() => {
+        this.presentationBusy = false;
+        this.nextCommandAt = this.time.now;
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
+      return;
     }
     if (command.type === 'STATE_CHANGE' && this.handleStateChange(command)) return;
     if (command.type === 'FLOOR_TRANSITION') {
@@ -529,8 +550,18 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
 
   private handleEncounter(command: Extract<RuntimeCommand, { type: 'ENCOUNTER' }>) {
     this.setRobotVisualState(runtimeRobotEncounterState(command.phase, command.encounter));
-    if (command.phase === 'END') this.lastAction = undefined;
-    if (command.phase === 'START') this.restoreFloorEntities(command.floor);
+    if (command.phase === 'START') {
+      this.restoreFloorEntities(command.floor);
+      this.faceEncounter(command.zoneId, command.position);
+    }
+  }
+
+  private faceEncounter(zoneId: string, fallback?: RuntimePoint) {
+    if (!this.robot) return;
+    const target = Object.values(this.presentation.entities).find(entity => entity.zoneId === zoneId && entity.visible)?.position ?? fallback;
+    if (!target) return;
+    this.lastDirection = directionTowardTarget({ x: this.robot.x, y: this.robot.y }, target, this.lastDirection);
+    this.showRobotVisual();
   }
 
   private handleStateChange(command: Extract<RuntimeCommand, { type: 'STATE_CHANGE' }>) {
@@ -562,20 +593,6 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       void this.animateSecurityEntranceOpen().then(() => {
         this.presentationBusy = false;
         this.nextCommandAt = this.time.now;
-        this.completeCommand(command);
-      }).catch(error => this.failRuntime(error));
-      return true;
-    }
-    if (command.change === 'VILLAIN_NEUTRALIZED'
-      && this.lastAction?.zoneId === command.location
-      && this.lastAction.state === 'VILLAIN_ENCOUNTER'
-      && this.lastAction.action === 'SUBDUE') {
-      this.presentationBusy = true;
-      void this.animateSubdueLunge(command.location).then(() => {
-        this.presentation = applyRuntimePresentationCommand(this.presentation, command);
-        this.restoreFloorEntities(command.floor);
-        this.presentationBusy = false;
-        this.nextCommandAt = this.time.now + EVENT_DELAY / this.eventPlaybackSpeed;
         this.completeCommand(command);
       }).catch(error => this.failRuntime(error));
       return true;
@@ -667,21 +684,18 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     await this.presentationDelay(timing.openHoldMs);
   }
 
-  private async animateSubdueLunge(zoneId: string) {
+  private async animateSubdueAttempt(zoneId: string, repetitions: number) {
     if (!this.robot) return;
     const targets = Object.values(this.presentation.entities).filter(entity => entity.zoneId === zoneId);
     const encounter = targets[0];
     if (!encounter) return;
-    const length = Math.hypot(encounter.incomingDirection.x, encounter.incomingDirection.y) || 1;
-    const direction = {
-      x: encounter.incomingDirection.x / length,
-      y: encounter.incomingDirection.y / length,
-    };
     const start = { x: this.robot.x, y: this.robot.y };
-    const available = Math.max(0,
-      (encounter.contactPosition.x - start.x) * direction.x
-      + (encounter.contactPosition.y - start.y) * direction.y);
-    const maximum = Math.min(RUNTIME_VISUAL_CONFIG.subdueLunge.distance, available);
+    const length = Math.hypot(encounter.position.x - start.x, encounter.position.y - start.y) || 1;
+    const direction = {
+      x: (encounter.position.x - start.x) / length,
+      y: (encounter.position.y - start.y) / length,
+    };
+    const maximum = Math.min(RUNTIME_VISUAL_CONFIG.subdueLunge.distance, length);
     const map = this.maps[this.floor - 1];
     const bounds = { x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight };
     const targetIds = new Set(targets.map(entity => entity.id));
@@ -694,9 +708,42 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     this.lastDirection = directionForSegment({ x: 0, y: 0 }, direction);
     this.setRobotVisualState('COMBAT');
     this.robot.setVelocity(0, 0);
-    await this.tweenTo(this.robot, target, RUNTIME_VISUAL_CONFIG.subdueLunge.forwardMs);
-    await this.presentationDelay(RUNTIME_VISUAL_CONFIG.subdueLunge.impactHoldMs);
-    await this.tweenTo(this.robot, start, RUNTIME_VISUAL_CONFIG.subdueLunge.returnMs);
+    for (let repetition = 0; repetition < repetitions; repetition++) {
+      await this.tweenTo(this.robot, target, RUNTIME_VISUAL_CONFIG.subdueLunge.forwardMs);
+      await this.presentationDelay(RUNTIME_VISUAL_CONFIG.subdueLunge.impactHoldMs);
+      await this.tweenTo(this.robot, start, RUNTIME_VISUAL_CONFIG.subdueLunge.returnMs);
+    }
+    this.showRobotVisual();
+  }
+
+  private async animateLocalMotion(command: Extract<RuntimeCommand, { type: 'LOCAL_RETREAT' | 'LOCAL_BYPASS' }>) {
+    if (!this.robot) return;
+    const map = this.maps[command.floor - 1];
+    const bounds = { x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight };
+    const walls = this.movementWalls(command.floor);
+    const current = { x: this.robot.x, y: this.robot.y };
+    let points: RuntimePoint[];
+    if (command.type === 'LOCAL_RETREAT') {
+      const plan = planLocalRetreat(current, command.incomingDirection, command.distance, bounds, walls, this.movementBlockers(command.floor));
+      if (!plan.valid) throw new Error(`LOCAL_RETREAT ${command.commandId ?? '?'} has no collision-free path`);
+      points = plan.points;
+    } else {
+      const target = Object.values(this.presentation.entities).find(entity => entity.zoneId === command.zoneId);
+      if (!target) throw new Error(`LOCAL_BYPASS ${command.commandId ?? '?'} target is missing`);
+      const targetBlocker = { id: target.id, point: target.position, footprint: runtimeVisualFootprint(target.kind) };
+      const blockers = [...this.movementBlockers(command.floor).filter(blocker => blocker.id !== target.id), targetBlocker];
+      const plan = planLocalBypass(current, target.position, command.incomingDirection, targetBlocker.footprint, command.tileSize, bounds, walls, blockers);
+      if (!plan.valid) throw new Error(`LOCAL_BYPASS ${command.commandId ?? '?'} has no collision-free path`);
+      if (plan.side === 'RIGHT') this.traceCommand('LOCAL_BYPASS_FALLBACK_RIGHT', command);
+      points = plan.points;
+    }
+    this.robot.setVelocity(0, 0);
+    for (const [index, point] of points.slice(1).entries()) {
+      this.lastDirection = directionForSegment({ x: this.robot.x, y: this.robot.y }, point);
+      this.showRobotVisual();
+      await this.tweenTo(this.robot, point, 160);
+      if (command.type === 'LOCAL_RETREAT' && index === 0) await this.presentationDelay(120);
+    }
     this.showRobotVisual();
   }
 
@@ -968,6 +1015,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     if (command.type === 'MOVE') return `MOVE · ${command.edgeIds.join(' → ')}`;
     if (command.type === 'ACTION') return `ACTION → ${command.action}`;
     if (command.type === 'OUTCOME') return `OUTCOME → ${command.outcome}`;
+    if (command.type === 'LOCAL_RETREAT') return 'LOCAL RETREAT';
+    if (command.type === 'LOCAL_BYPASS') return 'LOCAL BYPASS';
     if (command.type === 'ENCOUNTER') return `${command.phase === 'START' ? command.encounter : 'ENCOUNTER END'}${command.villainCount ? ` ×${command.villainCount}` : ''}${command.stagingFallback ? ' · STAGING_FALLBACK' : ''}`;
     if (command.type === 'FLOOR_TRANSITION') return `TRANSITION → F${command.targetFloor}`;
     if (command.type === 'STATE_CHANGE') return command.change;

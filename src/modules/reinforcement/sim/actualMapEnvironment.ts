@@ -62,10 +62,13 @@ export type ActualRouteOption = {
   floor: number;
   contextId: string;
   startNodeId: string;
+  decisionNodeId: string;
   endNodeId: string;
   edgeIds: string[];
+  decisionEdgeIds: string[];
   encounterZoneIds: string[];
   movementTime: number;
+  decisionMovementTime: number;
   transitionId: string;
   targetFloor: number;
   targetSpawn: string;
@@ -76,6 +79,7 @@ export type ActualRouteContext = {
   id: string;
   floor: number;
   startNodeId: string;
+  decisionNodeId: string;
   options: ActualRouteOption[];
 };
 
@@ -226,7 +230,8 @@ export function buildActualMapEnvironment(maps: readonly TiledMapJson[], graph: 
   for (const [nodeId, node] of nodes) {
     if (node.floor === 5 || !node.contextId || seenContextIds.has(node.contextId) || (node.type !== 'ROUTE_CHOICE' && node.type !== 'DECISION')) continue;
     seenContextIds.add(node.contextId);
-    const startNodeId = node.floor === 1 ? spawns.find(spawn => spawn.floor === 1)!.nodeId : nodeId;
+    const decisionNodeId = nodeId;
+    const startNodeId = node.floor === 1 ? spawns.find(spawn => spawn.floor === 1)!.nodeId : decisionNodeId;
     const floorEdges = edges.filter(edge => edge.floor === node.floor);
     const routeIds = [...new Set(floorEdges.filter(edge => edge.from === startNodeId || edge.to === startNodeId).map(edge => edge.routeId).filter(Boolean))] as string[];
     const floorTransitions = transitions.filter(transition => transition.floor === node.floor);
@@ -245,17 +250,22 @@ export function buildActualMapEnvironment(maps: readonly TiledMapJson[], graph: 
       const endNodeId = [...path].reverse().map(edge => stairIds.has(edge.to) ? edge.to : stairIds.has(edge.from) ? edge.from : '').find(Boolean)!;
       const transition = floorTransitions.find(candidate => candidate.stairId === endNodeId);
       if (!transition) throw new Error(`${node.contextId}/${routeId}: transition is missing`);
+      const decisionPath = decisionNodeId === startNodeId
+        ? path
+        : shortestPath(decisionNodeId, id => stairIds.has(id), floorEdges, edge => edge.routeId === routeId);
+      if (!decisionPath) throw new Error(`${node.contextId}/${routeId}: no route from decision node ${decisionNodeId}`);
       const routeSet = new Set(path.map(edge => edge.routeId).filter(Boolean));
       const encounterZoneIds = zones.filter(zone => zone.floor === node.floor && zone.routeId && routeSet.has(zone.routeId)).map(zone => zone.id);
       return {
-        id: routeId, action: `ACTUAL_ROUTE:${routeId}` as const, floor: node.floor, contextId: node.contextId!, startNodeId,
-        endNodeId, edgeIds: path.map(edge => edge.id), encounterZoneIds,
+        id: routeId, action: `ACTUAL_ROUTE:${routeId}` as const, floor: node.floor, contextId: node.contextId!, startNodeId, decisionNodeId,
+        endNodeId, edgeIds: path.map(edge => edge.id), decisionEdgeIds: decisionPath.map(edge => edge.id), encounterZoneIds,
         movementTime: path.reduce((sum, edge) => sum + edge.simulationTime, 0),
+        decisionMovementTime: decisionPath.reduce((sum, edge) => sum + edge.simulationTime, 0),
         transitionId: transition.id, targetFloor: transition.targetFloor, targetSpawn: transition.targetSpawn,
         detourAvailable: routeIds.length > 1,
       };
     });
-    contexts.push({ id: node.contextId, floor: node.floor, startNodeId, options });
+    contexts.push({ id: node.contextId, floor: node.floor, startNodeId, decisionNodeId, options });
   }
   if (new Set(contexts.map(context => context.id)).size !== contexts.length) throw new Error('Duplicate Route Context id');
 

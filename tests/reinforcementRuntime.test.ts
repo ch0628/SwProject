@@ -99,11 +99,12 @@ test('runtime adapter deterministically replays only headless-selected decisions
 });
 
 test('TIMEOUT at an F5 route boundary emits no post-terminal MOVE and terminates once', () => {
-  const timedOut = runActualMapTraining(environment, PROFILES.BALANCED, 42, 5, 5).rounds[0].episodes[0];
+  const training = runActualMapTraining(environment, PROFILES.BALANCED, 42, 5, 5);
+  const round = training.rounds.find(candidate => candidate.episodes.some(result => result.terminalReason === 'TIMEOUT'))!;
+  const timedOut = round.episodes.find(result => result.terminalReason === 'TIMEOUT')!;
   assert.equal(timedOut.terminalReason, 'TIMEOUT');
-  assert.ok(timedOut.actionHistory.slice(-2).every(action => action.action === 'RETREAT'));
 
-  const replay = createRuntimeCommands(environment, timedOut, episodeSeed(42, 1, 1));
+  const replay = createRuntimeCommands(environment, timedOut, episodeSeed(42, round.round, timedOut.robot));
   assert.equal(replay.filter(command => command.type === 'TERMINAL').length, 1);
   assert.deepEqual(replay.at(-1), {
     type: 'TERMINAL',
@@ -122,13 +123,13 @@ test('TIMEOUT at an F5 route boundary emits no post-terminal MOVE and terminates
 
 test('near-boundary F5 timeout stops at the canonical security-lock state instead of visually reaching Goal', () => {
   const training = runActualMapTraining(environment, rewardWeightsFromStars({ speed: 1, judgment: 3, threat: 2 }), 1, 20, 5);
-  const timedOut = training.rounds[12].episodes[4];
-  assert.equal(episodeSeed(1, 13, 5), 2504776171);
+  const timedOut = training.rounds[8].episodes[4];
+  assert.equal(episodeSeed(1, 9, 5), 308917039);
   assert.equal(timedOut.terminalReason, 'TIMEOUT');
   assert.equal(timedOut.eventHistory.at(-1)?.location, 'F5_SECURITY_LOCK');
   assert.equal(timedOut.actual.systemRestored, false);
 
-  const replay = createRuntimeCommands(environment, timedOut, 2504776171);
+  const replay = createRuntimeCommands(environment, timedOut, episodeSeed(1, 9, 5));
   assert.equal(replay.some(command => command.type === 'STATE_CHANGE' && command.change === 'SYSTEM_RESTORED'), false);
   assert.equal(replay.some(command => command.type === 'MOVE' && command.edgeIds.includes('E_F5_CONTROL_GOAL')), false);
   assert.equal(replay.at(-1)?.type, 'TERMINAL');
@@ -843,8 +844,8 @@ test('successful Villain SUBDUE adds one collision-checked combat lunge without 
   const total = RUNTIME_VISUAL_CONFIG.subdueLunge.forwardMs + RUNTIME_VISUAL_CONFIG.subdueLunge.impactHoldMs + RUNTIME_VISUAL_CONFIG.subdueLunge.returnMs;
   assert.ok(total >= 300 && total <= 500);
   const sceneSource = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
-  assert.match(sceneSource, /lastAction\?\.zoneId === command\.location[\s\S]*lastAction\.state === 'VILLAIN_ENCOUNTER'[\s\S]*lastAction\.action === 'SUBDUE'/);
-  const lunge = sceneSource.slice(sceneSource.indexOf('private async animateSubdueLunge'), sceneSource.indexOf('private setRobotVisualState'));
+  assert.match(sceneSource, /command\.action === 'SUBDUE'[\s\S]*command\.state === 'BOSS_ENCOUNTER' \? 2 : 1[\s\S]*animateSubdueAttempt/);
+  const lunge = sceneSource.slice(sceneSource.indexOf('private async animateSubdueAttempt'), sceneSource.indexOf('private async animateLocalMotion'));
   assert.match(lunge, /movementPathIsClear/);
   assert.match(lunge, /setRobotVisualState\('COMBAT'\)[\s\S]*forwardMs[\s\S]*impactHoldMs[\s\S]*returnMs/);
   assert.doesNotMatch(lunge, /routeCursor|projectRouteProgress/);

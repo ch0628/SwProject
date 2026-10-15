@@ -26,7 +26,7 @@ const balanced = rewardWeightsFromStars(DEFAULT_REWARD_STARS);
 
 test('SUBDUE defeat adds recovery cost, damage and experience without directly disabling Robot', () => {
   const villain = resolveVillainEncounter(1, 'SUBDUE', 1, ACTUAL_ENVIRONMENT_PRODUCTION_V3);
-  const boss = resolveBossEncounter('SUBDUE', 1, false, 0, {
+  const boss = resolveBossEncounter('SUBDUE', 1, false, {
     baseSubdueSuccess: ACTUAL_ENVIRONMENT_PRODUCTION_V3.bossSubdue,
     subdueFailureDamage: ACTUAL_ENVIRONMENT_PRODUCTION_V3.subdueFailureDamage,
   });
@@ -46,8 +46,8 @@ test('local retry bonus changes Villain and Boss probability without changing gl
   assert.equal(resolveVillainEncounter(1, 'SUBDUE', 0.54, villainOptions).neutralized, false);
   assert.equal(resolveVillainEncounter(1, 'SUBDUE', 0.54, { ...villainOptions, retryCombatBonus: 0.05 }).neutralized, true);
   const bossOptions = { baseSubdueSuccess: 0.4, combatSkill: 0, combatSkillBonus: 0.45 };
-  assert.equal(resolveBossEncounter('SUBDUE', 0.44, false, 0, bossOptions).neutralized, false);
-  assert.equal(resolveBossEncounter('SUBDUE', 0.44, false, 0, { ...bossOptions, retryCombatBonus: 0.05 }).neutralized, true);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.44, false, bossOptions).neutralized, false);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.44, false, { ...bossOptions, retryCombatBonus: 0.05 }).neutralized, true);
 
   const run = runActualMapTraining(environment, balanced, 73, 3, 5);
   assert.ok(run.rounds.every(round => round.episodes.every(episode => episode.combatSkillSnapshot === round.combatSkillSnapshot)));

@@ -6,7 +6,7 @@ import { ACTUAL_GRAPH_FILE, ACTUAL_MAP_FILES, buildActualMapEnvironment } from '
 import { runActualMapTraining } from '../src/modules/reinforcement/sim/actualMapSimulation.ts';
 import { episodeSeed, rewardWeightsFromStars } from '../src/modules/reinforcement/sim/learningEngine.ts';
 import { createRuntimeCommands, type RuntimeCommand, type RuntimePoint } from '../src/modules/reinforcement/runtime/runtimeCommands.ts';
-import { planLocalMovement, runtimeVisualFootprint } from '../src/modules/reinforcement/runtime/runtimeMovement.ts';
+import { planLocalBypass, planLocalMovement, planLocalRetreat, runtimeVisualFootprint } from '../src/modules/reinforcement/runtime/runtimeMovement.ts';
 import {
   applyRuntimePresentationCommand,
   createRuntimePresentation,
@@ -62,6 +62,28 @@ const auditCommands = (commands: RuntimeCommand[]) => {
       }, activeWalls(floor, presentation.openDoors, presentation.securityLockOpen), blockers);
       assert.equal(plan.valid, true, `Runtime MOVE ${command.commandId} has no collision-free path`);
       position = command.points.at(-1)!;
+    } else if (command.type === 'LOCAL_RETREAT') {
+      const map = maps[floor - 1];
+      const plan = planLocalRetreat(position, command.incomingDirection, command.distance, {
+        x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight,
+      }, activeWalls(floor, presentation.openDoors, presentation.securityLockOpen));
+      assert.equal(plan.valid, true, `LOCAL_RETREAT ${command.commandId} has no collision-free path`);
+      position = plan.points.at(-1)!;
+    } else if (command.type === 'LOCAL_BYPASS') {
+      const map = maps[floor - 1];
+      const target = entitiesForFloor(presentation, floor).find(entity => entity.zoneId === command.zoneId)!;
+      const targetBlocker = { id: target.id, point: target.position, footprint: runtimeVisualFootprint(target.kind) };
+      const blockers = [
+        ...entitiesForFloor(presentation, floor).filter(entity => entity.blocking && entity.id !== target.id).map(entity => ({
+          id: entity.id, point: entity.position, footprint: runtimeVisualFootprint(entity.kind),
+        })),
+        targetBlocker,
+      ];
+      const plan = planLocalBypass(position, target.position, command.incomingDirection, targetBlocker.footprint, command.tileSize, {
+        x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight,
+      }, activeWalls(floor, presentation.openDoors, presentation.securityLockOpen), blockers);
+      assert.equal(plan.valid, true, `LOCAL_BYPASS ${command.commandId} has no collision-free path`);
+      position = plan.points.at(-1)!;
     } else if (command.type === 'STATE_CHANGE') {
       const motion = presentationMotionForCommand(presentation, command);
       if (motion?.kind === 'PUSH' && motion.robotPushTo) position = motion.robotPushTo;
@@ -75,8 +97,8 @@ const auditCommands = (commands: RuntimeCommand[]) => {
   }
 };
 
-test('production observation checkpoints and the former MOVE 64 reroute case have no runtime path or floor divergence', () => {
-  for (const roundNumber of [1, 4, 5, 10, 15, 20]) {
+test('all twenty production rounds have no runtime path or floor divergence', () => {
+  for (const roundNumber of Array.from({ length: 20 }, (_, index) => index + 1)) {
     const round = training.rounds[roundNumber - 1];
     for (const episode of round.episodes) {
       auditCommands(createRuntimeCommands(environment, episode, episodeSeed(42, roundNumber, episode.robot)));
@@ -84,7 +106,7 @@ test('production observation checkpoints and the former MOVE 64 reroute case hav
   }
 });
 
-test('Boss discovery keeps one room, recovery stays in-place, and retreat returns only to the same encounter staging', () => {
+test('Boss discovery keeps one room and SUBDUE recovery stays in-place until neutralization or terminal', () => {
   for (const round of training.rounds) for (const episode of round.episodes) {
     const commands = createRuntimeCommands(environment, episode, episodeSeed(42, round.round, episode.robot));
     let bossRoom: string | undefined;
@@ -111,7 +133,7 @@ test('Boss discovery keeps one room, recovery stays in-place, and retreat return
   }
 });
 
-test('F5 character encounters use same-x vertical staging and Boss retreat re-approaches that staging instead of its center', () => {
+test('F5 character encounters use same-x vertical staging before Guard and Boss actions', () => {
   for (const roundNumber of [1, 5, 10, 15, 20]) for (const episode of training.rounds[roundNumber - 1].episodes) {
     const commands = createRuntimeCommands(environment, episode, episodeSeed(42, roundNumber, episode.robot));
     for (const [index, command] of commands.entries()) {

@@ -58,6 +58,8 @@ export type RuntimeCommand =
     })
   | (RuntimeBase & { type: 'ACTION'; zoneId: string; state: Exclude<DecisionState, 'ROUTE_CHOICE'>; action: string })
   | (RuntimeBase & { type: 'OUTCOME'; zoneId: string; state: Exclude<DecisionState, 'ROUTE_CHOICE'>; outcome: string; events: EventType[] })
+  | (RuntimeBase & { type: 'LOCAL_RETREAT'; zoneId: string; stagingPosition: RuntimePoint; incomingDirection: RuntimePoint; distance: number })
+  | (RuntimeBase & { type: 'LOCAL_BYPASS'; zoneId: string; stagingPosition: RuntimePoint; targetPosition: RuntimePoint; incomingDirection: RuntimePoint; tileSize: number })
   | (RuntimeBase & { type: 'FLOOR_TRANSITION'; transitionId: string; targetFloor: number; targetSpawn: string })
   | (RuntimeBase & { type: 'STATE_CHANGE'; change: RuntimeStateChange; location: string; position?: RuntimePoint; room?: F5Room; villainVariant?: 1 | 2 | 3 | 4 })
   | (RuntimeBase & { type: 'TERMINAL'; reason: TerminalReason });
@@ -68,6 +70,14 @@ export const directionForSegment = (from: RuntimePoint, to: RuntimePoint): Runti
   if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0 ? 'RIGHT' : 'LEFT';
   return dy >= 0 ? 'DOWN' : 'UP';
 };
+
+export const directionTowardTarget = (
+  robot: RuntimePoint,
+  target: RuntimePoint,
+  fallback: RuntimeDirection = 'DOWN',
+): RuntimeDirection => Math.hypot(target.x - robot.x, target.y - robot.y) < 0.001
+  ? fallback
+  : directionForSegment(robot, target);
 
 const samePoint = (left: RuntimePoint, right: RuntimePoint) => left.x === right.x && left.y === right.y;
 
@@ -296,6 +306,9 @@ function actionCommands(
     const state = action.state as Exclude<DecisionState, 'ROUTE_CHOICE'>;
     commands.push({ type: 'ACTION', floor, simulationTime, zoneId: zone.id, state, action: action.action });
     commands.push({ type: 'OUTCOME', floor, simulationTime, zoneId: zone.id, state, outcome: action.localOutcome, events: [...action.immediateEvents] });
+    if ((floor === 2 || floor === 4) && zone.kind === 'VILLAIN_ENCOUNTER' && action.localOutcome === 'RETREAT' && !isTerminal(action.immediateEvents)) {
+      commands.push({ type: 'LOCAL_RETREAT', floor, simulationTime, zoneId: zone.id, stagingPosition: staging.stagingPosition, incomingDirection: staging.incomingDirection, distance: 32 });
+    }
     if (action.localOutcome === 'SUBDUE_RECOVERY' && !isTerminal(action.immediateEvents)) commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'ROBOT_RECOVERY', location: zone.id, position: base.position });
     if (action.localOutcome === 'OBSTACLE_CLEARED') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'OBSTACLE_CLEARED', location: zone.id, position: base.position });
     if (action.action === 'PUSH' && (action.localOutcome === 'CLEAN_PASS' || action.localOutcome === 'FACILITY_DAMAGE')) commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'OBSTACLE_PUSHED', location: zone.id, position: base.position });
@@ -305,7 +318,18 @@ function actionCommands(
     if (zone.kind === 'VILLAIN_ENCOUNTER' && action.action === 'FORCE_PASS' && (action.localOutcome === 'PASS' || action.localOutcome === 'MOBILITY_DAMAGE')) commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'VILLAIN_FORCE_PASSED', location: zone.id, position: base.position, villainVariant: variant });
     if (zone.kind === 'VILLAIN_ENCOUNTER' && action.action === 'DISTRACT' && action.localOutcome === 'PASS') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'VILLAIN_DISTRACTED', location: zone.id, position: base.position, villainVariant: variant });
   }
-  if (!actions.some(action => isTerminal(action.immediateEvents))) commands.push({ type: 'ENCOUNTER', phase: 'END', simulationTime: actionEndTimes.get(actions.at(-1)!) ?? 0, ...base });
+  if (!actions.some(action => isTerminal(action.immediateEvents))) {
+    const simulationTime = actionEndTimes.get(actions.at(-1)!) ?? 0;
+    commands.push({ type: 'ENCOUNTER', phase: 'END', simulationTime, ...base });
+    const lastAction = actions.at(-1);
+    if ((zone.kind === 'CITIZEN_NEARBY' || zone.kind === 'AMBIGUOUS_PERSON') && lastAction?.action !== 'SUBDUE') {
+      commands.push({
+        type: 'LOCAL_BYPASS', floor, simulationTime, zoneId: zone.id,
+        stagingPosition: staging.stagingPosition, targetPosition: base.position,
+        incomingDirection: staging.incomingDirection, tileSize: 32,
+      });
+    }
+  }
   return commands;
 }
 
@@ -399,12 +423,8 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
             commands.push({ type: 'ACTION', floor: 5, simulationTime: actionTime, zoneId: bossZone.id, state: 'BOSS_ENCOUNTER', action: action.action });
             commands.push({ type: 'OUTCOME', floor: 5, simulationTime: actionTime, zoneId: bossZone.id, state: 'BOSS_ENCOUNTER', outcome: action.localOutcome, events: [...action.immediateEvents] });
             if (action.localOutcome === 'SUBDUE_RECOVERY' && !isTerminal(action.immediateEvents)) commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: actionTime, change: 'ROBOT_RECOVERY', location: bossZone.id, position: roomPosition });
-            if (isTerminal(action.immediateEvents)) break;
-            if (action.localOutcome === 'RETREAT_TO_SEARCH') {
-              commands.push(...edgeCommand(environment, 5, roomPath.noBossReturnEdgeId, actionTime));
-              commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, 0, bossStaging.stagingDistance), actionTime));
-            }
             if (action.immediateEvents.includes('BOSS_NEUTRALIZED')) commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: actionTime, change: 'BOSS_NEUTRALIZED', location: room, room, position: roomPosition });
+            if (isTerminal(action.immediateEvents)) break;
           }
           if (!bossActions.some(action => isTerminal(action.immediateEvents))) commands.push({ type: 'ENCOUNTER', phase: 'END', simulationTime: actionEndTimes.get(bossActions.at(-1)!) ?? routeTime, ...bossBase });
         }
@@ -451,7 +471,11 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
 
     const option = environment.contexts.flatMap(context => context.options).find(candidate => candidate.action === route.action && candidate.contextId === route.routeContext);
     if (!option) throw new Error(`Runtime adapter: route ${route.action} in ${String(route.routeContext)} is missing`);
-    const path = orientedPath(environment, option.edgeIds, option.startNodeId).points;
+    const routeFromDecision = route.routeStartNode === option.decisionNodeId && option.decisionNodeId !== option.startNodeId;
+    const routeEdgeIds = routeFromDecision ? option.decisionEdgeIds : option.edgeIds;
+    const routeStartNode = routeFromDecision ? option.decisionNodeId : option.startNodeId;
+    const path = orientedPath(environment, routeEdgeIds, routeStartNode).points;
+    const decisionPath = orientedPath(environment, option.decisionEdgeIds, option.decisionNodeId).points;
     const zoneActions = new Map<string, ActionExperience[]>();
     for (const action of followups) {
       if (!action.location) continue;
@@ -480,7 +504,7 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
     let travelled = 0;
     let stopped = false;
     for (const stop of stops) {
-      commands.push(...moveCommand(option.floor, option.edgeIds, pathBetween(path, travelled, stop.staging.stagingDistance), routeTime));
+      commands.push(...moveCommand(option.floor, routeEdgeIds, pathBetween(path, travelled, stop.staging.stagingDistance), routeTime));
       travelled = stop.staging.stagingDistance;
       commands.push(...actionCommands(option.floor, stop.zone, stop.actions, actionEndTimes, seed, stop.staging));
       if (stop.actions.some(action => isTerminal(action.immediateEvents))) {
@@ -488,7 +512,11 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
         break;
       }
       if (stop.actions.at(-1)?.localOutcome === 'RETREAT') {
-        commands.push(...moveCommand(option.floor, option.edgeIds, [...slicePath(path, 0, travelled)].reverse(), actionEndTimes.get(stop.actions.at(-1)!) ?? routeTime));
+        const current = stop.staging.stagingPosition;
+        const decisionDistance = projectDistance(decisionPath, current);
+        const reverse = [...slicePath(decisionPath, 0, decisionDistance)].reverse();
+        const retreat = appendDistinct([current], reverse[0] ?? current).concat(reverse.slice(1));
+        commands.push(...moveCommand(option.floor, option.decisionEdgeIds, retreat, actionEndTimes.get(stop.actions.at(-1)!) ?? routeTime));
         stopped = true;
         break;
       }
@@ -496,11 +524,15 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
     const nextRoute = episode.actionHistory[next];
     const reroutingSameContext = nextRoute?.state === 'ROUTE_CHOICE' && nextRoute.routeContext === route.routeContext;
     if (!stopped && reroutingSameContext) {
-      commands.push(...moveCommand(option.floor, option.edgeIds, [...slicePath(path, 0, travelled)].reverse(), actionEndTimes.get(followups.at(-1)!) ?? routeTime));
+      const current = pointAt(path, pathMetrics(path), travelled);
+      const decisionDistance = projectDistance(decisionPath, current);
+      const reverse = [...slicePath(decisionPath, 0, decisionDistance)].reverse();
+      const retreat = appendDistinct([current], reverse[0] ?? current).concat(reverse.slice(1));
+      commands.push(...moveCommand(option.floor, option.decisionEdgeIds, retreat, actionEndTimes.get(followups.at(-1)!) ?? routeTime));
       stopped = true;
     }
     if (!stopped) {
-      commands.push(...moveCommand(option.floor, option.edgeIds, slicePath(path, travelled, pathMetrics(path).at(-1)!), routeTime));
+      commands.push(...moveCommand(option.floor, routeEdgeIds, slicePath(path, travelled, pathMetrics(path).at(-1)!), routeTime));
       commands.push({ type: 'FLOOR_TRANSITION', floor: option.floor, simulationTime: routeTime, transitionId: option.transitionId, targetFloor: option.targetFloor, targetSpawn: option.targetSpawn });
     }
     index = next;
