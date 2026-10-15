@@ -62,6 +62,9 @@ export type ActualEnvironmentParameters = {
   forcePassSuccessDamage?: number;
   forcePassFailureDamage?: number;
   subdueSuccessDamage?: number;
+  subdueFailureDamage?: number;
+  retryCombatBonusStep?: number;
+  retryCombatBonusCap?: number;
   fixedRobotDamageCost?: number;
   robotDisabledPenalty?: number;
 };
@@ -75,11 +78,14 @@ export const ACTUAL_ENVIRONMENT_PRODUCTION_V3: ActualEnvironmentParameters = {
   initialCombatSkill: 0.10,
   combatLearningRate: 0.035,
   maxCombatSkillBonus: 0.45,
-  distractSuccessDamage: 0.04,
-  distractFailureDamage: 0.12,
-  forcePassSuccessDamage: 0.18,
-  forcePassFailureDamage: 0.32,
-  subdueSuccessDamage: 0.02,
+  distractSuccessDamage: 0.01,
+  distractFailureDamage: 0.05,
+  forcePassSuccessDamage: 0.15,
+  forcePassFailureDamage: 0.25,
+  subdueSuccessDamage: 0.01,
+  subdueFailureDamage: 0.40,
+  retryCombatBonusStep: 0.025,
+  retryCombatBonusCap: 0.05,
   fixedRobotDamageCost: 0.8,
   robotDisabledPenalty: 2.5,
 };
@@ -90,6 +96,23 @@ export type VillainDiagnostic = {
   villainCount: 1 | 2;
   action: (typeof ACTIONS.VILLAIN_ENCOUNTER)[number];
   outcome: string;
+  subdueAttempt?: number;
+  retryCombatBonus?: number;
+};
+
+export type CombatEnemyType = 'VILLAIN_1' | 'VILLAIN_2' | 'F5_GUARD' | 'BOSS';
+
+export type CombatEncounterDiagnostic = {
+  enemyType: CombatEnemyType;
+  zoneId: string;
+  attempts: number;
+  subdueFailures: number;
+  firstAttemptSuccess: boolean;
+  retrySuccess: boolean;
+  finalNeutralization: boolean;
+  disabledCaused: boolean;
+  retryBonusTotal: number;
+  recoveredThenNeutralized: boolean;
 };
 
 export type ActualEpisodeMetrics = {
@@ -97,6 +120,7 @@ export type ActualEpisodeMetrics = {
   routeChoices: string[];
   encounterTriggers: Record<EncounterKind, number>;
   villainDiagnostics: VillainDiagnostic[];
+  combatEncounters: CombatEncounterDiagnostic[];
   obstacleActions: number;
   citizenActions: number;
   ambiguousActions: number;
@@ -113,6 +137,8 @@ export type ActualEpisodeMetrics = {
   subdueOpportunities: number;
   subdueSelections: number;
   subdueSuccesses: number;
+  subdueFailureRecoveries: number;
+  recoveryNeutralizations: number;
   distractSuccesses: number;
   distractFailures: number;
   forcePassSuccesses: number;
@@ -200,11 +226,11 @@ function simulateActualEpisode(
   const trackTime = new Map<string, number>();
   const snapshotSignature = JSON.stringify(policy);
   const actual: ActualEpisodeMetrics = {
-    reachedFloors: [1], routeChoices: [], encounterTriggers: { OBSTACLE: 0, CITIZEN_NEARBY: 0, AMBIGUOUS_PERSON: 0, VILLAIN_ENCOUNTER: 0 }, villainDiagnostics: [], obstacleActions: 0, citizenActions: 0,
+    reachedFloors: [1], routeChoices: [], encounterTriggers: { OBSTACLE: 0, CITIZEN_NEARBY: 0, AMBIGUOUS_PERSON: 0, VILLAIN_ENCOUNTER: 0 }, villainDiagnostics: [], combatEncounters: [], obstacleActions: 0, citizenActions: 0,
     ambiguousActions: 0, villainActions: 0, bossActions: 0, bossRoom,
     searchedRooms: [], roomsSearchedBeforeBoss: 0, guardNeutralizations: 0,
     bossNeutralized: false, controlRoomReached: false, systemRestored: false, hiddenBossExposedToPolicy: false,
-    subdueOpportunities: 0, subdueSelections: 0, subdueSuccesses: 0,
+    subdueOpportunities: 0, subdueSelections: 0, subdueSuccesses: 0, subdueFailureRecoveries: 0, recoveryNeutralizations: 0,
     distractSuccesses: 0, distractFailures: 0, forcePassSuccesses: 0, forcePassFailures: 0,
     stairReroutes: 0, localRetries: 0, repeatedSameStairLoops: 0, f5Retreats: 0,
     bossSuccesses: 0, bossFailures: 0, failedTransitions: [],
@@ -303,6 +329,19 @@ function simulateActualEpisode(
     }
 
     const roomGuard = zone.floor === 5;
+    const enemyType: CombatEnemyType = roomGuard ? 'F5_GUARD' : (zone.villainCount ?? 1) === 1 ? 'VILLAIN_1' : 'VILLAIN_2';
+    const createCombatEncounter = (): CombatEncounterDiagnostic => {
+      const diagnostic: CombatEncounterDiagnostic = {
+        enemyType, zoneId: zone.id, attempts: 0, subdueFailures: 0,
+        firstAttemptSuccess: false, retrySuccess: false, finalNeutralization: false,
+        disabledCaused: false, retryBonusTotal: 0, recoveredThenNeutralized: false,
+      };
+      actual.combatEncounters.push(diagnostic);
+      return diagnostic;
+    };
+    let combatEncounter = createCombatEncounter();
+    let retryCombatBonus = 0;
+    let hadSubdueFailure = false;
     actual.subdueOpportunities++;
     while (!terminalReason) {
       const available = roomGuard ? (['SUBDUE', 'RETREAT'] as const) : availableVillainActions(zone.bypassAvailable);
@@ -321,19 +360,42 @@ function simulateActualEpisode(
         forcePassSuccessDamage: parameters.forcePassSuccessDamage,
         forcePassFailureDamage: parameters.forcePassFailureDamage,
         subdueSuccessDamage: parameters.subdueSuccessDamage,
+        subdueFailureDamage: parameters.subdueFailureDamage,
+        retryCombatBonus,
       });
-      actual.villainDiagnostics.push({ zoneId: zone.id, villainCount: zone.villainCount ?? 1, action, outcome: resolution.localOutcome });
+      const subdueAttempt = action === 'SUBDUE' ? combatEncounter.attempts + 1 : undefined;
+      actual.villainDiagnostics.push({ zoneId: zone.id, villainCount: zone.villainCount ?? 1, action, outcome: resolution.localOutcome, subdueAttempt, retryCombatBonus: action === 'SUBDUE' ? retryCombatBonus : undefined });
       recordAction('VILLAIN_ENCOUNTER', action, resolution.elapsedCost, resolution.events, resolution.localOutcome, zone.id, resolution.robotDamageDelta);
       actual.villainActions++;
       if (action === 'SUBDUE') {
         actual.subdueSelections++;
+        combatEncounter.attempts++;
+        combatEncounter.retryBonusTotal += retryCombatBonus;
         combatExperience += resolution.combatExperience ?? 0;
-        if (resolution.neutralized) actual.subdueSuccesses++;
+        if (resolution.neutralized) {
+          actual.subdueSuccesses++;
+          combatEncounter.firstAttemptSuccess = combatEncounter.attempts === 1;
+          combatEncounter.retrySuccess = combatEncounter.attempts > 1;
+          combatEncounter.finalNeutralization = true;
+          combatEncounter.recoveredThenNeutralized = hadSubdueFailure;
+          if (hadSubdueFailure) actual.recoveryNeutralizations++;
+        } else if (resolution.subdueFailed) {
+          hadSubdueFailure = true;
+          combatEncounter.subdueFailures++;
+          actual.subdueFailureRecoveries++;
+          retryCombatBonus = Math.min(
+            parameters.retryCombatBonusCap ?? 0.05,
+            retryCombatBonus + (parameters.retryCombatBonusStep ?? 0.025),
+          );
+        }
       }
       if (action === 'DISTRACT') resolution.passed ? actual.distractSuccesses++ : actual.distractFailures++;
       if (action === 'FORCE_PASS') resolution.passed ? actual.forcePassSuccesses++ : actual.forcePassFailures++;
       mobilityDamaged ||= resolution.mobilityDamaged;
-      if (terminalReason) return 'TERMINAL';
+      if (terminalReason) {
+        combatEncounter.disabledCaused = terminalReason === 'ROBOT_DISABLED';
+        return 'TERMINAL';
+      }
       if (resolution.neutralized) {
         successfulNeutralizations++;
         handledZones.add(zone.id);
@@ -343,6 +405,10 @@ function simulateActualEpisode(
       if (action === 'RETREAT' && roomGuard) {
         actual.f5Retreats++;
         return 'RETREAT';
+      }
+      if (resolution.subdueFailed) {
+        actual.localRetries++;
+        continue;
       }
       if (roomGuard) continue;
       if (resolution.passed) return 'PASS';
@@ -358,6 +424,11 @@ function simulateActualEpisode(
         }
       }
       actual.localRetries++;
+      if (action === 'RETREAT') {
+        retryCombatBonus = 0;
+        hadSubdueFailure = false;
+        combatEncounter = createCombatEncounter();
+      }
     }
     return 'TERMINAL';
   };
@@ -424,6 +495,18 @@ function simulateActualEpisode(
     }
 
     let distracted = false;
+    const createBossEncounter = (): CombatEncounterDiagnostic => {
+      const diagnostic: CombatEncounterDiagnostic = {
+        enemyType: 'BOSS', zoneId: `F5_BOSS_${roomPath.room}`, attempts: 0, subdueFailures: 0,
+        firstAttemptSuccess: false, retrySuccess: false, finalNeutralization: false,
+        disabledCaused: false, retryBonusTotal: 0, recoveredThenNeutralized: false,
+      };
+      actual.combatEncounters.push(diagnostic);
+      return diagnostic;
+    };
+    let bossEncounter = createBossEncounter();
+    let bossRetryCombatBonus = 0;
+    let bossHadSubdueFailure = false;
     while (!terminalReason && !actual.bossNeutralized) {
       const bossAction = chooseAction(policy, 'BOSS_ENCOUNTER', ACTIONS.BOSS_ENCOUNTER, random, epsilon) as (typeof ACTIONS.BOSS_ENCOUNTER)[number];
       const retreatCost = environment.edges.find(edge => edge.id === roomPath.noBossReturnEdgeId)!.simulationTime + roomPath.movementTime;
@@ -433,21 +516,45 @@ function simulateActualEpisode(
         combatSkill,
         combatSkillBonus: parameters.maxCombatSkillBonus ?? 0,
         subdueSuccessDamage: parameters.subdueSuccessDamage,
+        subdueFailureDamage: parameters.subdueFailureDamage,
+        retryCombatBonus: bossRetryCombatBonus,
       });
       const bossExperience = recordAction('BOSS_ENCOUNTER', bossAction, resolution.elapsedCost, resolution.events, resolution.localOutcome, roomPath.room, resolution.robotDamageDelta);
       actual.bossActions++;
       if (bossAction === 'SUBDUE') {
         actual.subdueOpportunities++;
         actual.subdueSelections++;
+        bossEncounter.attempts++;
+        bossEncounter.retryBonusTotal += bossRetryCombatBonus;
         combatExperience += resolution.combatExperience ?? 0;
         if (resolution.neutralized) {
           actual.subdueSuccesses++;
           actual.bossSuccesses++;
           successfulNeutralizations++;
-        } else actual.bossFailures++;
+          bossEncounter.firstAttemptSuccess = bossEncounter.attempts === 1;
+          bossEncounter.retrySuccess = bossEncounter.attempts > 1;
+          bossEncounter.finalNeutralization = true;
+          bossEncounter.recoveredThenNeutralized = bossHadSubdueFailure;
+          if (bossHadSubdueFailure) actual.recoveryNeutralizations++;
+        } else {
+          actual.bossFailures++;
+          if (resolution.subdueFailed) {
+            bossHadSubdueFailure = true;
+            bossEncounter.subdueFailures++;
+            actual.subdueFailureRecoveries++;
+            bossRetryCombatBonus = Math.min(
+              parameters.retryCombatBonusCap ?? 0.05,
+              bossRetryCombatBonus + (parameters.retryCombatBonusStep ?? 0.025),
+            );
+          }
+        }
       } else {
         actual.f5Retreats++;
+        bossRetryCombatBonus = 0;
+        bossHadSubdueFailure = false;
+        if (!terminalReason) bossEncounter = createBossEncounter();
       }
+      if (terminalReason === 'ROBOT_DISABLED') bossEncounter.disabledCaused = true;
       if (resolution.neutralized) {
         actual.bossNeutralized = true;
         const edgeTime = (id: string): number => environment.edges.find(edge => edge.id === id)!.simulationTime;

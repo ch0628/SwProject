@@ -64,6 +64,7 @@ export const RUNTIME_VISUAL_CONFIG = {
     impactHoldMs: 80,
     returnMs: 160,
   },
+  recoveryVisualMs: 1000,
   secureEntranceOpen: {
     unlockPauseMs: 550,
     openHoldMs: 400,

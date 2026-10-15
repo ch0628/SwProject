@@ -711,7 +711,7 @@ test('DISTRACT presentation is success-only, supports one Villain, and does not 
     .find(candidate => candidate.kind === 'VILLAIN_ENCOUNTER')!;
   for (const [action, localOutcome, immediateEvents] of [
     ['SUBDUE', 'PASS', []],
-    ['SUBDUE', 'ROBOT_DISABLED', ['ROBOT_DISABLED']],
+    ['SUBDUE', 'SUBDUE_RECOVERY', ['ROBOT_DAMAGE']],
     ['FORCE_PASS', 'PASS', []],
     ['RETREAT', 'RETREAT', []],
     ['DISTRACT', 'BLOCKED', []],
@@ -760,9 +760,15 @@ test('successful Villain SUBDUE adds one collision-checked combat lunge without 
   assert.equal(replay.filter(command => command.type === 'STATE_CHANGE' && command.change === 'VILLAIN_NEUTRALIZED').length, 1);
 
   const failedEpisode = structuredClone(syntheticEpisode);
-  failedEpisode.actionHistory[1] = { ...villainTemplate, action: 'SUBDUE', location: zone.id, elapsedCost: 1, immediateEvents: ['ROBOT_DISABLED'], localOutcome: 'ROBOT_DISABLED' };
-  assert.equal(createRuntimeCommands(environment, failedEpisode, seed)
-    .some(command => command.type === 'STATE_CHANGE' && command.change === 'VILLAIN_NEUTRALIZED'), false);
+  failedEpisode.actionHistory[1] = { ...villainTemplate, action: 'SUBDUE', location: zone.id, elapsedCost: 6, immediateEvents: ['ROBOT_DAMAGE'], localOutcome: 'SUBDUE_RECOVERY' };
+  const failedReplay = createRuntimeCommands(environment, failedEpisode, seed);
+  assert.equal(failedReplay.some(command => command.type === 'STATE_CHANGE' && command.change === 'VILLAIN_NEUTRALIZED'), false);
+  assert.equal(failedReplay.filter(command => command.type === 'STATE_CHANGE' && command.change === 'ROBOT_RECOVERY').length, 1);
+  assert.equal(failedReplay.filter(command => command.type === 'TERMINAL').length, 1);
+  const recovery = failedReplay.find(command => command.type === 'STATE_CHANGE' && command.change === 'ROBOT_RECOVERY')!;
+  assert.ok(failedReplay.indexOf(recovery) < failedReplay.findIndex(command => command.type === 'TERMINAL'));
+  assert.deepEqual(applyRuntimePresentationCommand(presentation, recovery), presentation);
+  assert.ok(RUNTIME_VISUAL_CONFIG.recoveryVisualMs >= 800 && RUNTIME_VISUAL_CONFIG.recoveryVisualMs <= 1200);
 
   assert.deepEqual(RUNTIME_VISUAL_CONFIG.subdueLunge, { distance: 16, forwardMs: 140, impactHoldMs: 80, returnMs: 160 });
   const total = RUNTIME_VISUAL_CONFIG.subdueLunge.forwardMs + RUNTIME_VISUAL_CONFIG.subdueLunge.impactHoldMs + RUNTIME_VISUAL_CONFIG.subdueLunge.returnMs;
@@ -773,6 +779,9 @@ test('successful Villain SUBDUE adds one collision-checked combat lunge without 
   assert.match(lunge, /movementPathIsClear/);
   assert.match(lunge, /setRobotVisualState\('COMBAT'\)[\s\S]*forwardMs[\s\S]*impactHoldMs[\s\S]*returnMs/);
   assert.doesNotMatch(lunge, /routeCursor|projectRouteProgress/);
+  const recoveryHandler = sceneSource.slice(sceneSource.indexOf("command.change === 'ROBOT_RECOVERY'"), sceneSource.indexOf("command.change === 'SYSTEM_RESTORED'"));
+  assert.match(recoveryHandler, /runtime-robot-neutralized-DOWN/);
+  assert.match(recoveryHandler, /recoveryVisualMs[\s\S]*setRobotVisualState\('COMBAT'\)[\s\S]*presentationBusy = false[\s\S]*nextCommandAt/);
 });
 
 test('runtime character scale ratios are centralized and neutralized characters keep the same display height', () => {

@@ -456,6 +456,18 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   }
 
   private handleStateChange(command: Extract<RuntimeCommand, { type: 'STATE_CHANGE' }>) {
+    if (command.change === 'ROBOT_RECOVERY') {
+      this.presentationBusy = true;
+      this.robot?.setVelocity(0, 0).anims.stop();
+      this.robotVisualState = 'NEUTRALIZED';
+      this.robot?.setTexture('runtime-robot-neutralized-DOWN');
+      void this.presentationDelay(RUNTIME_VISUAL_CONFIG.recoveryVisualMs).then(() => {
+        this.setRobotVisualState('COMBAT');
+        this.presentationBusy = false;
+        this.nextCommandAt = this.time.now;
+      }).catch(error => this.finishAtLogicalTerminal(error));
+      return true;
+    }
     if (command.change === 'SYSTEM_RESTORED') {
       this.presentationBusy = true;
       void this.animateCorePowerOn(command).then(() => {
