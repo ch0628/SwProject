@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { axisAlignedBounds, decompressTileLayers, properties } from '../src/modules/reinforcement/debug/floor1Tiled.ts';
-import { episodeSeed, PROFILES } from '../src/modules/reinforcement/sim/learningEngine.ts';
+import { episodeSeed, PROFILES, rewardWeightsFromStars } from '../src/modules/reinforcement/sim/learningEngine.ts';
 import { ACTUAL_GRAPH_FILE, ACTUAL_MAP_FILES, buildActualMapEnvironment } from '../src/modules/reinforcement/sim/actualMapEnvironment.ts';
 import { runActualMapProfile, runActualMapTraining } from '../src/modules/reinforcement/sim/actualMapSimulation.ts';
 import { FiveRobotRuntimeController } from '../src/modules/reinforcement/runtime/runtimeController.ts';
@@ -110,6 +110,7 @@ test('TIMEOUT at an F5 route boundary emits no post-terminal MOVE and terminates
     floor: 5,
     simulationTime: timedOut.elapsedTime,
     reason: 'TIMEOUT',
+    commandId: replay.length,
   });
   const terminalIndex = replay.findIndex(command => command.type === 'TERMINAL');
   assert.equal(replay.slice(terminalIndex + 1).some(command => command.type === 'MOVE' || command.type === 'ENCOUNTER'), false);
@@ -117,6 +118,54 @@ test('TIMEOUT at an F5 route boundary emits no post-terminal MOVE and terminates
   const sceneSource = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
   assert.match(sceneSource, /if \(this\.terminalEmitted\) return;[\s\S]*this\.move = undefined;[\s\S]*this\.game\.events\.emit\('reinforcement-runtime-terminal'/);
   assert.equal(sceneSource.match(/\.emit\('reinforcement-runtime-terminal'/g)?.length, 1);
+});
+
+test('near-boundary F5 timeout stops at the canonical security-lock state instead of visually reaching Goal', () => {
+  const training = runActualMapTraining(environment, rewardWeightsFromStars({ speed: 1, judgment: 3, threat: 2 }), 1, 20, 5);
+  const timedOut = training.rounds[12].episodes[4];
+  assert.equal(episodeSeed(1, 13, 5), 2504776171);
+  assert.equal(timedOut.terminalReason, 'TIMEOUT');
+  assert.equal(timedOut.eventHistory.at(-1)?.location, 'F5_SECURITY_LOCK');
+  assert.equal(timedOut.actual.systemRestored, false);
+
+  const replay = createRuntimeCommands(environment, timedOut, 2504776171);
+  assert.equal(replay.some(command => command.type === 'STATE_CHANGE' && command.change === 'SYSTEM_RESTORED'), false);
+  assert.equal(replay.some(command => command.type === 'MOVE' && command.edgeIds.includes('E_F5_CONTROL_GOAL')), false);
+  assert.equal(replay.at(-1)?.type, 'TERMINAL');
+  assert.equal(replay.at(-1)?.type === 'TERMINAL' && replay.at(-1)?.reason, 'TIMEOUT');
+});
+
+test('runtime command ids and terminal boundary are single-assignment across a deterministic 20-round run', () => {
+  const training = runActualMapTraining(environment, rewardWeightsFromStars({ speed: 1, judgment: 3, threat: 2 }), 42, 20, 5);
+  for (const round of training.rounds) for (const result of round.episodes) {
+    const replay = createRuntimeCommands(environment, result, episodeSeed(42, round.round, result.robot));
+    assert.deepEqual(replay.map(command => command.commandId), replay.map((_command, index) => index + 1));
+    assert.equal(replay.filter(command => command.type === 'TERMINAL').length, 1);
+    assert.equal(replay.at(-1)?.type, 'TERMINAL');
+    assert.equal(replay.at(-1)?.type === 'TERMINAL' && replay.at(-1)?.reason, result.terminalReason);
+
+    const final = replay.reduce(applyRuntimeCommand, initialRuntimePlaybackState());
+    assert.equal(final.terminal, result.terminalReason);
+    assert.equal(final.floor, result.actual.reachedFloors.at(-1));
+    assert.equal(final.bossNeutralized, result.actual.bossNeutralized);
+    assert.equal(final.systemRestored, result.actual.systemRestored);
+  }
+});
+
+test('alive F5 SUBDUE recovery keeps the same encounter and creates no spawn-return MOVE', () => {
+  const training = runActualMapTraining(environment, rewardWeightsFromStars({ speed: 1, judgment: 3, threat: 2 }), 42, 20, 5);
+  let recoveries = 0;
+  for (const round of training.rounds) for (const result of round.episodes) {
+    const replay = createRuntimeCommands(environment, result, episodeSeed(42, round.round, result.robot));
+    replay.forEach((command, index) => {
+      if (command.type !== 'STATE_CHANGE' || command.change !== 'ROBOT_RECOVERY' || command.floor !== 5) return;
+      recoveries++;
+      const next = replay.slice(index + 1).find(candidate => candidate.type === 'ACTION' || candidate.type === 'MOVE' || candidate.type === 'TERMINAL');
+      assert.equal(next?.type, 'ACTION');
+      assert.equal(next?.type === 'ACTION' && next.zoneId, command.location);
+    });
+  }
+  assert.ok(recoveries > 0);
 });
 
 test('runtime MOVE commands preserve actual Navigation Edge polylines', () => {
@@ -127,7 +176,12 @@ test('runtime MOVE commands preserve actual Navigation Edge polylines', () => {
       const points = environment.edges.find(edge => edge.id === id)!.points;
       return points.slice(1).map((point, index) => [points[index], point] as const);
     });
-    for (const point of move.points) assert.ok(edgeSegments.some(([from, to]) => pointOnSegment(point, from, to)), `${move.edgeIds.join(',')}: ${point.x},${point.y}`);
+    const offEdge = move.points.filter(point => !edgeSegments.some(([from, to]) => pointOnSegment(point, from, to)));
+    if (!move.localStaging) assert.deepEqual(offEdge, [], `${move.edgeIds.join(',')}: ${offEdge.map(point => `${point.x},${point.y}`).join(';')}`);
+    else {
+      assert.equal(offEdge.length, 1);
+      assert.ok(offEdge[0] === move.points[0] || offEdge[0] === move.points.at(-1));
+    }
   }
 });
 
@@ -614,6 +668,21 @@ test('local avoidance selects a collision-free side and never crosses a static w
   assert.ok(planned.points.slice(1, -1).some(point => point.y < route[0].y));
 });
 
+test('movement planner rejects an unreachable wall target instead of returning a permanently blocked WALK', () => {
+  const bounds = { x: 0, y: 0, width: 200, height: 120 };
+  const wall = { x: 90, y: 0, width: 20, height: 120 };
+  const plan = planLocalMovement(
+    [{ x: 40, y: 60 }, { x: 160, y: 60 }],
+    { x: 40, y: 60 },
+    bounds,
+    [wall],
+    [],
+  );
+  assert.equal(plan.valid, false);
+  assert.equal(movementPathIsClear(plan.points, runtimeVisualFootprint('ROBOT'), bounds, [wall]), true);
+  assert.notDeepEqual(plan.points.at(-1), { x: 160, y: 60 });
+});
+
 test('DISTRACT PASS animates Robot and both Villains, opens the lane, and rejoins forward', () => {
   const option = environment.contexts.flatMap(context => context.options).find(candidate =>
     candidate.encounterZoneIds.some(id => {
@@ -815,7 +884,7 @@ test('Robot normal, combat, work and neutralized visuals map all directions with
   const sceneSource = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
   assert.match(sceneSource, /command\.state === 'OBSTACLE'.*command\.action === 'PUSH'.*command\.action === 'CLEAR'/);
   assert.match(sceneSource, /command\.reason === 'ROBOT_DISABLED' \? 'NEUTRALIZED' : 'NORMAL'/);
-  assert.match(sceneSource, /robotVisualState === 'NEUTRALIZED' && state !== 'NEUTRALIZED'/);
+  assert.match(sceneSource, /robotDisabled && state !== 'NEUTRALIZED'/);
   assert.match(sceneSource, /setTexture\(runtimeRobotTexture\(this\.robotVisualState, this\.lastDirection\)\)\.setOrigin\(0\.5, 1\)/);
   assert.match(sceneSource, /scaleSprite\(this\.robot, RUNTIME_VISUAL_CONFIG\.robotDisplayHeight\)/);
 });

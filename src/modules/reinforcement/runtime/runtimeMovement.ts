@@ -164,7 +164,7 @@ const detourForSegment = (
     progress: Math.max(0, Math.min(length, (candidate.point.x - from.x) * tangent.x + (candidate.point.y - from.y) * tangent.y)),
   })).filter(({ candidate }) => !movementPathIsClear([from, to], footprint, bounds, [], [candidate]))
     .sort((left, right) => left.progress - right.progress)[0];
-  if (!blocker) return [to];
+  if (!blocker) return undefined;
   const candidates = [1, -1].flatMap(side => [8, 16, 24].map(extra => {
     const alongClearance = projectedHalfExtent(footprint, tangent)
       + projectedHalfExtent(blocker.candidate.footprint, tangent) + 8;
@@ -188,7 +188,7 @@ const detourForSegment = (
       return path.slice(1).reduce((sum, point, index) => sum + Math.hypot(point.x - path[index].x, point.y - path[index].y), 0);
     };
     return distance(left) - distance(right);
-  })[0] ?? [to];
+  })[0];
 };
 
 export function planLocalMovement(
@@ -202,6 +202,10 @@ export function planLocalMovement(
   const rejoin = forwardRejoinPolyline(route, current, minimumProgress);
   const footprint = runtimeVisualFootprint('ROBOT');
   const points = [rejoin.points[0]];
-  for (const target of rejoin.points.slice(1)) points.push(...detourForSegment(points.at(-1)!, target, footprint, bounds, walls, blockers));
-  return { ...rejoin, points };
+  for (const target of rejoin.points.slice(1)) {
+    const segment = detourForSegment(points.at(-1)!, target, footprint, bounds, walls, blockers);
+    if (!segment) return { ...rejoin, points, valid: false, invalidTarget: target };
+    points.push(...segment);
+  }
+  return { ...rejoin, points, valid: movementPathIsClear(points, footprint, bounds, walls, blockers) };
 }

@@ -240,11 +240,11 @@ function simulateActualEpisode(
     eventHistory.push({ type, elapsedTime: roundNumber(elapsedTime), location, causedBy });
     if (type === 'FACILITY_DAMAGE') facilityDamageCount++;
     if (type === 'CITIZEN_RISK') citizenRiskCount++;
-    if (type === 'MISUNDERSTANDING') {
+    if (type === 'MISUNDERSTANDING' && !terminalReason) {
       citizenMisunderstanding = true;
       terminalReason = type;
     }
-    if (type === 'ROBOT_DISABLED') terminalReason = type;
+    if (type === 'ROBOT_DISABLED' && !terminalReason) terminalReason = type;
   };
 
   const finishIfTimedOut = (location: string): boolean => {
@@ -557,18 +557,30 @@ function simulateActualEpisode(
       if (terminalReason === 'ROBOT_DISABLED') bossEncounter.disabledCaused = true;
       if (resolution.neutralized) {
         actual.bossNeutralized = true;
+        if (terminalReason) continue;
         const edgeTime = (id: string): number => environment.edges.find(edge => edge.id === id)!.simulationTime;
         addEnvironmentalCost(bossExperience, edgeTime(roomPath.postBossEdgeId) + edgeTime('E_F5_HALL_LOCK'), 'F5_SECURITY_LOCK');
         if (!terminalReason) recordEvent('SECURITY_LOCK_OPEN', 'F5_SECURITY_LOCK', 'ENVIRONMENT');
         if (!terminalReason) {
-          addEnvironmentalCost(bossExperience, edgeTime('E_F5_LOCK_CONTROL'), 'F5_CONTROL_ROOM');
-          if (!terminalReason) actual.controlRoomReached = true;
-          addEnvironmentalCost(bossExperience, ACTION_TIME.VERY_SMALL, 'F5_CONTROL_ROOM');
-          if (!terminalReason) {
-            actual.systemRestored = true;
-            recordEvent('SYSTEM_RESTORED', 'F5_CONTROL_ROOM', 'ENVIRONMENT');
-            addEnvironmentalCost(bossExperience, edgeTime('E_F5_CONTROL_GOAL'), 'F5_GOAL');
-          }
+          const controlMove = edgeTime('E_F5_LOCK_CONTROL');
+          elapsedTime += controlMove;
+          bossExperience.elapsedCost += controlMove;
+          actual.controlRoomReached = true;
+          finishIfTimedOut('F5_CONTROL_ROOM');
+        }
+        if (!terminalReason) {
+          elapsedTime += ACTION_TIME.VERY_SMALL;
+          bossExperience.elapsedCost += ACTION_TIME.VERY_SMALL;
+          actual.systemRestored = true;
+          recordEvent('SYSTEM_RESTORED', 'F5_CONTROL_ROOM', 'ENVIRONMENT');
+          finishIfTimedOut('F5_CONTROL_ROOM');
+        }
+        if (!terminalReason) {
+          const goalMove = edgeTime('E_F5_CONTROL_GOAL');
+          elapsedTime += goalMove;
+          bossExperience.elapsedCost += goalMove;
+          terminalReason = 'GOAL_REACHED';
+          recordEvent('GOAL_REACHED', 'F5_GOAL', 'ENVIRONMENT');
         }
       }
     }

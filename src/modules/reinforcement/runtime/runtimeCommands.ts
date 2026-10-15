@@ -35,10 +35,10 @@ export type RuntimeStateChange =
   | 'SECURITY_LOCK_OPEN'
   | 'SYSTEM_RESTORED';
 
-type RuntimeBase = { floor: number; simulationTime: number };
+type RuntimeBase = { floor: number; simulationTime: number; commandId?: number };
 
 export type RuntimeCommand =
-  | (RuntimeBase & { type: 'MOVE'; edgeIds: string[]; points: RuntimePoint[] })
+  | (RuntimeBase & { type: 'MOVE'; edgeIds: string[]; points: RuntimePoint[]; logicalSourceNode?: string; logicalTargetNode?: string; localStaging?: boolean })
   | (RuntimeBase & {
       type: 'ENCOUNTER';
       phase: 'START' | 'END';
@@ -223,6 +223,37 @@ const visualStaging = (points: readonly RuntimePoint[], zone: ActualEncounterZon
   );
 };
 
+const verticalCharacterStaging = (
+  staging: RuntimeStaging,
+  encounterPosition: RuntimePoint,
+  entityFootprint: RuntimeFootprint,
+): RuntimeStaging => {
+  if (Math.abs(staging.incomingDirection.y) < 0.9) return staging;
+  const direction = { x: 0, y: Math.sign(staging.incomingDirection.y) };
+  const robot = runtimeVisualFootprint('ROBOT');
+  const distance = RUNTIME_CHARACTER_STAGING_GAP + robot.height / 2 + entityFootprint.height / 2;
+  const contactDistance = robot.height / 2 + entityFootprint.height / 2;
+  const stagingPosition = { x: encounterPosition.x, y: encounterPosition.y - direction.y * distance };
+  const contactPosition = { x: encounterPosition.x, y: encounterPosition.y - direction.y * contactDistance };
+  return {
+    ...staging,
+    stagingPosition,
+    contactPosition,
+    approachPoints: [stagingPosition, contactPosition],
+    incomingDirection: direction,
+    gap: RUNTIME_CHARACTER_STAGING_GAP,
+    fallback: false,
+  };
+};
+
+const appendDistinct = (points: RuntimePoint[], point: RuntimePoint) =>
+  !points.length || samePoint(points.at(-1)!, point) ? points : [...points, point];
+
+const pathFromStaging = (staging: RuntimeStaging, route: readonly RuntimePoint[], toDistance: number) => {
+  const continuation = slicePath(route, staging.stagingDistance, toDistance);
+  return appendDistinct([staging.stagingPosition], continuation[0] ?? staging.stagingPosition).concat(continuation.slice(1));
+};
+
 const variantFor = (seed: number, zoneId: string): 1 | 2 | 3 | 4 => {
   let hash = seed >>> 0;
   for (const character of zoneId) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619) >>> 0;
@@ -265,7 +296,7 @@ function actionCommands(
     const state = action.state as Exclude<DecisionState, 'ROUTE_CHOICE'>;
     commands.push({ type: 'ACTION', floor, simulationTime, zoneId: zone.id, state, action: action.action });
     commands.push({ type: 'OUTCOME', floor, simulationTime, zoneId: zone.id, state, outcome: action.localOutcome, events: [...action.immediateEvents] });
-    if (action.localOutcome === 'SUBDUE_RECOVERY') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'ROBOT_RECOVERY', location: zone.id, position: base.position });
+    if (action.localOutcome === 'SUBDUE_RECOVERY' && !isTerminal(action.immediateEvents)) commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'ROBOT_RECOVERY', location: zone.id, position: base.position });
     if (action.localOutcome === 'OBSTACLE_CLEARED') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'OBSTACLE_CLEARED', location: zone.id, position: base.position });
     if (action.action === 'PUSH' && (action.localOutcome === 'CLEAN_PASS' || action.localOutcome === 'FACILITY_DAMAGE')) commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'OBSTACLE_PUSHED', location: zone.id, position: base.position });
     if (action.localOutcome === 'SAFE_PASS' && zone.kind === 'OBSTACLE') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'OBSTACLE_BYPASSED', location: zone.id, position: base.position });
@@ -278,8 +309,8 @@ function actionCommands(
   return commands;
 }
 
-const moveCommand = (floor: number, edgeIds: string[], points: RuntimePoint[], simulationTime: number): RuntimeCommand[] =>
-  points.length > 1 ? [{ type: 'MOVE', floor, edgeIds, points, simulationTime }] : [];
+const moveCommand = (floor: number, edgeIds: string[], points: RuntimePoint[], simulationTime: number, localStaging = false): RuntimeCommand[] =>
+  points.length > 1 ? [{ type: 'MOVE', floor, edgeIds, points, simulationTime, ...(localStaging ? { localStaging: true } : {}) }] : [];
 
 const pathBetween = (points: readonly RuntimePoint[], fromDistance: number, toDistance: number) =>
   toDistance >= fromDistance ? slicePath(points, fromDistance, toDistance) : [...slicePath(points, toDistance, fromDistance)].reverse();
@@ -316,21 +347,22 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
       const approach = orientedPath(environment, roomPath.approachEdgeIds, 'F5_SEARCH_HUB').points;
       const guardActions = followups.filter(action => action.state === 'VILLAIN_ENCOUNTER' && action.location === guard.id);
       if (!guardActions.length) break;
-      const guardStaging = visualStaging(approach, guard);
-      commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, 0, guardStaging.stagingDistance), routeTime));
+      const guardStaging = verticalCharacterStaging(visualStaging(approach, guard), guard, runtimeVisualFootprint('GUARD'));
+      const guardApproach = appendDistinct(slicePath(approach, 0, guardStaging.stagingDistance), guardStaging.stagingPosition);
+      commands.push(...moveCommand(5, roomPath.approachEdgeIds, guardApproach, routeTime, true));
       commands.push(...actionCommands(5, guard, guardActions, actionEndTimes, seed, guardStaging));
       if (guardActions.some(action => isTerminal(action.immediateEvents))) break;
       const guardNeutralized = guardActions.some(action => action.immediateEvents.includes('VILLAIN_NEUTRALIZED'));
       const guardRetreated = guardActions.at(-1)?.localOutcome === 'RETREAT';
       if (guardRetreated && !guardNeutralized) {
-        commands.push(...moveCommand(5, roomPath.approachEdgeIds, [...slicePath(approach, 0, guardStaging.stagingDistance)].reverse(), actionEndTimes.get(guardActions.at(-1)!) ?? routeTime));
+        commands.push(...moveCommand(5, roomPath.approachEdgeIds, [...guardApproach].reverse(), actionEndTimes.get(guardActions.at(-1)!) ?? routeTime, true));
         index = next;
         continue;
       }
       if (guardNeutralized) commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: actionEndTimes.get(guardActions.at(-1)!) ?? routeTime, change: 'F5_DOOR_OPEN', location: guard.id, room, position: { x: guard.x, y: guard.y } });
 
       if (room !== episode.actual.bossRoom) {
-        commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, guardStaging.stagingDistance, pathMetrics(approach).at(-1)!), routeTime));
+        commands.push(...moveCommand(5, roomPath.approachEdgeIds, pathFromStaging(guardStaging, approach, pathMetrics(approach).at(-1)!), routeTime, true));
         commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: routeTime, change: 'NO_BOSS', location: room, room, position: approach.at(-1) });
         commands.push(...edgeCommand(environment, 5, roomPath.noBossReturnEdgeId, routeTime));
       } else {
@@ -342,7 +374,7 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
           RUNTIME_CHARACTER_STAGING_GAP,
           runtimeVisualFootprint('ROBOT'),
         );
-        commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, guardStaging.stagingDistance, bossStaging.stagingDistance), routeTime));
+        commands.push(...moveCommand(5, roomPath.approachEdgeIds, pathFromStaging(guardStaging, approach, bossStaging.stagingDistance), routeTime, true));
         commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: routeTime, change: 'BOSS_FOUND', location: room, room, position: roomPosition });
         const bossActions = followups.filter(action => action.state === 'BOSS_ENCOUNTER');
         if (bossActions.length) {
@@ -366,17 +398,22 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
             const actionTime = actionEndTimes.get(action) ?? routeTime;
             commands.push({ type: 'ACTION', floor: 5, simulationTime: actionTime, zoneId: bossZone.id, state: 'BOSS_ENCOUNTER', action: action.action });
             commands.push({ type: 'OUTCOME', floor: 5, simulationTime: actionTime, zoneId: bossZone.id, state: 'BOSS_ENCOUNTER', outcome: action.localOutcome, events: [...action.immediateEvents] });
-            if (action.localOutcome === 'SUBDUE_RECOVERY') commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: actionTime, change: 'ROBOT_RECOVERY', location: bossZone.id, position: roomPosition });
+            if (action.localOutcome === 'SUBDUE_RECOVERY' && !isTerminal(action.immediateEvents)) commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: actionTime, change: 'ROBOT_RECOVERY', location: bossZone.id, position: roomPosition });
             if (isTerminal(action.immediateEvents)) break;
             if (action.localOutcome === 'RETREAT_TO_SEARCH') {
               commands.push(...edgeCommand(environment, 5, roomPath.noBossReturnEdgeId, actionTime));
-              commands.push(...moveCommand(5, roomPath.approachEdgeIds, approach, actionTime));
+              commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, 0, bossStaging.stagingDistance), actionTime));
             }
             if (action.immediateEvents.includes('BOSS_NEUTRALIZED')) commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: actionTime, change: 'BOSS_NEUTRALIZED', location: room, room, position: roomPosition });
           }
           if (!bossActions.some(action => isTerminal(action.immediateEvents))) commands.push({ type: 'ENCOUNTER', phase: 'END', simulationTime: actionEndTimes.get(bossActions.at(-1)!) ?? routeTime, ...bossBase });
         }
-        if (episode.actual.bossNeutralized) {
+        const timeoutLocation = episode.eventHistory.find(event => event.type === 'TIMEOUT')?.location;
+        const securityLockReached = episode.eventHistory.some(event => event.type === 'SECURITY_LOCK_OPEN')
+          || timeoutLocation === 'F5_SECURITY_LOCK' || timeoutLocation === 'F5_CONTROL_ROOM';
+        const securityLockOpen = episode.eventHistory.some(event => event.type === 'SECURITY_LOCK_OPEN');
+        const controlRoomReached = episode.actual.controlRoomReached || timeoutLocation === 'F5_CONTROL_ROOM';
+        if (episode.actual.bossNeutralized && securityLockReached) {
           const bossTime = actionEndTimes.get(followups.at(-1)!) ?? routeTime;
           commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, bossStaging.stagingDistance, pathMetrics(approach).at(-1)!), bossTime));
           commands.push(...edgeCommand(environment, 5, roomPath.postBossEdgeId, bossTime));
@@ -397,11 +434,15 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
             runtimeVisualFootprint('ROBOT'),
           );
           commands.push(...moveCommand(5, ['E_F5_HALL_LOCK'], slicePath(lockPath, 0, lockStaging.stagingDistance), bossTime));
-          commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: bossTime, change: 'SECURITY_LOCK_OPEN', location: 'F5_SECURITY_LOCK' });
-          commands.push(...moveCommand(5, ['E_F5_HALL_LOCK'], slicePath(lockPath, lockStaging.stagingDistance, pathMetrics(lockPath).at(-1)!), bossTime));
-          commands.push(...edgeCommand(environment, 5, 'E_F5_LOCK_CONTROL', bossTime));
-          commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: bossTime, change: 'SYSTEM_RESTORED', location: 'F5_CONTROL_ROOM' });
-          commands.push(...edgeCommand(environment, 5, 'E_F5_CONTROL_GOAL', bossTime));
+          if (securityLockOpen) {
+            commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: bossTime, change: 'SECURITY_LOCK_OPEN', location: 'F5_SECURITY_LOCK' });
+            if (controlRoomReached) {
+              commands.push(...moveCommand(5, ['E_F5_HALL_LOCK'], slicePath(lockPath, lockStaging.stagingDistance, pathMetrics(lockPath).at(-1)!), bossTime));
+              commands.push(...edgeCommand(environment, 5, 'E_F5_LOCK_CONTROL', bossTime));
+            }
+            if (episode.actual.systemRestored) commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: bossTime, change: 'SYSTEM_RESTORED', location: 'F5_CONTROL_ROOM' });
+            if (episode.terminalReason === 'GOAL_REACHED') commands.push(...edgeCommand(environment, 5, 'E_F5_CONTROL_GOAL', bossTime));
+          }
         }
       }
       index = next;
@@ -452,6 +493,12 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
         break;
       }
     }
+    const nextRoute = episode.actionHistory[next];
+    const reroutingSameContext = nextRoute?.state === 'ROUTE_CHOICE' && nextRoute.routeContext === route.routeContext;
+    if (!stopped && reroutingSameContext) {
+      commands.push(...moveCommand(option.floor, option.edgeIds, [...slicePath(path, 0, travelled)].reverse(), actionEndTimes.get(followups.at(-1)!) ?? routeTime));
+      stopped = true;
+    }
     if (!stopped) {
       commands.push(...moveCommand(option.floor, option.edgeIds, slicePath(path, travelled, pathMetrics(path).at(-1)!), routeTime));
       commands.push({ type: 'FLOOR_TRANSITION', floor: option.floor, simulationTime: routeTime, transitionId: option.transitionId, targetFloor: option.targetFloor, targetSpawn: option.targetSpawn });
@@ -460,34 +507,63 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
   }
 
   commands.push({ type: 'TERMINAL', floor: episode.actual.reachedFloors.at(-1) ?? 1, simulationTime: episode.elapsedTime, reason: episode.terminalReason });
-  return commands;
+  const nearestEdgeNode = (edgeIds: readonly string[], point: RuntimePoint) => edgeIds
+    .flatMap(id => {
+      const edge = environment.edges.find(candidate => candidate.id === id)!;
+      return [
+        { node: edge.from, point: edge.points[0] },
+        { node: edge.to, point: edge.points.at(-1)! },
+      ];
+    })
+    .sort((left, right) => Math.hypot(left.point.x - point.x, left.point.y - point.y)
+      - Math.hypot(right.point.x - point.x, right.point.y - point.y))[0]?.node;
+  return commands.map((command, index) => command.type === 'MOVE' ? ({
+    ...command,
+    commandId: index + 1,
+    logicalSourceNode: nearestEdgeNode(command.edgeIds, command.points[0]),
+    logicalTargetNode: nearestEdgeNode(command.edgeIds, command.points.at(-1)!),
+  }) : ({ ...command, commandId: index + 1 }));
 }
 
 export type RuntimePlaybackState = {
+  floor: number;
   terminal?: TerminalReason;
+  currentSearchRoom?: F5Room;
+  currentEncounterId?: string;
+  bossRoomId?: F5Room;
+  bossFound: boolean;
   obstacleBlocking: Record<string, boolean>;
   neutralizedVillains: string[];
   openDoors: F5Room[];
   bossVisible: boolean;
   bossNeutralized: boolean;
   securityLockOpen: boolean;
+  systemRestored: boolean;
 };
 
 export const initialRuntimePlaybackState = (): RuntimePlaybackState => ({
-  obstacleBlocking: {}, neutralizedVillains: [], openDoors: [], bossVisible: false, bossNeutralized: false, securityLockOpen: false,
+  floor: 1, bossFound: false, obstacleBlocking: {}, neutralizedVillains: [], openDoors: [], bossVisible: false, bossNeutralized: false, securityLockOpen: false, systemRestored: false,
 });
 
 export function applyRuntimeCommand(state: RuntimePlaybackState, command: RuntimeCommand): RuntimePlaybackState {
   if (state.terminal) return state;
   const next: RuntimePlaybackState = { ...state, obstacleBlocking: { ...state.obstacleBlocking }, neutralizedVillains: [...state.neutralizedVillains], openDoors: [...state.openDoors] };
+  next.floor = command.type === 'FLOOR_TRANSITION' ? command.targetFloor : command.floor;
   if (command.type === 'TERMINAL') next.terminal = command.reason;
+  if (command.type === 'ENCOUNTER') next.currentEncounterId = command.phase === 'START' ? command.zoneId : undefined;
   if (command.type !== 'STATE_CHANGE') return next;
   if (command.change === 'OBSTACLE_ACTIVE' || command.change === 'OBSTACLE_BLOCKED') next.obstacleBlocking[command.location] = true;
   if (command.change === 'OBSTACLE_CLEARED' || command.change === 'OBSTACLE_PUSHED' || command.change === 'OBSTACLE_SHIFTED' || command.change === 'OBSTACLE_BYPASSED') next.obstacleBlocking[command.location] = false;
   if (command.change === 'VILLAIN_NEUTRALIZED' && !next.neutralizedVillains.includes(command.location)) next.neutralizedVillains.push(command.location);
   if (command.change === 'F5_DOOR_OPEN' && command.room && !next.openDoors.includes(command.room)) next.openDoors.push(command.room);
-  if (command.change === 'BOSS_FOUND') next.bossVisible = true;
+  if ((command.change === 'F5_DOOR_OPEN' || command.change === 'NO_BOSS' || command.change === 'BOSS_FOUND') && command.room) next.currentSearchRoom = command.room;
+  if (command.change === 'BOSS_FOUND') {
+    next.bossFound = true;
+    next.bossVisible = true;
+    next.bossRoomId = command.room;
+  }
   if (command.change === 'BOSS_NEUTRALIZED') next.bossNeutralized = true;
   if (command.change === 'SECURITY_LOCK_OPEN') next.securityLockOpen = true;
+  if (command.change === 'SYSTEM_RESTORED') next.systemRestored = true;
   return next;
 }

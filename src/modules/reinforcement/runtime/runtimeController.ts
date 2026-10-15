@@ -50,6 +50,8 @@ export type TrainingSession = {
   rounds: RoundHistory[];
 };
 
+export const OBSERVATION_ROUNDS = [1, 5, 10, 15, 20] as const;
+
 const createRobots = (environment: ActualMapEnvironment, round: ActualRound, seed: number): RobotRuntime[] =>
   round.episodes.map((episode, index) => ({
     robot: index + 1,
@@ -109,7 +111,7 @@ export class TrainingRuntimeController {
   mainRobot = 1;
   history: TrainingSession;
   private run: ActualTrainingRun;
-  private roundOffset = 0;
+  private observationOffset = 0;
   private committedRound = false;
   private committedUpdates = 0;
   private readonly environment: ActualMapEnvironment;
@@ -134,12 +136,15 @@ export class TrainingRuntimeController {
     this.startCurrentRound();
   }
 
-  get roundIndex() { return this.roundOffset + 1; }
+  get actualRound() { return OBSERVATION_ROUNDS[this.observationOffset]; }
+  get observationIndex() { return this.observationOffset + 1; }
+  get observationRound() { return this.actualRound; }
+  get roundIndex() { return this.observationIndex; }
   get roundComplete() { return this.robots.every(robot => robot.terminal); }
-  get trainingComplete() { return this.roundIndex === this.totalRounds && this.roundComplete; }
+  get trainingComplete() { return this.observationIndex === OBSERVATION_ROUNDS.length && this.roundComplete; }
   get policyUpdateCount() { return this.committedUpdates; }
   get combatSkillUpdateCount() { return this.committedUpdates; }
-  get currentRound() { return this.run.rounds[this.roundOffset]; }
+  get currentRound() { return this.run.rounds[this.actualRound - 1]; }
 
   selectMain(robotId: number) {
     if (!this.robots.some(robot => robot.robot === robotId)) throw new Error(`Robot ${robotId} is unavailable`);
@@ -174,7 +179,7 @@ export class TrainingRuntimeController {
 
   nextRound(): boolean {
     if (!this.roundComplete || this.trainingComplete) return false;
-    this.roundOffset++;
+    this.observationOffset++;
     this.startCurrentRound();
     return true;
   }
@@ -221,7 +226,7 @@ export class TrainingRuntimeController {
   restart(selectedRewardStars: RewardStars = this.history.selectedRewardStars) {
     this.selectedRewardWeights = rewardWeightsFromStars(selectedRewardStars);
     this.run = runActualMapTraining(this.environment, this.selectedRewardWeights, this.seed, this.totalRounds, 5);
-    this.roundOffset = 0;
+    this.observationOffset = 0;
     this.committedUpdates = 0;
     this.history = {
       selectedRewardStars: { ...selectedRewardStars },
@@ -241,14 +246,14 @@ export class TrainingRuntimeController {
     if (this.committedRound) return;
     const round = this.currentRound;
     this.committedRound = true;
-    this.committedUpdates++;
-    this.history.rounds.push({
-      roundIndex: round.round,
-      policySnapshotBefore: structuredClone(round.snapshot),
-      robotResults: structuredClone(round.episodes),
-      policySnapshotAfter: structuredClone(round.policyAfter),
-      combatSkillSnapshot: round.combatSkillSnapshot,
-      combatSkillAfter: round.combatSkillAfter,
+    this.committedUpdates = round.round;
+    for (const completed of this.run.rounds.slice(this.history.rounds.length, round.round)) this.history.rounds.push({
+      roundIndex: completed.round,
+      policySnapshotBefore: structuredClone(completed.snapshot),
+      robotResults: structuredClone(completed.episodes),
+      policySnapshotAfter: structuredClone(completed.policyAfter),
+      combatSkillSnapshot: completed.combatSkillSnapshot,
+      combatSkillAfter: completed.combatSkillAfter,
     });
   }
 }
