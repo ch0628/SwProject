@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-15",
+  "seed": 42,
+  "starProfile": { "speed": 1, "judgment": 3, "threat": 2 },
+  "browserCommandIds": [56, 64, 88, 113],
+  "commandIdScope": "episode-local",
+  "deterministicMatches": {
+    "64": {
+      "round": 4,
+      "robot": 4,
+      "floor": 3,
+      "runtimeSource": { "x": 304, "y": 1120 },
+      "requestedRouteStart": { "x": 1280, "y": 1184 },
+      "firstBlockedPoint": { "x": 1312, "y": 1184 },
+      "why": "same-context F3 reroute was emitted after an incorrect F4 transition"
+    },
+    "88": {
+      "round": 4,
+      "robot": 5,
+      "floor": 5,
+      "bossRoom": "L2",
+      "runtimeSource": { "x": 1280, "y": 1200 },
+      "oldTarget": { "x": 704, "y": 224 },
+      "fixedTarget": { "x": 704, "y": 307 },
+      "why": "Boss retreat re-approach targeted Boss center and non-blocking Boss was misclassified as a collider"
+    },
+    "113": {
+      "round": 4,
+      "robot": 3,
+      "floor": 5,
+      "bossRoom": "R1",
+      "runtimeSource": { "x": 1280, "y": 1200 },
+      "oldTarget": { "x": 2272, "y": 640 },
+      "fixedTarget": { "x": 2272, "y": 723 },
+      "why": "Boss retreat re-approach targeted Boss center and non-blocking Boss was misclassified as a collider"
+    },
+    "56": {
+      "why": "not uniquely attributable because commandId is episode-local and the original console line omitted round/robot/episode identity",
+      "futureTrace": "runtimeSyncDebug now records identity, logical nodes, coordinates, collision intersections, dynamic state, and WHY_NO_COLLISION_FREE_PATH"
+    }
+  },
+  "verification": {
+    "invalidPathCommands": 0,
+    "floorDivergences": 0,
+    "invalidBossSearchCommands": 0,
+    "nonTerminalBossRecoverySpawnResets": 0,
+    "visibleRuntimeRounds": [1, 5, 10, 15, 20],
+    "hiddenRoundsPresentedByPhaser": false,
+    "tests": "250/250 PASS",
+    "typecheck": "PASS",
+    "build": "PASS"
+  },
+  "numericTuningChanged": false,
+  "browserSmokeRun": false
+}

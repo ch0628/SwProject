@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-10-15",
+  "profileSource": {
+    "requestedCandidate": { "speed": 1, "judgment": 3, "threat": 2 },
+    "persistedProductionRunAvailable": false,
+    "reason": "The production UI keeps the selected stars in React memory and does not persist completed run identity."
+  },
+  "goalTimeoutFirstDivergence": {
+    "trainingSeed": 1,
+    "round": 13,
+    "robot": 5,
+    "episodeSeed": 2504776171,
+    "headlessTerminal": "TIMEOUT",
+    "headlessTerminalLocation": "F5_SECURITY_LOCK",
+    "headlessSystemRestored": false,
+    "before": {
+      "adapterGeneratedSystemRestored": true,
+      "adapterGeneratedControlGoalMove": true
+    },
+    "after": {
+      "adapterGeneratedSystemRestored": false,
+      "adapterGeneratedControlGoalMove": false,
+      "runtimeTerminal": "TIMEOUT"
+    }
+  },
+  "reportedRound15Robot4Candidate": {
+    "trainingSeed": 42,
+    "round": 15,
+    "robot": 4,
+    "episodeSeed": 1391397081,
+    "reproducedInfiniteWalk": false,
+    "terminal": "GOAL_REACHED",
+    "simulationTime": 429.807124,
+    "robotDamage": 0.44,
+    "bossRoom": "R1",
+    "systemRestored": true,
+    "commandCount": 79,
+    "invalidStaticMovePaths": 0
+  },
+  "f5RecoveryExample": {
+    "trainingSeed": 42,
+    "round": 1,
+    "robot": 3,
+    "episodeSeed": 267658970,
+    "zoneId": "F5_R2_GUARD_ZONE",
+    "sequence": [
+      "OUTCOME:SUBDUE_RECOVERY",
+      "STATE_CHANGE:ROBOT_RECOVERY",
+      "ACTION:RETREAT"
+    ],
+    "spawnMoveBetweenRecoveryAndNextDecision": false
+  },
+  "afterValidation": {
+    "episodes": 100,
+    "headlessRuntimeParity": 100,
+    "invalidStaticMovePaths": 0,
+    "terminalCommandsPerEpisode": 1,
+    "commandIdsSequential": true
+  }
+}

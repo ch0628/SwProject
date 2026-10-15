@@ -10,7 +10,7 @@ import {
   rewardWeightsFromStars,
   type RewardStars,
 } from '../src/modules/reinforcement/sim/learningEngine.ts';
-import { TrainingRuntimeController } from '../src/modules/reinforcement/runtime/runtimeController.ts';
+import { OBSERVATION_ROUNDS, TrainingRuntimeController } from '../src/modules/reinforcement/runtime/runtimeController.ts';
 import { failureReview, importantActionMessage, meaningfulEventMessage, rewardAdvice, terminalReasonSentence, trainingLabel } from '../src/modules/reinforcement/runtime/trainingLabels.ts';
 
 const readJson = (path: string) => JSON.parse(fs.readFileSync(path, 'utf8'));
@@ -21,9 +21,12 @@ const finishRobot = (controller: TrainingRuntimeController, robotId: number) => 
   while (controller.advance(robotId));
 };
 
-test('training controller runs exactly twenty fully observed rounds and commits once after each 5/5 terminal', () => {
+test('training controller learns twenty rounds but presents only checkpoints 1/5/10/15/20', () => {
   const controller = new TrainingRuntimeController(environment, weights, 27);
   assert.equal(controller.roundIndex, 1);
+  assert.equal(controller.actualRound, 1);
+  assert.equal(controller.observationIndex, 1);
+  assert.equal(controller.observationRound, 1);
   assert.equal(controller.robots.length, 5);
   assert.equal(new Set(controller.robots.map(robot => robot.episode.snapshotSignature)).size, 1);
   assert.ok(controller.robots.every(robot => robot.episode.snapshotSignature === JSON.stringify(controller.currentRound.snapshot)));
@@ -55,23 +58,27 @@ test('training controller runs exactly twenty fully observed rounds and commits 
   assert.equal(controller.policyUpdateCount, 1, 'duplicate terminal observation must not update twice');
 
   const firstRoundRobots = controller.robots;
-  const policyAfterRoundOne = structuredClone(controller.history.rounds[0].policySnapshotAfter);
   assert.equal(controller.nextRound(), true);
   assert.equal(controller.roundIndex, 2);
+  assert.equal(controller.actualRound, 5);
   assert.equal(controller.mainRobot, 1);
   assert.ok(controller.robots.every((robot, index) => robot !== firstRoundRobots[index] && robot.cursor === 0 && robot.floor === 1 && !robot.terminal));
-  assert.deepEqual(controller.currentRound.snapshot, policyAfterRoundOne);
 
-  for (let round = 2; round <= 20; round++) {
-    assert.equal(controller.roundIndex, round);
+  for (let observation = 2; observation <= OBSERVATION_ROUNDS.length; observation++) {
+    const actualRound = OBSERVATION_ROUNDS[observation - 1];
+    assert.equal(controller.observationIndex, observation);
+    assert.equal(controller.actualRound, actualRound);
+    assert.equal(controller.observationRound, actualRound);
     for (let robot = 1; robot <= 5; robot++) finishRobot(controller, robot);
-    assert.equal(controller.policyUpdateCount, round);
-    assert.equal(controller.history.rounds.length, round);
-    if (round < 20) assert.equal(controller.nextRound(), true);
+    assert.equal(controller.policyUpdateCount, actualRound);
+    assert.equal(controller.combatSkillUpdateCount, actualRound);
+    assert.equal(controller.history.rounds.length, actualRound);
+    if (observation < OBSERVATION_ROUNDS.length) assert.equal(controller.nextRound(), true);
   }
   assert.equal(controller.trainingComplete, true);
   assert.equal(controller.nextRound(), false, 'Round 21 must never be created');
-  assert.equal(controller.roundIndex, 20);
+  assert.equal(controller.roundIndex, 5);
+  assert.equal(controller.actualRound, 20);
   assert.equal(controller.history.rounds.length, 20);
   assert.ok(controller.history.rounds.every(round => round.robotResults.length === 5));
   assert.equal(controller.history.rounds.flatMap(round => round.robotResults).length, 100);

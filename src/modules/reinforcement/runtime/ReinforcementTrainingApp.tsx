@@ -78,9 +78,10 @@ function TutorialPreview({ step, onNext }: { step: number; onNext: () => void })
   </main>;
 }
 
-function RuntimeView({ maps, robot, instanceKey, main, running, onReady, onSelect, onStatus, onError }: {
+function RuntimeView({ maps, robot, instanceKey, main, running, onReady, onSelect, onStatus, onError, runtimeIdentity }: {
   maps: TiledMapJson[]; robot: RobotRuntime; instanceKey: string; main: boolean; running: boolean;
   onReady: () => void; onSelect: () => void; onStatus: (status: RuntimeStatus) => void; onError: (message: string) => void;
+  runtimeIdentity?: Record<string, unknown>;
 }) {
   const mount = useRef<HTMLDivElement>(null);
   const gameRef = useRef<Phaser.Game | null>(null);
@@ -96,9 +97,16 @@ function RuntimeView({ maps, robot, instanceKey, main, running, onReady, onSelec
     const game = new Phaser.Game({
       type: Phaser.AUTO, parent: mount.current, width: LOGICAL.width, height: LOGICAL.height,
       backgroundColor: '#071018', pixelArt: true, roundPixels: true,
+      audio: { noAudio: true },
       physics: { default: 'arcade', arcade: { debug: false } },
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-      scene: [new ReinforcementRuntimeScene({ maps, commands: robot.commands, waitForStart: true })],
+      scene: [new ReinforcementRuntimeScene({
+        maps,
+        commands: robot.commands,
+        waitForStart: true,
+        runtimeSyncDebug: new URLSearchParams(window.location.search).get('runtimeSyncDebug') === 'true',
+        runtimeIdentity,
+      })],
     });
     gameRef.current = game;
     game.events.on('reinforcement-runtime-ready', () => {
@@ -151,7 +159,7 @@ function RoundResult({ controller, reviewRobot, onReview, onBack, onContinue }: 
   const successLine = successes.length ? `임무를 완수한 로봇은 ${robotNames(successes)}야.` : '이번에는 임무를 완수한 로봇이 없었어.';
   const failureLine = failures.length ? `아쉬웠던 로봇은 ${robotNames(failures)}야.` : '실패한 로봇은 없어!';
   return <section className="round-result round-result-summary"><AriDialogue
-    text={`${controller.roundIndex}번째 학습이 끝났어! 로봇 5대가 도전했어.\n${successLine}\n${failureLine}`}
+    text={`${controller.observationIndex}번째 학습이 끝났어! 로봇 5대가 도전했어.\n${successLine}\n${failureLine}`}
     expression={failures.length ? 'neutral' : 'happy'} onNext={onContinue}
     nextLabel={controller.trainingComplete ? '최종 결과 보기' : '다음 학습 시작'}>
     <div className="round-robot-results" aria-label="로봇별 학습 결과">{controller.robots.map(robot => {
@@ -304,6 +312,7 @@ export function ReinforcementTrainingApp() {
     <header className="actual-mission-header"><div><span>최종 도전</span><strong>실전 임무</strong></div><div><span>현재 위치</span><strong>{actualRobot.floor}층</strong></div>
       <div className="current-action"><span>지금 하는 행동</span><strong>{actualRobot.message}</strong></div></header>
     <section className="actual-runtime-view"><RuntimeView maps={maps} robot={actualRobot} instanceKey="actual-mission" main
+      runtimeIdentity={{ trainingSeed: initialSeed, starProfile: weights, round: 'evaluation', robotIndex: 1, episodeId: `evaluation-${actualRobot.episodeSeed}` }}
       running={phase === 'ACTUAL_RUNTIME'} onReady={() => setActualReady(true)} onSelect={() => undefined}
       onStatus={observeActual} onError={() => setError('실전 임무 화면을 표시하는 중 문제가 생겼어요.')} /></section>
     {phase === 'ACTUAL_PREPARING' && <PreparationScreen ready={actualReady ? 1 : 0} total={1} actual error={error} onBack={restart} />}
@@ -313,12 +322,13 @@ export function ReinforcementTrainingApp() {
   const mainRobot = controller.robots.find(robot => robot.robot === controller.mainRobot)!;
   const completed = controller.robots.filter(robot => robot.terminal).length;
   return <main className="reinforcement-training runtime-screen noto-font" data-version={version}>
-    <header className="training-header"><div><span>학습</span><strong>{controller.roundIndex} / 5</strong></div>
+    <header className="training-header"><div><span>학습</span><strong>{controller.observationIndex} / 5</strong></div>
       <div><span>자세히 보는 로봇</span><strong>로봇 {controller.mainRobot}</strong></div>
       <div className="current-action"><span>지금 하는 행동</span><strong>{mainRobot.message}</strong></div>
       <div className="training-progress"><span>도전을 마친 로봇</span><strong>{completed} / 5</strong></div></header>
     <section className="training-runtime-grid" aria-label="로봇 5대의 학습 화면">{controller.robots.map(robot => <RuntimeView key={robot.robot}
-      maps={maps} robot={robot} instanceKey={`round-${controller.roundIndex}-robot-${robot.robot}`}
+      maps={maps} robot={robot} instanceKey={`round-${controller.actualRound}-robot-${robot.robot}`}
+      runtimeIdentity={{ trainingSeed: initialSeed, starProfile: weights, actualRound: controller.actualRound, observationIndex: controller.observationIndex, observationRound: controller.observationRound, robotIndex: robot.robot, episodeId: `${controller.actualRound}-${robot.robot}-${robot.episodeSeed}` }}
       main={robot.robot === controller.mainRobot} running={phase === 'RUNTIME'}
       onReady={() => setReadyRobots(current => current.includes(robot.robot) ? current : [...current, robot.robot])}
       onSelect={() => selectMain(robot.robot)} onStatus={status => observe(robot.robot, status)}

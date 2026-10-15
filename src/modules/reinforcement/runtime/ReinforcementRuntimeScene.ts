@@ -11,10 +11,13 @@ import {
 } from '../debug/floor1Tiled.ts';
 import { RUNTIME_ASSETS, RUNTIME_VISUAL_CONFIG } from './runtimeAssets.ts';
 import {
+  applyRuntimeCommand,
   directionForSegment,
+  initialRuntimePlaybackState,
   RUNTIME_CONTACT_FOOTPRINTS,
   type RuntimeCommand,
   type RuntimeDirection,
+  type RuntimePlaybackState,
   type RuntimePoint,
 } from './runtimeCommands.ts';
 import {
@@ -53,6 +56,8 @@ export type RuntimeSceneOptions = {
   maps: TiledMapJson[];
   commands: RuntimeCommand[];
   waitForStart?: boolean;
+  runtimeSyncDebug?: boolean;
+  runtimeIdentity?: Record<string, unknown>;
 };
 
 const MAP_URLS = Array.from({ length: 5 }, (_, index) => `/maps/reinforcement/floor_${index + 1}_blockout.tmj`);
@@ -73,6 +78,11 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   private started: boolean;
   private terminal = false;
   private terminalEmitted = false;
+  private robotDisabled = false;
+  private runtimeSyncDebug: boolean;
+  private runtimeIdentity: Record<string, unknown>;
+  private completedCommandIds = new Set<number>();
+  private playbackState: RuntimePlaybackState = initialRuntimePlaybackState();
   private presentationBusy = false;
   private movementPlaybackSpeed = 1;
   private eventPlaybackSpeed = 1;
@@ -83,6 +93,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     macroPoints: RuntimePoint[];
     progressBase: number;
     index: number;
+    lastDistance: number;
+    stalledMs: number;
   };
   private routeCursor: RuntimeRouteCursor = { segment: 0, progress: 0, worldPosition: { x: 0, y: 0 } };
   private presentation: RuntimePresentationState;
@@ -113,7 +125,10 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     this.maps = options.maps;
     this.commands = options.commands;
     this.started = !options.waitForStart;
+    this.runtimeSyncDebug = options.runtimeSyncDebug ?? false;
+    this.runtimeIdentity = options.runtimeIdentity ?? {};
     this.presentation = createRuntimePresentation(options.commands, options.maps);
+    for (const command of this.commands) this.traceCommand('CREATED', command);
   }
 
   preload() {
@@ -360,12 +375,19 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   }
 
   private execute(command: RuntimeCommand, time: number) {
+    this.traceCommand('STARTED', command);
     this.emitStatus(this.describe(command), command.simulationTime, command);
     if (command.type === 'MOVE') {
       const current = { x: this.robot!.x, y: this.robot!.y };
       const map = this.maps[command.floor - 1];
       const bounds = { x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight };
       const plan = planLocalMovement(command.points, current, bounds, this.movementWalls(command.floor), this.movementBlockers(command.floor));
+      if (!plan.valid) {
+        const target = 'invalidTarget' in plan ? plan.invalidTarget : command.points.at(-1);
+        this.traceCommand('INVALID_MOVE_TARGET', command, { target, ...this.collisionAudit(command, current) });
+        this.failRuntime(new Error(`Runtime MOVE ${command.commandId ?? '?'} has no collision-free path`));
+        return;
+      }
       const progressBase = this.routeCursor.progress;
       this.routeCursor = {
         edgeId: command.edgeIds[0],
@@ -373,7 +395,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         progress: progressBase,
         worldPosition: current,
       };
-      this.move = { command, points: plan.points, macroPoints: command.points, progressBase, index: 1 };
+      this.move = { command, points: plan.points, macroPoints: command.points, progressBase, index: 1, lastDistance: Number.POSITIVE_INFINITY, stalledMs: 0 };
       return;
     }
     if (command.type === 'ENCOUNTER') this.handleEncounter(command);
@@ -386,13 +408,16 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       this.presentationBusy = true;
       void this.transitionFloor(command).then(() => {
         this.presentationBusy = false;
-      }).catch(error => this.finishAtLogicalTerminal(error));
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
       return;
     }
     if (command.type === 'TERMINAL') {
       this.applyTerminal(command);
+      this.completeCommand(command);
       return;
     }
+    this.completeCommand(command);
     this.nextCommandAt = time + EVENT_DELAY / this.eventPlaybackSpeed;
   }
 
@@ -405,6 +430,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       const total = projectRouteProgress(this.move.macroPoints, this.move.macroPoints.at(-1)!).total;
       this.routeCursor.progress = Math.max(this.routeCursor.progress, this.move.progressBase + total);
       this.routeCursor.worldPosition = { x: this.robot.x, y: this.robot.y };
+      this.completeCommand(this.move.command);
       this.move = undefined;
       this.nextCommandAt = this.time.now + 80 / this.movementPlaybackSpeed;
       return;
@@ -415,12 +441,21 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     else this.showRobotVisual();
     const distance = RUNTIME_VISUAL_CONFIG.movementPixelsPerSecond * this.movementPlaybackSpeed * delta / 1000;
     const remaining = Phaser.Math.Distance.Between(from.x, from.y, target.x, target.y);
+    this.move.stalledMs = remaining + 0.1 < this.move.lastDistance ? 0 : this.move.stalledMs + delta;
+    this.move.lastDistance = remaining;
+    if (this.move.stalledMs >= 750) {
+      this.traceCommand('STUCK', this.move.command, { target, remaining });
+      this.failRuntime(new Error(`Runtime MOVE ${this.move.command.commandId ?? '?'} made no progress`));
+      return;
+    }
     if (remaining <= distance + 1) {
       this.robot.setPosition(target.x, target.y).setVelocity(0, 0);
       this.move.index++;
+      this.move.stalledMs = 0;
+      this.move.lastDistance = Number.POSITIVE_INFINITY;
     } else {
       const direction = new Phaser.Math.Vector2(target.x - from.x, target.y - from.y).normalize().scale(RUNTIME_VISUAL_CONFIG.movementPixelsPerSecond * this.movementPlaybackSpeed);
-      this.robot.setVelocity(direction.x, direction.y);
+      this.robot.setVelocity(0, 0).setPosition(from.x + direction.x * delta / 1000, from.y + direction.y * delta / 1000);
     }
     const position = { x: this.robot.x, y: this.robot.y };
     const projection = projectRouteProgress(this.move.macroPoints, position);
@@ -442,11 +477,54 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   }
 
   private movementBlockers(floor: number) {
-    return entitiesForFloor(this.presentation, floor).map(entity => ({
+    return entitiesForFloor(this.presentation, floor).filter(entity => entity.blocking).map(entity => ({
       id: entity.id,
       point: entity.position,
       footprint: runtimeVisualFootprint(entity.kind),
     }));
+  }
+
+  private collisionAudit(command: Extract<RuntimeCommand, { type: 'MOVE' }>, current: RuntimePoint) {
+    const map = this.maps[command.floor - 1];
+    const bounds = { x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight };
+    const route = [current, ...command.points];
+    const footprint = runtimeVisualFootprint('ROBOT');
+    const activeWalls = (map.layers.find(layer => layer.name === 'Collision')?.objects ?? []).filter(object => {
+      const values = properties(object);
+      if (values.blocksRobot === false || object.width <= 0 || object.height <= 0) return false;
+      if (values.dynamicLock === true) return !this.presentation.securityLockOpen;
+      if (values.dynamicDoor === true) return !this.presentation.openDoors.includes(String(values.roomId) as F5Room);
+      return true;
+    }).map((object, index) => ({
+      id: object.name || `collision-${index}`,
+      bounds: axisAlignedBounds(object),
+      dynamic: properties(object).dynamicDoor === true || properties(object).dynamicLock === true,
+    }));
+    const blockers = this.movementBlockers(command.floor);
+    const intersectsWall = (wall: RuntimeRect) => !movementPathIsClear(route, footprint, bounds, [wall]);
+    const intersectsBlocker = (blocker: (typeof blockers)[number]) => !movementPathIsClear(route, footprint, bounds, [], [blocker]);
+    const entities = entitiesForFloor(this.presentation, command.floor);
+    const staticCollisionIntersections = activeWalls.filter(wall => !wall.dynamic && intersectsWall(wall.bounds)).map(wall => wall.id);
+    const dynamicCollisionIntersections = activeWalls.filter(wall => wall.dynamic && intersectsWall(wall.bounds)).map(wall => wall.id);
+    const entityCollisionIntersections = blockers.filter(intersectsBlocker).map(blocker => blocker.id);
+    const whyNoCollisionFreePath = dynamicCollisionIntersections.length
+      ? `closed runtime gate intersects route: ${dynamicCollisionIntersections.join(', ')}`
+      : entityCollisionIntersections.length
+        ? `active blocking entity intersects route: ${entityCollisionIntersections.join(', ')}`
+        : staticCollisionIntersections.length
+          ? `static collision intersects runtime source-to-target route: ${staticCollisionIntersections.join(', ')}`
+          : 'runtime source is outside the canonical route or no in-bounds deterministic detour exists';
+    return {
+      WHY_NO_COLLISION_FREE_PATH: whyNoCollisionFreePath,
+      staticCollisionIntersections,
+      dynamicCollisionIntersections,
+      entityCollisionIntersections,
+      doorState: { openRooms: this.presentation.openDoors, securityLockOpen: this.presentation.securityLockOpen },
+      enemyPositions: entities.filter(entity => entity.kind === 'VILLAIN' || entity.kind === 'GUARD' || entity.kind === 'BOSS')
+        .map(entity => ({ id: entity.id, kind: entity.kind, position: entity.position, blocking: entity.blocking, visualState: entity.visualState })),
+      obstaclePositions: entities.filter(entity => entity.kind === 'OBSTACLE')
+        .map(entity => ({ id: entity.id, position: entity.position, blocking: entity.blocking })),
+    };
   }
 
   private handleEncounter(command: Extract<RuntimeCommand, { type: 'ENCOUNTER' }>) {
@@ -465,7 +543,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         this.setRobotVisualState('COMBAT');
         this.presentationBusy = false;
         this.nextCommandAt = this.time.now;
-      }).catch(error => this.finishAtLogicalTerminal(error));
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
       return true;
     }
     if (command.change === 'SYSTEM_RESTORED') {
@@ -473,7 +552,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       void this.animateCorePowerOn(command).then(() => {
         this.presentationBusy = false;
         this.nextCommandAt = this.time.now;
-      }).catch(error => this.finishAtLogicalTerminal(error));
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
       return true;
     }
     if (command.change === 'SECURITY_LOCK_OPEN' && this.securityLock) {
@@ -482,7 +562,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       void this.animateSecurityEntranceOpen().then(() => {
         this.presentationBusy = false;
         this.nextCommandAt = this.time.now;
-      }).catch(error => this.finishAtLogicalTerminal(error));
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
       return true;
     }
     if (command.change === 'VILLAIN_NEUTRALIZED'
@@ -495,7 +576,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         this.restoreFloorEntities(command.floor);
         this.presentationBusy = false;
         this.nextCommandAt = this.time.now + EVENT_DELAY / this.eventPlaybackSpeed;
-      }).catch(error => this.finishAtLogicalTerminal(error));
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
       return true;
     }
     const motion = presentationMotionForCommand(this.presentation, command);
@@ -509,7 +591,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         if (motion.kind === 'PUSH' || motion.kind === 'CLEAR') this.setRobotVisualState('NORMAL');
         this.presentationBusy = false;
         this.nextCommandAt = this.time.now + EVENT_DELAY / this.eventPlaybackSpeed;
-      }).catch(error => this.finishAtLogicalTerminal(error));
+        this.completeCommand(command);
+      }).catch(error => this.failRuntime(error));
       return true;
     }
     this.presentation = applyRuntimePresentationCommand(this.presentation, command);
@@ -618,7 +701,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   }
 
   private setRobotVisualState(state: RuntimeRobotVisualState) {
-    if (this.robotVisualState === 'NEUTRALIZED' && state !== 'NEUTRALIZED') return;
+    if (this.robotDisabled && state !== 'NEUTRALIZED') return;
     this.robotVisualState = state;
     this.showRobotVisual();
   }
@@ -800,20 +883,19 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     this.move = undefined;
     this.presentationBusy = false;
     this.robot?.setVelocity(0, 0).anims.stop();
+    this.robotDisabled = command.reason === 'ROBOT_DISABLED';
     this.setRobotVisualState(command.reason === 'ROBOT_DISABLED' ? 'NEUTRALIZED' : 'NORMAL');
     this.game.events.emit('reinforcement-runtime-terminal', command.reason, command.simulationTime);
   }
 
-  private finishAtLogicalTerminal(error: unknown) {
+  private failRuntime(error: unknown) {
     console.error(error);
+    this.terminal = true;
+    this.presentationBusy = false;
+    this.robot?.setVelocity(0, 0).anims.stop();
     this.game.events.emit('reinforcement-runtime-error', error instanceof Error ? error.message : String(error));
-    for (let index = this.commands.length - 1; index >= 0; index--) {
-      const command = this.commands[index];
-      if (command.type !== 'TERMINAL') continue;
-      this.emitStatus(this.describe(command), command.simulationTime, command);
-      this.applyTerminal(command);
-      return;
-    }
+    if (this.move) this.traceCommand('CANCELLED', this.move.command, { reason: error instanceof Error ? error.message : String(error) });
+    this.move = undefined;
   }
 
   private setPlaybackSpeed(value: number | { movement: number; event: number }) {
@@ -824,6 +906,62 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
 
   private emitStatus(trace: string, simulationTime: number, command?: RuntimeCommand) {
     this.game.events.emit('reinforcement-runtime-status', { floor: this.floor, trace, simulationTime, command });
+  }
+
+  private completeCommand(command: RuntimeCommand) {
+    if (command.commandId !== undefined) {
+      if (this.completedCommandIds.has(command.commandId)) {
+        this.traceCommand('DUPLICATE_COMPLETION', command);
+        return;
+      }
+      this.completedCommandIds.add(command.commandId);
+    }
+    this.playbackState = applyRuntimeCommand(this.playbackState, command);
+    this.traceCommand('COMPLETED', command);
+  }
+
+  private traceCommand(phase: string, command: RuntimeCommand, detail: Record<string, unknown> = {}) {
+    if (!this.runtimeSyncDebug) return;
+    const commandContext = command.type === 'MOVE'
+      ? {
+          edgeIds: command.edgeIds,
+          logicalSourceNode: command.logicalSourceNode,
+          logicalTargetNode: command.logicalTargetNode,
+          source: command.points[0],
+          target: command.points.at(-1),
+        }
+      : command.type === 'FLOOR_TRANSITION'
+        ? { transitionId: command.transitionId, targetFloor: command.targetFloor, targetSpawn: command.targetSpawn }
+        : command.type === 'ENCOUNTER'
+          ? { encounterId: command.zoneId, encounterPhase: command.phase }
+          : command.type === 'ACTION' || command.type === 'OUTCOME'
+            ? { encounterId: command.zoneId }
+            : {};
+    const entry = {
+      ...this.runtimeIdentity,
+      phase,
+      commandId: command.commandId,
+      type: command.type,
+      commandFloor: command.floor,
+      runtimeFloor: this.floor,
+      simulationTime: command.simulationTime,
+      position: this.robot ? { x: this.robot.x, y: this.robot.y } : undefined,
+      velocity: this.robot?.body && 'velocity' in this.robot.body ? { x: this.robot.body.velocity.x, y: this.robot.body.velocity.y } : undefined,
+      activeMoveTarget: this.move?.points[this.move.index],
+      pendingCommandCount: Math.max(0, this.commands.length - this.cursor),
+      bossFound: this.playbackState.bossFound,
+      bossRoomId: this.playbackState.bossRoomId,
+      currentSearchRoom: this.playbackState.currentSearchRoom,
+      currentEncounterId: this.playbackState.currentEncounterId,
+      bossNeutralized: this.playbackState.bossNeutralized,
+      securityLockOpen: this.playbackState.securityLockOpen,
+      systemRestored: this.playbackState.systemRestored,
+      terminalReason: this.playbackState.terminal,
+      ...commandContext,
+      ...detail,
+    };
+    console.debug('[runtime-sync]', entry);
+    this.game?.events.emit('reinforcement-runtime-sync-debug', entry);
   }
 
   private describe(command: RuntimeCommand) {
