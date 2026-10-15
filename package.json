@@ -15,7 +15,8 @@
     "validate:actual-map-tuning": "node --experimental-strip-types scripts/reinforcement/runActualMapEnvironmentSweep.ts",
     "validate:reward-redesign": "node --experimental-strip-types scripts/reinforcement/evaluateRewardRedesign.ts",
     "validate:reward-failure-v3": "node --experimental-strip-types scripts/reinforcement/evaluateRewardFailureV3.ts",
-    "validate:subdue-recovery": "node --experimental-strip-types scripts/reinforcement/evaluateSubdueRecovery.ts"
+    "validate:subdue-recovery": "node --experimental-strip-types scripts/reinforcement/evaluateSubdueRecovery.ts",
+    "validate:topology-contract": "node --experimental-strip-types scripts/reinforcement/evaluateTopologyInteractionContract.ts"
   },
   "dependencies": { "phaser": "4.2.1", "react": "^19.1.1", "react-dom": "^19.1.1" },
   "devDependencies": { "@types/react": "^19.1.10", "@types/react-dom": "^19.1.9", "typescript": "~5.9.2", "vite": "^7.1.3" }

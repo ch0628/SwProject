@@ -4,7 +4,7 @@ export const ACTIONS = {
   CITIZEN_NEARBY: ['WIDE_DETOUR', 'SLOW_PASS', 'WAIT', 'FAST_PASS'],
   AMBIGUOUS_PERSON: ['OBSERVE', 'BYPASS', 'TRACK', 'SUBDUE'],
   VILLAIN_ENCOUNTER: ['SUBDUE', 'FORCE_PASS', 'DISTRACT', 'BYPASS', 'RETREAT'],
-  BOSS_ENCOUNTER: ['SUBDUE', 'RETREAT'],
+  BOSS_ENCOUNTER: ['SUBDUE'],
 } as const;
 
 export type DecisionState = keyof typeof ACTIONS;
@@ -106,6 +106,7 @@ export type ActionExperience = {
   segmentEvents?: EventType[];
   segmentReturn?: number;
   routeContext?: string;
+  routeStartNode?: string;
   routeOptions?: Action[];
   rawRouteCredit?: number;
   routeAdvantage?: number;
@@ -571,22 +572,18 @@ export function resolveBossEncounter(
   action: (typeof ACTIONS.BOSS_ENCOUNTER)[number],
   roll = 0,
   distracted = false,
-  retreatTimeCost = 0,
   options: BossResolutionOptions = {},
 ): EncounterResolution {
-  if (action === 'SUBDUE') {
-    const baseProbability = distracted
-      ? validProbability(options.distractedSubdueSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.bossDistractedSubdue, 'distracted Boss SUBDUE success')
-      : validProbability(options.baseSubdueSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.bossSubdue, 'Boss SUBDUE success');
-    const successThreshold = clamp(baseProbability
-      + (options.combatSkill ?? 0) * (options.combatSkillBonus ?? 0)
-      + (options.retryCombatBonus ?? 0), 0, 1);
-    const success = roll < successThreshold;
-    return success
-      ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['BOSS_NEUTRALIZED'], localOutcome: 'BOSS_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false, robotDamageDelta: options.subdueSuccessDamage ?? 0.01, combatExperience: 1 }
-      : { elapsedCost: ACTION_TIME.VERY_SMALL + 5, events: [], localOutcome: 'SUBDUE_RECOVERY', passed: false, retry: true, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.subdueFailureDamage ?? 0.4, combatExperience: 0.6, subdueFailed: true };
-  }
-  return { elapsedCost: retreatTimeCost, events: [], localOutcome: 'RETREAT_TO_SEARCH', passed: false, retry: false, neutralized: false, mobilityDamaged: false };
+  const baseProbability = distracted
+    ? validProbability(options.distractedSubdueSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.bossDistractedSubdue, 'distracted Boss SUBDUE success')
+    : validProbability(options.baseSubdueSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.bossSubdue, 'Boss SUBDUE success');
+  const successThreshold = clamp(baseProbability
+    + (options.combatSkill ?? 0) * (options.combatSkillBonus ?? 0)
+    + (options.retryCombatBonus ?? 0), 0, 1);
+  const success = roll < successThreshold;
+  return success
+    ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['BOSS_NEUTRALIZED'], localOutcome: 'BOSS_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false, robotDamageDelta: options.subdueSuccessDamage ?? 0.01, combatExperience: 1 }
+    : { elapsedCost: ACTION_TIME.VERY_SMALL + 5, events: [], localOutcome: 'SUBDUE_RECOVERY', passed: false, retry: true, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.subdueFailureDamage ?? 0.4, combatExperience: 0.6, subdueFailed: true };
 }
 
 export function resolveAmbiguousPerson(

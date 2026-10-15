@@ -121,6 +121,55 @@ export const movementPathIsClear = (
   })).every(point => pointIsClear(point, footprint, bounds, walls, blockers));
 });
 
+const unitAxis = (direction: RuntimePoint): RuntimePoint => Math.abs(direction.x) >= Math.abs(direction.y)
+  ? { x: Math.sign(direction.x) || 1, y: 0 }
+  : { x: 0, y: Math.sign(direction.y) || 1 };
+
+export function planLocalRetreat(
+  staging: RuntimePoint,
+  incomingDirection: RuntimePoint,
+  distance: number,
+  bounds: RuntimeRect,
+  walls: readonly RuntimeRect[],
+  blockers: readonly RuntimeMovementBlocker[] = [],
+) {
+  const forward = unitAxis(incomingDirection);
+  const retreat = { x: staging.x - forward.x * distance, y: staging.y - forward.y * distance };
+  const points = [{ ...staging }, retreat, { ...staging }];
+  return { points, valid: movementPathIsClear(points, runtimeVisualFootprint('ROBOT'), bounds, walls, blockers) };
+}
+
+export function planLocalBypass(
+  staging: RuntimePoint,
+  target: RuntimePoint,
+  incomingDirection: RuntimePoint,
+  targetFootprint: RuntimeFootprint,
+  tileSize: number,
+  bounds: RuntimeRect,
+  walls: readonly RuntimeRect[],
+  blockers: readonly RuntimeMovementBlocker[] = [],
+) {
+  const forward = unitAxis(incomingDirection);
+  const left = { x: forward.y, y: -forward.x };
+  const robot = runtimeVisualFootprint('ROBOT');
+  const targetProgress = Math.max(0, (target.x - staging.x) * forward.x + (target.y - staging.y) * forward.y);
+  const clearance = projectedHalfExtent(robot, forward) + projectedHalfExtent(targetFootprint, forward) + 8;
+  const forwardDistance = targetProgress + clearance;
+  const candidate = (side: 'LEFT' | 'RIGHT') => {
+    const sign = side === 'LEFT' ? 1 : -1;
+    const lateral = { x: left.x * tileSize * sign, y: left.y * tileSize * sign };
+    const p1 = { x: staging.x + lateral.x, y: staging.y + lateral.y };
+    const p3 = { x: staging.x + forward.x * forwardDistance, y: staging.y + forward.y * forwardDistance };
+    const p2 = { x: p3.x + lateral.x, y: p3.y + lateral.y };
+    const points = [{ ...staging }, p1, p2, p3];
+    return { side, points, valid: movementPathIsClear(points, robot, bounds, walls, blockers) };
+  };
+  const leftPlan = candidate('LEFT');
+  if (leftPlan.valid) return leftPlan;
+  const rightPlan = candidate('RIGHT');
+  return rightPlan.valid ? rightPlan : { side: 'NONE' as const, points: leftPlan.points, valid: false };
+}
+
 export function planDistractMovement(
   center: RuntimePoint,
   bounds: RuntimeRect,

@@ -57,7 +57,7 @@ test('combat skill raises SUBDUE probability, Boss stays harder, and failed comb
   const failed = resolveVillainEncounter(1, 'SUBDUE', 0.99, { ...common, combatSkill: 0 });
   assert.equal(failed.combatExperience, 0.6);
   assert.equal(failed.robotDamageDelta, 0.4);
-  const boss = resolveBossEncounter('SUBDUE', 0.66, false, 0, { baseSubdueSuccess: 0.42, combatSkill: 0.5, combatSkillBonus: 0.45 });
+  const boss = resolveBossEncounter('SUBDUE', 0.66, false, { baseSubdueSuccess: 0.42, combatSkill: 0.5, combatSkillBonus: 0.45 });
   const villain = resolveVillainEncounter(1, 'SUBDUE', 0.60, { ...common, combatSkill: 0.5 });
   assert.equal(villain.neutralized, true);
   assert.equal(boss.neutralized, false);
@@ -115,13 +115,14 @@ test('episode damage is monotonic, survives reroutes/retries, and new episodes s
   assert.ok(run.rounds.flatMap(round => round.episodes).every(episode => episode.actual.repeatedSameStairLoops === 0));
 });
 
-test('F5 allows SUBDUE/RETREAT only and progression remains neutralization-gated', () => {
-  assert.deepEqual(ACTIONS.BOSS_ENCOUNTER, ['SUBDUE', 'RETREAT']);
+test('F5 Guard allows SUBDUE/RETREAT, Boss is SUBDUE-only, and progression remains neutralization-gated', () => {
+  assert.deepEqual(ACTIONS.BOSS_ENCOUNTER, ['SUBDUE']);
   const episodes = runActualMapTraining(environment, balanced, 9, 20, 5).rounds.flatMap(round => round.episodes);
   const f5Actions = episodes.flatMap(episode => episode.actionHistory.filter(action =>
     action.state === 'BOSS_ENCOUNTER' || (action.state === 'VILLAIN_ENCOUNTER' && String(action.location).startsWith('F5_'))));
   assert.ok(f5Actions.length > 0);
   assert.ok(f5Actions.every(action => action.action === 'SUBDUE' || action.action === 'RETREAT'));
+  assert.ok(f5Actions.filter(action => action.state === 'BOSS_ENCOUNTER').every(action => action.action === 'SUBDUE'));
   assert.ok(episodes.filter(episode => episode.goalReached).every(episode => {
     const events = episode.eventHistory.map(event => event.type);
     return events.indexOf('BOSS_NEUTRALIZED') < events.indexOf('SECURITY_LOCK_OPEN')

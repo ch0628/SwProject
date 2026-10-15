@@ -299,7 +299,7 @@ test('Map Integration v1 exposes only the approved action pools and numeric trai
   assert.equal(ACTIONS.OBSTACLE.includes('SQUEEZE' as never), false);
   assert.equal(ACTIONS.OBSTACLE.includes('WAIT' as never), false);
   assert.deepEqual(ACTIONS.VILLAIN_ENCOUNTER, ['SUBDUE', 'FORCE_PASS', 'DISTRACT', 'BYPASS', 'RETREAT']);
-  assert.deepEqual(ACTIONS.BOSS_ENCOUNTER, ['SUBDUE', 'RETREAT']);
+  assert.deepEqual(ACTIONS.BOSS_ENCOUNTER, ['SUBDUE']);
   assert.deepEqual(ROUTE_TRAITS, { NONE: 0, LOW: 0.25, MEDIUM: 0.5, HIGH: 0.75 });
   assert.deepEqual(ENCOUNTER_RATES, { LOW: 0.25, MEDIUM: 0.5, HIGH: 0.75, MANDATORY: 1 });
 });
@@ -346,13 +346,13 @@ test('MOBILITY_DAMAGE applies to the next route segment only', () => {
   assert.deepEqual(consumeMobilityDamage(10, first.mobilityDamaged), { elapsedCost: 10, mobilityDamaged: false });
 });
 
-test('BOSS SUBDUE uses combat skill, remains fallible, and only RETREAT is the alternative', () => {
+test('BOSS SUBDUE uses combat skill, remains fallible, and is the only available action', () => {
   assert.equal(resolveBossEncounter('SUBDUE', 0.79).neutralized, true);
   assert.equal(resolveBossEncounter('SUBDUE', 0.80).localOutcome, 'SUBDUE_RECOVERY');
-  assert.equal(resolveBossEncounter('SUBDUE', 0.84, false, 0, { baseSubdueSuccess: 0.4, combatSkill: 1, combatSkillBonus: 0.45 }).neutralized, true);
-  assert.equal(resolveBossEncounter('SUBDUE', 0.86, false, 0, { baseSubdueSuccess: 0.4, combatSkill: 1, combatSkillBonus: 0.45 }).localOutcome, 'SUBDUE_RECOVERY');
-  assert.equal(resolveBossEncounter('SUBDUE', 0.75, false, 0, { baseSubdueSuccess: 0.80 }).neutralized, true);
-  assert.equal(resolveBossEncounter('SUBDUE', 0.90, true, 0, { distractedSubdueSuccess: 0.95 }).neutralized, true);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.84, false, { baseSubdueSuccess: 0.4, combatSkill: 1, combatSkillBonus: 0.45 }).neutralized, true);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.86, false, { baseSubdueSuccess: 0.4, combatSkill: 1, combatSkillBonus: 0.45 }).localOutcome, 'SUBDUE_RECOVERY');
+  assert.equal(resolveBossEncounter('SUBDUE', 0.75, false, { baseSubdueSuccess: 0.80 }).neutralized, true);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.90, true, { distractedSubdueSuccess: 0.95 }).neutralized, true);
   assert.equal(ACTIONS.BOSS_ENCOUNTER.includes('BYPASS' as never), false);
   assert.equal(ACTIONS.BOSS_ENCOUNTER.includes('DISTRACT' as never), false);
 });
