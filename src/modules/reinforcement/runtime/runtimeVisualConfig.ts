@@ -1,3 +1,19 @@
+import type { RuntimeDirection } from './runtimeCommands.ts';
+
+export type RuntimeRobotVisualState = 'NORMAL' | 'COMBAT' | 'WORK' | 'NEUTRALIZED';
+
+export const runtimeRobotTexture = (state: RuntimeRobotVisualState, direction: RuntimeDirection) =>
+  state === 'NORMAL' ? `runtime-robot-idle-${direction}` : `runtime-robot-${state.toLowerCase()}-${direction}`;
+
+export const runtimeRobotEncounterState = (
+  phase: 'START' | 'END',
+  encounter: 'OBSTACLE' | 'CITIZEN_NEARBY' | 'AMBIGUOUS_PERSON' | 'VILLAIN_ENCOUNTER' | 'BOSS_ENCOUNTER',
+): RuntimeRobotVisualState => phase === 'END'
+  ? 'NORMAL'
+  : encounter === 'VILLAIN_ENCOUNTER' || encounter === 'BOSS_ENCOUNTER'
+    ? 'COMBAT'
+    : encounter === 'CITIZEN_NEARBY' ? 'WORK' : 'NORMAL';
+
 export const RUNTIME_CHARACTER_SCALE = {
   ROBOT: 0.85,
   CITIZEN: 1.2,
@@ -42,6 +58,16 @@ export const RUNTIME_VISUAL_CONFIG = {
   forcePassDurationMs: 280,
   distractSideDurationMs: 220,
   distractFinalDurationMs: 260,
+  subdueLunge: {
+    distance: 16,
+    forwardMs: 140,
+    impactHoldMs: 80,
+    returnMs: 160,
+  },
+  secureEntranceOpen: {
+    unlockPauseMs: 550,
+    openHoldMs: 400,
+  },
   corePowerOn: {
     arrivalPauseMs: 500,
     poweringMs: 850,

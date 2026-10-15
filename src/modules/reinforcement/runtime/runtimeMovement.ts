@@ -1,11 +1,11 @@
-import { RUNTIME_CHARACTER_SCALE } from './runtimeVisualConfig.ts';
 import {
-  RUNTIME_CONTACT_FOOTPRINTS,
-  type RuntimeFootprint,
   type RuntimePoint,
 } from './runtimeCommands.ts';
+import { runtimeVisualFootprint, type RuntimeFootprint, type RuntimeMovementKind } from './runtimeFootprints.ts';
 
-export type RuntimeMovementKind = 'ROBOT' | 'OBSTACLE' | 'CITIZEN' | 'AMBIGUOUS' | 'VILLAIN' | 'GUARD' | 'BOSS';
+export { runtimeVisualFootprint } from './runtimeFootprints.ts';
+
+export type { RuntimeMovementKind } from './runtimeFootprints.ts';
 export type RuntimeRect = { x: number; y: number; width: number; height: number };
 export type RuntimeMovementBlocker = { id: string; point: RuntimePoint; footprint: RuntimeFootprint };
 export type RuntimeRouteCursor = {
@@ -13,20 +13,6 @@ export type RuntimeRouteCursor = {
   segment: number;
   progress: number;
   worldPosition: RuntimePoint;
-};
-
-const scaled = (footprint: RuntimeFootprint, scale: number): RuntimeFootprint => ({
-  width: footprint.width * scale,
-  height: footprint.height * scale,
-});
-
-export const runtimeVisualFootprint = (kind: RuntimeMovementKind): RuntimeFootprint => {
-  if (kind === 'ROBOT') return scaled(RUNTIME_CONTACT_FOOTPRINTS.ROBOT, RUNTIME_CHARACTER_SCALE.ROBOT);
-  if (kind === 'OBSTACLE') return RUNTIME_CONTACT_FOOTPRINTS.OBSTACLE;
-  if (kind === 'CITIZEN') return scaled(RUNTIME_CONTACT_FOOTPRINTS.CITIZEN_NEARBY, RUNTIME_CHARACTER_SCALE.CITIZEN);
-  if (kind === 'AMBIGUOUS') return scaled(RUNTIME_CONTACT_FOOTPRINTS.AMBIGUOUS_PERSON, RUNTIME_CHARACTER_SCALE.AMBIGUOUS);
-  if (kind === 'BOSS') return scaled(RUNTIME_CONTACT_FOOTPRINTS.BOSS_ENCOUNTER, RUNTIME_CHARACTER_SCALE.BOSS);
-  return scaled(RUNTIME_CONTACT_FOOTPRINTS.VILLAIN_ENCOUNTER, RUNTIME_CHARACTER_SCALE.VILLAIN);
 };
 
 const routeMetrics = (points: readonly RuntimePoint[]) => {

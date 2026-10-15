@@ -1,0 +1,331 @@
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import * as Phaser from 'phaser';
+import graph from '../../../../docs/modules/machine_learning/reinforcement/navigation/navigation_graph_v1_f5_v3.json';
+import { LOGICAL } from '../../../config.ts';
+import { AriDialogue } from '../../ai-basics/AriDialogue.tsx';
+import {
+  DEFAULT_REWARD_STARS,
+  REWARD_STAR_TOTAL,
+  type RewardStars,
+  type TerminalReason,
+} from '../sim/learningEngine.ts';
+import type { ActualEpisode } from '../sim/actualMapSimulation.ts';
+import { ACTUAL_MAP_FILES, buildActualMapEnvironment } from '../sim/actualMapEnvironment.ts';
+import type { TiledMapJson } from '../debug/floor1Tiled.ts';
+import { ReinforcementRuntimeScene } from './ReinforcementRuntimeScene.ts';
+import { TrainingRuntimeController, type RobotRuntime, type RoundHistory } from './runtimeController.ts';
+import type { RuntimeCommand } from './runtimeCommands.ts';
+import { failureReview, REWARD_LABELS, rewardAdvice, trainingLabel, WEIGHT_LEVEL_LABELS } from './trainingLabels.ts';
+
+type Phase = 'TUTORIAL' | 'SETTING' | 'PREPARING' | 'RUNTIME' | 'RESULT' | 'COMPLETE'
+  | 'ACTUAL_PREPARING' | 'ACTUAL_RUNTIME' | 'ACTUAL_RESULT';
+type RuntimeStatus = { floor: number; trace: string; simulationTime: number; command?: RuntimeCommand };
+type TutorialTarget = 'start' | 'rewards' | 'runtime' | 'action' | 'results' | 'failure' | 'actual';
+
+const WEIGHT_FIELDS = (Object.keys(REWARD_LABELS) as Array<keyof RewardStars>).map(key => ({ key, label: REWARD_LABELS[key] }));
+const COMPARED_ACTIONS = ['SUBDUE', 'DISTRACT', 'FORCE_PASS', 'PUSH', 'CLEAR', 'DETOUR'] as const;
+const FAILURE_REASONS: Exclude<TerminalReason, 'GOAL_REACHED'>[] = ['ROBOT_DISABLED', 'TIMEOUT', 'MISUNDERSTANDING'];
+const TUTORIAL_STEPS: Array<{ text: string; target: TutorialTarget }> = [
+  { text: '이번에는 로봇을 직접 움직이는 게 아니야! 로봇이 어떤 행동을 중요하게 배울지 정해 줄 거야.', target: 'start' },
+  { text: '별이 많을수록 로봇이 더 중요하게 생각해. 네 생각대로 보상과 벌점의 중요도를 골라 봐!', target: 'rewards' },
+  { text: '큰 화면은 자세히 보는 로봇이고, 아래 작은 화면은 같이 학습 중인 다른 로봇이야. 작은 화면을 누르면 크게 볼 수 있어.', target: 'runtime' },
+  { text: '여기를 보면 지금 로봇이 무엇을 하고 있는지 알 수 있어.', target: 'action' },
+  { text: '로봇 5대가 모두 도전을 끝내면 성공과 실패를 한눈에 확인할 수 있어.', target: 'results' },
+  { text: '실패한 로봇을 누르면 어디에서 어려움을 겪었는지 마지막 장면을 볼 수 있어.', target: 'failure' },
+  { text: '5번의 학습이 끝나면, 마지막에 배운 방법으로 실제 임무에도 도전해 볼 수 있어!', target: 'actual' },
+];
+
+const robotNames = (episodes: ActualEpisode[]) => episodes.length ? episodes.map(episode => `로봇 ${episode.robot}`).join(', ') : '없어';
+const successCount = (round: RoundHistory) => round.robotResults.filter(episode => episode.terminalReason === 'GOAL_REACHED').length;
+const reasonCount = (round: RoundHistory, reason: TerminalReason) => round.robotResults.filter(episode => episode.terminalReason === reason).length;
+const actionCount = (round: RoundHistory, action: string) => round.robotResults.reduce(
+  (sum, episode) => sum + episode.actionHistory.filter(item => item.action === action).length,
+  0,
+);
+
+function TutorialPreview({ step, onNext }: { step: number; onNext: () => void }) {
+  const current = TUTORIAL_STEPS[step];
+  const focus = (target: TutorialTarget) => current.target === target ? 'tutorial-highlight' : '';
+  const view = step < 2 ? 'setting' : step < 4 ? 'runtime' : step < 6 ? 'results' : 'actual';
+  return <main className="reinforcement-training tutorial-screen noto-font">
+    <div className="tutorial-progress" aria-label={`튜토리얼 ${step + 1} / ${TUTORIAL_STEPS.length}`}>
+      {TUTORIAL_STEPS.map((_, index) => <i className={index <= step ? 'is-done' : ''} key={index} />)}
+    </div>
+    <section className="tutorial-stage" aria-hidden="true">
+      {view === 'setting' && <div className="tutorial-setting-mock">
+        <h1>로봇은 무엇을 중요하게 배울까?</h1>
+        <div className={`tutorial-reward-list ${focus('rewards')}`}>
+          <span>시민 보호 <b>★★★</b></span><span>시설 보호 <b>★★</b></span><span>빠른 해결 <b>★</b></span>
+        </div>
+        <button className={focus('start')} type="button">학습 시작</button>
+      </div>}
+      {view === 'runtime' && <div className="tutorial-runtime-mock">
+        <div className={`tutorial-main-view ${focus('runtime')}`}><strong>로봇 1 큰 화면</strong><span>5층으로 이동 중</span></div>
+        <div className="tutorial-sub-views">{[2, 3, 4, 5].map(robot => <span key={robot}>로봇 {robot}</span>)}</div>
+        <div className={`tutorial-action-card ${focus('action')}`}><small>지금 하는 행동</small><strong>악당의 주의를 돌리고 있어요!</strong></div>
+      </div>}
+      {view === 'results' && <div className={`tutorial-result-mock ${focus('results')}`}>
+        <h1>1번째 학습이 끝났어!</h1>
+        <div>{[1, 2, 3, 4, 5].map(robot => <span className={robot === 2 ? focus('failure') : ''} key={robot}>로봇 {robot}<b>{robot === 2 ? '마지막 장면 보기' : '임무 성공'}</b></span>)}</div>
+      </div>}
+      {view === 'actual' && <div className="tutorial-final-mock">
+        <h1>훈련이 끝났어!</h1><p>처음보다 임무를 성공한 로봇이 많아졌어.</p>
+        <button className={focus('actual')} type="button">실전에서 확인하기</button>
+      </div>}
+    </section>
+    <AriDialogue text={current.text} expression={step === TUTORIAL_STEPS.length - 1 ? 'happy' : 'neutral'} onNext={onNext}
+      nextLabel={step === TUTORIAL_STEPS.length - 1 ? '중요도 정하러 가기' : '다음'} />
+  </main>;
+}
+
+function RuntimeView({ maps, robot, instanceKey, main, running, onReady, onSelect, onStatus, onError }: {
+  maps: TiledMapJson[]; robot: RobotRuntime; instanceKey: string; main: boolean; running: boolean;
+  onReady: () => void; onSelect: () => void; onStatus: (status: RuntimeStatus) => void; onError: (message: string) => void;
+}) {
+  const mount = useRef<HTMLDivElement>(null);
+  const gameRef = useRef<Phaser.Game | null>(null);
+  const readyHandler = useRef(onReady);
+  const statusHandler = useRef(onStatus);
+  const errorHandler = useRef(onError);
+  readyHandler.current = onReady;
+  statusHandler.current = onStatus;
+  errorHandler.current = onError;
+
+  useEffect(() => {
+    if (!mount.current) return;
+    const game = new Phaser.Game({
+      type: Phaser.AUTO, parent: mount.current, width: LOGICAL.width, height: LOGICAL.height,
+      backgroundColor: '#071018', pixelArt: true, roundPixels: true,
+      physics: { default: 'arcade', arcade: { debug: false } },
+      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+      scene: [new ReinforcementRuntimeScene({ maps, commands: robot.commands, waitForStart: true })],
+    });
+    gameRef.current = game;
+    game.events.on('reinforcement-runtime-ready', () => {
+      game.events.emit('reinforcement-runtime-speed', { movement: 1, event: 1 });
+      readyHandler.current();
+    });
+    game.events.on('reinforcement-runtime-status', (status: RuntimeStatus) => statusHandler.current(status));
+    game.events.on('reinforcement-runtime-error', (message: string) => errorHandler.current(message));
+    return () => { gameRef.current = null; game.destroy(true); };
+  }, [maps, robot.commands, instanceKey]);
+
+  useEffect(() => { if (running) gameRef.current?.events.emit('reinforcement-runtime-start'); }, [running]);
+
+  return <button type="button"
+    className={`training-runtime-card ${main ? 'is-main' : 'is-sub'} ${robot.terminal ? 'is-terminal' : ''}`}
+    aria-label={`로봇 ${robot.robot}${main ? ', 관찰 중' : ', 보조 화면'}`} aria-pressed={main}
+    disabled={!running} onClick={main || !running ? undefined : onSelect}>
+    <div className="training-runtime-canvas" ref={mount} />
+    <div className="training-runtime-status"><strong>로봇 {robot.robot}</strong><span>{robot.floor}층</span><span>{trainingLabel(robot.terminalReason ?? robot.status)}</span></div>
+  </button>;
+}
+
+function PreparationScreen({ ready, total = 5, actual = false, error, onBack }: {
+  ready: number; total?: number; actual?: boolean; error: string; onBack: () => void;
+}) {
+  return <section className="training-preparation" role="status" aria-live="polite"><div className="training-preparation-card">
+    <span className="training-preparation-spinner" aria-hidden="true">⚙</span>
+    <h1>{error ? '로봇을 준비하지 못했어요' : actual ? '실전 임무를 준비 중입니다' : '로봇을 준비 중입니다'}</h1>
+    <p>{error ? '잠시 후 다시 시작해 주세요.' : actual ? '훈련을 마친 로봇이 실제 임무를 준비하고 있어요.' : '5대의 로봇이 출발을 준비하고 있어요.'}</p>
+    {!error && <strong>{ready} / {total} 준비 완료</strong>}
+    {error && <button type="button" onClick={onBack}>설정으로 돌아가기</button>}
+  </div></section>;
+}
+
+function RoundResult({ controller, reviewRobot, onReview, onBack, onContinue }: {
+  controller: TrainingRuntimeController; reviewRobot: number | null; onReview: (robot: number) => void;
+  onBack: () => void; onContinue: () => void;
+}) {
+  const successes = controller.robots.map(robot => robot.episode).filter(episode => episode.terminalReason === 'GOAL_REACHED');
+  const failures = controller.robots.map(robot => robot.episode).filter(episode => episode.terminalReason !== 'GOAL_REACHED');
+  if (reviewRobot) {
+    const episode = controller.robots.find(robot => robot.robot === reviewRobot)!.episode;
+    const review = failureReview(episode);
+    return <section className="round-result round-result-review"><AriDialogue text={review.text} expression="disappointed" onNext={onBack} nextLabel="결과로 돌아가기">
+      <div className="failure-review-facts"><span><small>마지막 위치</small><strong>{review.floor}층</strong></span>
+        {review.action && <span><small>마지막 행동</small><strong>{review.action}</strong></span>}
+        <span><small>결과</small><strong>{review.result}</strong></span></div>
+    </AriDialogue></section>;
+  }
+  const successLine = successes.length ? `임무를 완수한 로봇은 ${robotNames(successes)}야.` : '이번에는 임무를 완수한 로봇이 없었어.';
+  const failureLine = failures.length ? `아쉬웠던 로봇은 ${robotNames(failures)}야.` : '실패한 로봇은 없어!';
+  return <section className="round-result round-result-summary"><AriDialogue
+    text={`${controller.roundIndex}번째 학습이 끝났어! 로봇 5대가 도전했어.\n${successLine}\n${failureLine}`}
+    expression={failures.length ? 'neutral' : 'happy'} onNext={onContinue}
+    nextLabel={controller.trainingComplete ? '최종 결과 보기' : '다음 학습 시작'}>
+    <div className="round-robot-results" aria-label="로봇별 학습 결과">{controller.robots.map(robot => {
+      const succeeded = robot.episode.terminalReason === 'GOAL_REACHED';
+      const content = <><strong>로봇 {robot.robot}</strong><span>{succeeded ? '✓ 임무 성공' : `✕ ${trainingLabel(robot.episode.terminalReason)}`}</span></>;
+      return succeeded ? <div className="is-success" key={robot.robot}>{content}</div>
+        : <button className="is-failure" type="button" key={robot.robot} onClick={() => onReview(robot.robot)}>{content}<small>마지막 장면 보기</small></button>;
+    })}</div>
+    {failures.length > 0 && <p className="review-hint">실패한 로봇을 눌러 어디에서 어려움을 겪었는지 볼 수 있어.</p>}
+    <p className="learning-explanation">성공한 경험과 실패한 경험을 모두 모았어. AI는 이 경험으로 다음 행동을 다시 배울 거야!</p>
+  </AriDialogue></section>;
+}
+
+function TrainingResult({ controller, onActual }: { controller: TrainingRuntimeController; onActual: () => void }) {
+  const first = controller.history.rounds[0];
+  const last = controller.history.rounds.at(-1)!;
+  const firstSuccess = successCount(first);
+  const lastSuccess = successCount(last);
+  const changes = COMPARED_ACTIONS.map(action => ({ action, first: actionCount(first, action), last: actionCount(last, action) }))
+    .filter(change => change.first + change.last > 0);
+  const maxActionCount = Math.max(1, ...changes.flatMap(change => [change.first, change.last]));
+  const forceChange = changes.find(change => change.action === 'FORCE_PASS');
+  const ariText = lastSuccess > firstSuccess ? '처음보다 임무를 성공한 로봇이 많아졌어!'
+    : forceChange && forceChange.last < forceChange.first ? '처음보다 강제로 돌파하기를 덜 골랐어! 다른 방법도 배운 거야.'
+      : lastSuccess < firstSuccess ? '마지막 학습은 더 어려웠지만, 성공과 실패 경험을 모두 모았어.'
+        : '여러 번 경험하면서 행동의 결과를 비교해 보았어.';
+  return <main className="reinforcement-training training-result-screen noto-font"><section className="training-result-card">
+    <p className="training-kicker">학습 결과</p><h1>훈련이 끝났어!</h1>
+    <p>5번의 학습 동안 <strong>25대의 로봇</strong>이 경험을 모았어!</p>
+    <div className="success-comparison"><div><small>처음</small><strong>성공 {firstSuccess} / 5</strong></div><b aria-hidden="true">→</b>
+      <div><small>마지막</small><strong>성공 {lastSuccess} / 5</strong></div></div>
+    <div className="training-result-details">
+      <section><h2>실패는 어떻게 달라졌을까?</h2>{FAILURE_REASONS.map(reason => <p key={reason}><span>{trainingLabel(reason)}</span><strong>{reasonCount(first, reason)} → {reasonCount(last, reason)}</strong></p>)}</section>
+      <section><h2>행동은 어떻게 달라졌을까?</h2>{changes.length ? changes.map(change => <div className="action-change" key={change.action}>
+        <span>{trainingLabel(change.action)}</span><strong>{change.first} → {change.last}</strong>
+        <i style={{ '--before': `${change.first / maxActionCount * 100}%`, '--after': `${change.last / maxActionCount * 100}%` } as CSSProperties} />
+      </div>) : <p>비교할 행동이 아직 없어요.</p>}</section>
+      <section className="chosen-weights"><h2>내가 중요하게 정한 것</h2>{WEIGHT_FIELDS.map(field => <p key={field.key}><span>{field.label}</span>
+        <strong aria-label={`${controller.history.selectedRewardStars[field.key]}단계`}>{'★'.repeat(controller.history.selectedRewardStars[field.key]) || '–'}</strong></p>)}</section>
+    </div>
+    <AriDialogue inline text={ariText} expression="happy" onNext={onActual} nextLabel="실전에서 확인하기" />
+  </section></main>;
+}
+
+function ActualMissionResult({ robot, onRestart, onHome }: { robot: RobotRuntime; onRestart: () => void; onHome: () => void }) {
+  const succeeded = robot.terminalReason === 'GOAL_REACHED';
+  const reason = robot.terminalReason ? trainingLabel(robot.terminalReason) : '임무 종료';
+  return <section className="actual-result"><AriDialogue
+    text={succeeded ? '해냈어! 훈련한 로봇이 실제 임무도 완수했어!'
+      : `아직 어려운 상황이 남아 있었어. 다시 학습해 보면 더 잘할 수 있을 거야!\n결과: ${reason}`}
+    expression={succeeded ? 'happy' : 'disappointed'}>
+    <div className="actual-result-actions"><button type="button" onClick={onRestart}>다시 학습하기</button><button type="button" onClick={onHome}>메인으로 돌아가기</button></div>
+  </AriDialogue></section>;
+}
+
+export function ReinforcementTrainingApp() {
+  const [phase, setPhase] = useState<Phase>('TUTORIAL');
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [weights, setWeights] = useState<RewardStars>({ ...DEFAULT_REWARD_STARS });
+  const [maps, setMaps] = useState<TiledMapJson[]>([]);
+  const [version, setVersion] = useState(0);
+  const [error, setError] = useState('');
+  const [reviewRobot, setReviewRobot] = useState<number | null>(null);
+  const [readyRobots, setReadyRobots] = useState<number[]>([]);
+  const [actualRobot, setActualRobot] = useState<RobotRuntime | null>(null);
+  const [actualReady, setActualReady] = useState(false);
+  const controllerRef = useRef<TrainingRuntimeController | null>(null);
+  const initialSeed = Number(new URLSearchParams(window.location.search).get('seed')) || 42;
+  const controller = controllerRef.current;
+  const usedStars = WEIGHT_FIELDS.reduce((sum, field) => sum + weights[field.key], 0);
+  const validStarBudget = usedStars === REWARD_STAR_TOTAL;
+
+  useEffect(() => {
+    if (phase === 'PREPARING' && !error && readyRobots.length === 5) setPhase('RUNTIME');
+    if (phase === 'ACTUAL_PREPARING' && !error && actualReady) setPhase('ACTUAL_RUNTIME');
+  }, [actualReady, error, phase, readyRobots.length]);
+
+  const startTraining = async () => {
+    if (phase !== 'SETTING') return;
+    setPhase('PREPARING'); setReadyRobots([]); setError('');
+    try {
+      const loadedMaps = await Promise.all(ACTUAL_MAP_FILES.map(async path => {
+        const response = await fetch(`/${path.replace(/^public\//, '')}`);
+        if (!response.ok) throw new Error('학습 지도를 불러오지 못했어요.');
+        return response.json() as Promise<TiledMapJson>;
+      }));
+      const environment = buildActualMapEnvironment(loadedMaps, graph as Parameters<typeof buildActualMapEnvironment>[1]);
+      controllerRef.current = new TrainingRuntimeController(environment, weights, initialSeed);
+      setMaps(loadedMaps); setVersion(value => value + 1);
+    } catch (cause) { console.error(cause); setError('학습 준비 중 문제가 생겼어요.'); }
+  };
+
+  const observe = (robotId: number, status: RuntimeStatus) => {
+    const active = controllerRef.current;
+    if (!active || phase !== 'RUNTIME' || !status.command) return;
+    active.observeCommand(robotId, status.command); setVersion(value => value + 1);
+    if (active.roundComplete) setPhase('RESULT');
+  };
+  const selectMain = (robotId: number) => {
+    const active = controllerRef.current;
+    if (!active) return;
+    active.selectMain(robotId); setVersion(value => value + 1);
+  };
+  const continueTraining = () => {
+    const active = controllerRef.current;
+    if (!active) return;
+    if (active.trainingComplete) { setReviewRobot(null); setPhase('COMPLETE'); return; }
+    active.nextRound(); setReviewRobot(null); setReadyRobots([]); setError(''); setVersion(value => value + 1); setPhase('PREPARING');
+  };
+  const startActualMission = () => {
+    const active = controllerRef.current;
+    if (!active) return;
+    setActualRobot(active.createEvaluation()); setActualReady(false); setError(''); setPhase('ACTUAL_PREPARING');
+  };
+  const observeActual = (status: RuntimeStatus) => {
+    const active = controllerRef.current;
+    if (!active || !actualRobot || phase !== 'ACTUAL_RUNTIME' || !status.command) return;
+    active.observeEvaluation(actualRobot, status.command); setVersion(value => value + 1);
+    if (actualRobot.terminal) setPhase('ACTUAL_RESULT');
+  };
+  const restart = () => {
+    controllerRef.current = null; setMaps([]); setError(''); setReviewRobot(null); setReadyRobots([]);
+    setActualRobot(null); setActualReady(false); setVersion(value => value + 1); setPhase('SETTING');
+  };
+
+  if (phase === 'TUTORIAL') return <TutorialPreview step={tutorialStep} onNext={() => {
+    if (tutorialStep === TUTORIAL_STEPS.length - 1) setPhase('SETTING'); else setTutorialStep(value => value + 1);
+  }} />;
+
+  if (phase === 'SETTING') return <main className="reinforcement-training setting-screen noto-font"><div className="setting-layout">
+    <section className="reward-setting" aria-label="보상 중요도 설정"><p className="training-kicker">학습 준비</p><h1>로봇이 중요하게 배울 것을 골라 봐!</h1>
+      <p>별이 많을수록 로봇이 더 중요하게 생각해요. 별 8개를 모두 나눠 주세요.</p>
+      <p aria-live="polite">나눠 준 별: <strong>{usedStars} / {REWARD_STAR_TOTAL}</strong></p>
+      <div className="weight-list">{WEIGHT_FIELDS.map(field => <fieldset key={field.key}><legend>{field.label}</legend><div className="weight-segments">
+        {[0, 1, 2, 3].map(value => <button type="button" key={value} aria-label={`${field.label}: ${WEIGHT_LEVEL_LABELS[value]}`}
+          aria-pressed={weights[field.key] === value} title={WEIGHT_LEVEL_LABELS[value]}
+          disabled={usedStars - weights[field.key] + value > REWARD_STAR_TOTAL}
+          onClick={() => setWeights(current => ({ ...current, [field.key]: value }))}>
+          <span>{value === 0 ? '–' : '★'.repeat(value)}</span><small>{WEIGHT_LEVEL_LABELS[value]}</small></button>)}
+      </div></fieldset>)}</div>
+      {error && <p className="training-error" role="alert">{error}</p>}
+      <button type="button" className="training-start" disabled={!validStarBudget} onClick={() => void startTraining()}>첫 번째 학습 시작</button>
+    </section><AriDialogue inline text={rewardAdvice(weights)} expression="happy" />
+  </div></main>;
+
+  if (!controller) return <main className="reinforcement-training noto-font"><PreparationScreen ready={0} error={error} onBack={restart} /></main>;
+  if (phase === 'COMPLETE') return <TrainingResult controller={controller} onActual={startActualMission} />;
+
+  if (actualRobot && ['ACTUAL_PREPARING', 'ACTUAL_RUNTIME', 'ACTUAL_RESULT'].includes(phase)) return <main className="reinforcement-training actual-mission-screen noto-font" data-version={version}>
+    <header className="actual-mission-header"><div><span>최종 도전</span><strong>실전 임무</strong></div><div><span>현재 위치</span><strong>{actualRobot.floor}층</strong></div>
+      <div className="current-action"><span>지금 하는 행동</span><strong>{actualRobot.message}</strong></div></header>
+    <section className="actual-runtime-view"><RuntimeView maps={maps} robot={actualRobot} instanceKey="actual-mission" main
+      running={phase === 'ACTUAL_RUNTIME'} onReady={() => setActualReady(true)} onSelect={() => undefined}
+      onStatus={observeActual} onError={() => setError('실전 임무 화면을 표시하는 중 문제가 생겼어요.')} /></section>
+    {phase === 'ACTUAL_PREPARING' && <PreparationScreen ready={actualReady ? 1 : 0} total={1} actual error={error} onBack={restart} />}
+    {phase === 'ACTUAL_RESULT' && <ActualMissionResult robot={actualRobot} onRestart={restart} onHome={() => window.location.assign('/')} />}
+  </main>;
+
+  const mainRobot = controller.robots.find(robot => robot.robot === controller.mainRobot)!;
+  const completed = controller.robots.filter(robot => robot.terminal).length;
+  return <main className="reinforcement-training runtime-screen noto-font" data-version={version}>
+    <header className="training-header"><div><span>학습</span><strong>{controller.roundIndex} / 5</strong></div>
+      <div><span>자세히 보는 로봇</span><strong>로봇 {controller.mainRobot}</strong></div>
+      <div className="current-action"><span>지금 하는 행동</span><strong>{mainRobot.message}</strong></div>
+      <div className="training-progress"><span>도전을 마친 로봇</span><strong>{completed} / 5</strong></div></header>
+    <section className="training-runtime-grid" aria-label="로봇 5대의 학습 화면">{controller.robots.map(robot => <RuntimeView key={robot.robot}
+      maps={maps} robot={robot} instanceKey={`round-${controller.roundIndex}-robot-${robot.robot}`}
+      main={robot.robot === controller.mainRobot} running={phase === 'RUNTIME'}
+      onReady={() => setReadyRobots(current => current.includes(robot.robot) ? current : [...current, robot.robot])}
+      onSelect={() => selectMain(robot.robot)} onStatus={status => observe(robot.robot, status)}
+      onError={() => setError('화면을 표시하는 중 문제가 생겼어요.')} />)}</section>
+    {error && <p className="runtime-error training-error" role="alert">{error}</p>}
+    {phase === 'PREPARING' && <PreparationScreen ready={readyRobots.length} error={error} onBack={restart} />}
+    {phase === 'RESULT' && <RoundResult controller={controller} reviewRobot={reviewRobot}
+      onReview={robotId => { selectMain(robotId); setReviewRobot(robotId); }} onBack={() => setReviewRobot(null)} onContinue={continueTraining} />}
+  </main>;
+}

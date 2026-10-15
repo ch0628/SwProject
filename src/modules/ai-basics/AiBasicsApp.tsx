@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as Phaser from 'phaser';
 import { LOGICAL } from '../../config';
 import { AiBasicsScene } from './AiBasicsScene';
+import { AriDialogue } from './AriDialogue';
 import { cardResult, quizResult } from './challenge';
 import { NOTES, type Note } from './notes';
 import cardFront from '../../../assets/cards/card_front.png';
@@ -11,9 +12,6 @@ import device1 from '../../../assets/card_insert_device/card_insert_device_1.png
 import device2 from '../../../assets/card_insert_device/card_insert_device_2.png';
 import device3 from '../../../assets/card_insert_device/card_insert_device_3.png';
 import deviceFinal from '../../../assets/card_insert_device/card_insert_device_final.png';
-import fairyNeutral from '../../../assets/ai/fairy.png';
-import fairyHappy from '../../../assets/ai/fairy_happy.png';
-import fairySad from '../../../assets/ai/fairy_sad.png';
 import problem1Cut1 from '../../../assets/wrong_answer_cut_scene/problem_1/problem1_cut_scene_1.png';
 import problem1Cut2 from '../../../assets/wrong_answer_cut_scene/problem_1/problem1_cut_scene_2.png';
 import problem2Cut1 from '../../../assets/wrong_answer_cut_scene/problem_2/problem2_cut_scene_1.png';
@@ -23,7 +21,6 @@ import problem3ElevatorCut1 from '../../../assets/wrong_answer_cut_scene/problem
 import problem3ElevatorCut2 from '../../../assets/wrong_answer_cut_scene/problem_3/type_1/problem3-1_cut_scene_2.png';
 import problem3VacuumCut1 from '../../../assets/wrong_answer_cut_scene/problem_3/type_2/problem3-2_cut_scene_1.png';
 import problem3VacuumCut2 from '../../../assets/wrong_answer_cut_scene/problem_3/type_2/problem3-2_cut_scene_2.png';
-import './aiBasics.css';
 
 type Phase = 'intro' | 'explore' | 'reveal' | 'quiz' | 'feedback' | 'cutscene' | 'select' | 'failure' | 'insert' | 'powerZoomOut' | 'power1' | 'power2' | 'ending' | 'complete';
 type Speaker = '???' | 'Ari';
@@ -65,16 +62,12 @@ const ENDING = [
   '정해진 방식대로만 움직이는 기계와 어떤 점이 다른지 이제 알겠지?',
 ];
 const DEVICES = [deviceEmpty, device1, device2, device3, deviceFinal];
-type AriExpression = 'neutral' | 'happy' | 'disappointed';
-const ARI_PORTRAITS: Record<AriExpression, string> = { neutral: fairyNeutral, happy: fairyHappy, disappointed: fairySad };
-
 function AiBasicsDialogue({ speaker, text, expression = 'neutral', onNext, nextLabel = '다음' }: {
-  speaker: Speaker; text: string; expression?: AriExpression; onNext: () => void; nextLabel?: string;
+  speaker: Speaker; text: string; expression?: 'neutral' | 'happy' | 'disappointed'; onNext: () => void; nextLabel?: string;
 }) {
+  if (speaker === 'Ari') return <AriDialogue text={text} expression={expression} onNext={onNext} nextLabel={nextLabel} showSpaceHint />;
   return <div className="overlay ai-dialogue-overlay"><span className="ai-space-hint" aria-hidden="true">[ SPACE ]</span><section className="ai-dialogue-panel" role="dialog" aria-label="대화">
-    <div className="ai-dialogue-portrait" data-expression={speaker === 'Ari' ? expression : undefined} aria-hidden="true">
-      {speaker === 'Ari' ? <img src={ARI_PORTRAITS[expression]} alt="" /> : <span>?</span>}
-    </div>
+    <div className="ai-dialogue-portrait" aria-hidden="true"><span>?</span></div>
     <div className="ai-dialogue-copy"><strong>{speaker}</strong><p>{text}</p><button type="button" onClick={onNext}>{nextLabel}</button></div>
   </section></div>;
 }

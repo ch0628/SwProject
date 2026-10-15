@@ -28,6 +28,7 @@ import {
   type RuntimePresentedEntity,
 } from './runtimePresentation.ts';
 import {
+  movementPathIsClear,
   planDistractMovement,
   planLocalMovement,
   projectRouteProgress,
@@ -38,7 +39,10 @@ import {
 import {
   planSecureEntrance,
   RUNTIME_ENVIRONMENT_VISUAL_CONFIG,
+  runtimeRobotEncounterState,
+  runtimeRobotTexture,
   runtimeSearchDoorTexture,
+  type RuntimeRobotVisualState,
 } from './runtimeVisualConfig.ts';
 
 type ManualTile = { id: number; class?: string; type?: string; image: string; imagewidth: number; imageheight: number };
@@ -48,6 +52,7 @@ type LoadedTileset = { firstgid: number; source: string; manual: boolean; tiles:
 export type RuntimeSceneOptions = {
   maps: TiledMapJson[];
   commands: RuntimeCommand[];
+  waitForStart?: boolean;
 };
 
 const MAP_URLS = Array.from({ length: 5 }, (_, index) => `/maps/reinforcement/floor_${index + 1}_blockout.tmj`);
@@ -65,9 +70,12 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   private floor = 1;
   private cursor = 0;
   private paused = false;
+  private started: boolean;
   private terminal = false;
+  private terminalEmitted = false;
   private presentationBusy = false;
-  private playbackSpeed = 1;
+  private movementPlaybackSpeed = 1;
+  private eventPlaybackSpeed = 1;
   private nextCommandAt = 0;
   private move?: {
     command: Extract<RuntimeCommand, { type: 'MOVE' }>;
@@ -80,8 +88,15 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   private presentation: RuntimePresentationState;
   private entities = new Map<string, Phaser.GameObjects.Sprite | Phaser.Physics.Arcade.Image>();
   private doors = new Map<string, { visual: Phaser.GameObjects.Image; collider: Phaser.Physics.Arcade.Image }>();
-  private securityLock?: { collider: Phaser.Physics.Arcade.Image };
-  private core?: {
+  private securityLock?: {
+    collider: Phaser.Physics.Arcade.Image;
+    left: Phaser.GameObjects.Image;
+    centers: Phaser.GameObjects.Image[];
+    right: Phaser.GameObjects.Image;
+  };
+  private robotVisualState: RuntimeRobotVisualState = 'NORMAL';
+  private lastAction?: Extract<RuntimeCommand, { type: 'ACTION' }>;
+  private cores: Array<{
     visual: Phaser.GameObjects.Image;
     offTexture: string;
     displayWidth: number;
@@ -89,7 +104,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     originX: number;
     originY: number;
     depth: number;
-  };
+  }> = [];
   private lastDirection: RuntimeDirection = 'DOWN';
   private transitionGate = new BuildingTransitionGate();
 
@@ -97,6 +112,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     super('ReinforcementRuntimeScene');
     this.maps = options.maps;
     this.commands = options.commands;
+    this.started = !options.waitForStart;
     this.presentation = createRuntimePresentation(options.commands, options.maps);
   }
 
@@ -105,6 +121,9 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     for (const direction of ['UP', 'DOWN', 'LEFT', 'RIGHT'] as const) {
       loadImage(`runtime-robot-idle-${direction}`, RUNTIME_ASSETS.ROBOT.idle[direction]);
       RUNTIME_ASSETS.ROBOT.walk[direction].forEach((url, index) => loadImage(`runtime-robot-walk-${direction}-${index}`, url));
+      loadImage(`runtime-robot-combat-${direction}`, RUNTIME_ASSETS.ROBOT.combat[direction]);
+      loadImage(`runtime-robot-work-${direction}`, RUNTIME_ASSETS.ROBOT.work[direction]);
+      loadImage(`runtime-robot-neutralized-${direction}`, RUNTIME_ASSETS.ROBOT.neutralized[direction]);
       loadImage(`runtime-citizen-${direction}`, RUNTIME_ASSETS.CITIZEN[direction]);
       loadImage(`runtime-ambiguous-${direction}`, RUNTIME_ASSETS.AMBIGUOUS_PERSON[direction]);
       loadImage(`runtime-boss-${direction}`, RUNTIME_ASSETS.BOSS.idle[direction]);
@@ -120,6 +139,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     loadImage('runtime-secure-left', RUNTIME_ASSETS.F5_SECURE_ENTRANCE.LEFT);
     loadImage('runtime-secure-glass', RUNTIME_ASSETS.F5_SECURE_ENTRANCE.CENTER);
     loadImage('runtime-secure-right', RUNTIME_ASSETS.F5_SECURE_ENTRANCE.RIGHT);
+    loadImage('runtime-secure-left-open', RUNTIME_ASSETS.F5_SECURE_ENTRANCE.LEFT_OPEN);
+    loadImage('runtime-secure-right-open', RUNTIME_ASSETS.F5_SECURE_ENTRANCE.RIGHT_OPEN);
     loadImage('runtime-core-on', RUNTIME_ASSETS.F5_CORE.ON);
   }
 
@@ -127,9 +148,11 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     this.createAnimations();
     this.game.events.on('reinforcement-runtime-pause', this.setPaused, this);
     this.game.events.on('reinforcement-runtime-speed', this.setPlaybackSpeed, this);
+    this.game.events.on('reinforcement-runtime-start', this.startPlayback, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.game.events.off('reinforcement-runtime-pause', this.setPaused, this);
       this.game.events.off('reinforcement-runtime-speed', this.setPlaybackSpeed, this);
+      this.game.events.off('reinforcement-runtime-start', this.startPlayback, this);
     });
     void this.initialize().catch(error => {
       console.error(error);
@@ -138,7 +161,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number) {
-    if (this.paused || this.terminal || this.presentationBusy || !this.robot) {
+    if (!this.started || this.paused || this.terminal || this.presentationBusy || !this.robot) {
       this.robot?.setVelocity(0, 0);
       return;
     }
@@ -217,7 +240,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     this.entities.clear();
     this.doors.clear();
     this.securityLock = undefined;
-    this.core = undefined;
+    this.cores = [];
     this.robot?.destroy();
     this.robot = undefined;
   }
@@ -254,12 +277,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
 
     const objects = (name: string) => map.layers.find(layer => layer.name === name)?.objects ?? [];
     if (floor === 5) {
-      const goal = objects('NavigationNodes').find(object => properties(object).nodeId === 'F5_GOAL');
-      if (!goal || !coreCandidates.length) throw new Error('Floor 5: final Core visual is missing');
-      const visual = coreCandidates.reduce((nearest, candidate) =>
-        Phaser.Math.Distance.Between(candidate.x, candidate.y, goal.x, goal.y)
-          < Phaser.Math.Distance.Between(nearest.x, nearest.y, goal.x, goal.y) ? candidate : nearest);
-      this.core = {
+      if (coreCandidates.length !== 3) throw new Error(`Floor 5: expected 3 Core visuals, found ${coreCandidates.length}`);
+      this.cores = coreCandidates.map(visual => ({
         visual,
         offTexture: visual.texture.key,
         displayWidth: visual.displayWidth,
@@ -267,7 +286,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         originX: visual.originX,
         originY: visual.originY,
         depth: visual.depth,
-      };
+      }));
       this.showPoweredCore(this.presentation.coreState === 'CORE_ON');
     }
     const spawn = objects('SpawnPoints').find(object => properties(object).spawnId === spawnId) ?? objects('SpawnPoints')[0];
@@ -318,8 +337,13 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         const architecture = planSecureEntrance(bounds).map(tile => this.add.image(tile.x, tile.y, tile.texture)
           .setOrigin(0.5, 1).setDisplaySize(tile.width, tile.height).setDepth(18));
         this.floorObjects.push(...architecture, collider);
-        this.securityLock = { collider };
-        if (this.presentation.securityLockOpen) collider.body!.enable = false;
+        this.securityLock = {
+          collider,
+          left: architecture[0],
+          centers: architecture.slice(1, -1),
+          right: architecture.at(-1)!,
+        };
+        if (this.presentation.securityLockOpen) this.showSecurityEntranceOpen();
       } else {
         const size = RUNTIME_ENVIRONMENT_VISUAL_CONFIG.searchDoor;
         const visual = this.add.image(bounds.x + bounds.width / 2, bounds.y + bounds.height, runtimeSearchDoorTexture(false))
@@ -336,7 +360,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   }
 
   private execute(command: RuntimeCommand, time: number) {
-    this.emitStatus(this.describe(command), command.simulationTime);
+    this.emitStatus(this.describe(command), command.simulationTime, command);
     if (command.type === 'MOVE') {
       const current = { x: this.robot!.x, y: this.robot!.y };
       const map = this.maps[command.floor - 1];
@@ -353,18 +377,23 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       return;
     }
     if (command.type === 'ENCOUNTER') this.handleEncounter(command);
+    if (command.type === 'ACTION') {
+      this.lastAction = command;
+      if (command.state === 'OBSTACLE' && (command.action === 'PUSH' || command.action === 'CLEAR')) this.setRobotVisualState('WORK');
+    }
     if (command.type === 'STATE_CHANGE' && this.handleStateChange(command)) return;
     if (command.type === 'FLOOR_TRANSITION') {
-      void this.transitionFloor(command);
+      this.presentationBusy = true;
+      void this.transitionFloor(command).then(() => {
+        this.presentationBusy = false;
+      }).catch(error => this.finishAtLogicalTerminal(error));
       return;
     }
     if (command.type === 'TERMINAL') {
-      this.terminal = true;
-      this.robot?.setVelocity(0, 0).setTexture(`runtime-robot-idle-${this.lastDirection}`).anims.stop();
-      this.game.events.emit('reinforcement-runtime-terminal', command.reason, command.simulationTime);
+      this.applyTerminal(command);
       return;
     }
-    this.nextCommandAt = time + EVENT_DELAY / this.playbackSpeed;
+    this.nextCommandAt = time + EVENT_DELAY / this.eventPlaybackSpeed;
   }
 
   private advanceMove(delta: number) {
@@ -372,24 +401,25 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     const target = this.move.points[this.move.index];
     if (!target) {
       this.robot.setVelocity(0, 0).anims.stop();
-      this.robot.setTexture(`runtime-robot-idle-${this.lastDirection}`);
+      this.showRobotVisual();
       const total = projectRouteProgress(this.move.macroPoints, this.move.macroPoints.at(-1)!).total;
       this.routeCursor.progress = Math.max(this.routeCursor.progress, this.move.progressBase + total);
       this.routeCursor.worldPosition = { x: this.robot.x, y: this.robot.y };
       this.move = undefined;
-      this.nextCommandAt = this.time.now + 80 / this.playbackSpeed;
+      this.nextCommandAt = this.time.now + 80 / this.movementPlaybackSpeed;
       return;
     }
     const from = { x: this.robot.x, y: this.robot.y };
     this.lastDirection = directionForSegment(from, target);
-    this.robot.play(`runtime-robot-walk-${this.lastDirection}`, true);
-    const distance = RUNTIME_VISUAL_CONFIG.movementPixelsPerSecond * this.playbackSpeed * delta / 1000;
+    if (this.robotVisualState === 'NORMAL') this.robot.play(`runtime-robot-walk-${this.lastDirection}`, true);
+    else this.showRobotVisual();
+    const distance = RUNTIME_VISUAL_CONFIG.movementPixelsPerSecond * this.movementPlaybackSpeed * delta / 1000;
     const remaining = Phaser.Math.Distance.Between(from.x, from.y, target.x, target.y);
     if (remaining <= distance + 1) {
       this.robot.setPosition(target.x, target.y).setVelocity(0, 0);
       this.move.index++;
     } else {
-      const direction = new Phaser.Math.Vector2(target.x - from.x, target.y - from.y).normalize().scale(RUNTIME_VISUAL_CONFIG.movementPixelsPerSecond * this.playbackSpeed);
+      const direction = new Phaser.Math.Vector2(target.x - from.x, target.y - from.y).normalize().scale(RUNTIME_VISUAL_CONFIG.movementPixelsPerSecond * this.movementPlaybackSpeed);
       this.robot.setVelocity(direction.x, direction.y);
     }
     const position = { x: this.robot.x, y: this.robot.y };
@@ -420,6 +450,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
   }
 
   private handleEncounter(command: Extract<RuntimeCommand, { type: 'ENCOUNTER' }>) {
+    this.setRobotVisualState(runtimeRobotEncounterState(command.phase, command.encounter));
+    if (command.phase === 'END') this.lastAction = undefined;
     if (command.phase === 'START') this.restoreFloorEntities(command.floor);
   }
 
@@ -429,18 +461,43 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       void this.animateCorePowerOn(command).then(() => {
         this.presentationBusy = false;
         this.nextCommandAt = this.time.now;
-      });
+      }).catch(error => this.finishAtLogicalTerminal(error));
+      return true;
+    }
+    if (command.change === 'SECURITY_LOCK_OPEN' && this.securityLock) {
+      this.presentation = applyRuntimePresentationCommand(this.presentation, command);
+      this.presentationBusy = true;
+      void this.animateSecurityEntranceOpen().then(() => {
+        this.presentationBusy = false;
+        this.nextCommandAt = this.time.now;
+      }).catch(error => this.finishAtLogicalTerminal(error));
+      return true;
+    }
+    if (command.change === 'VILLAIN_NEUTRALIZED'
+      && this.lastAction?.zoneId === command.location
+      && this.lastAction.state === 'VILLAIN_ENCOUNTER'
+      && this.lastAction.action === 'SUBDUE') {
+      this.presentationBusy = true;
+      void this.animateSubdueLunge(command.location).then(() => {
+        this.presentation = applyRuntimePresentationCommand(this.presentation, command);
+        this.restoreFloorEntities(command.floor);
+        this.presentationBusy = false;
+        this.nextCommandAt = this.time.now + EVENT_DELAY / this.eventPlaybackSpeed;
+      }).catch(error => this.finishAtLogicalTerminal(error));
       return true;
     }
     const motion = presentationMotionForCommand(this.presentation, command);
     if (motion?.entities.length) {
+      if (motion.kind === 'PUSH' || motion.kind === 'CLEAR') this.setRobotVisualState('WORK');
+      if (motion.kind === 'FORCE_PASS' || motion.kind === 'DISTRACT') this.setRobotVisualState('COMBAT');
       this.presentationBusy = true;
       void this.animatePresentation(motion).then(() => {
         this.presentation = applyRuntimePresentationCommand(this.presentation, command);
         this.restoreFloorEntities(command.floor);
+        if (motion.kind === 'PUSH' || motion.kind === 'CLEAR') this.setRobotVisualState('NORMAL');
         this.presentationBusy = false;
-        this.nextCommandAt = this.time.now + EVENT_DELAY / this.playbackSpeed;
-      });
+        this.nextCommandAt = this.time.now + EVENT_DELAY / this.eventPlaybackSpeed;
+      }).catch(error => this.finishAtLogicalTerminal(error));
       return true;
     }
     this.presentation = applyRuntimePresentationCommand(this.presentation, command);
@@ -452,9 +509,6 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         door.collider.body!.enable = false;
       }
     }
-    if (command.change === 'SECURITY_LOCK_OPEN' && this.securityLock) {
-      this.securityLock.collider.body!.enable = false;
-    }
     return false;
   }
 
@@ -463,7 +517,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       targets,
       x: point.x,
       y: point.y,
-      duration: duration / this.playbackSpeed,
+      duration: duration / this.eventPlaybackSpeed,
       ease: 'Sine.easeInOut',
       onComplete: () => resolve(),
     }));
@@ -474,18 +528,94 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     return new Promise<void>(resolve => this.tweens.add({
       targets: timer,
       progress: 1,
-      duration: duration / this.playbackSpeed,
+      duration: duration / this.eventPlaybackSpeed,
       onComplete: () => resolve(),
     }));
   }
 
   private showPoweredCore(powered: boolean) {
-    if (!this.core) return;
-    const { visual, offTexture, displayWidth, displayHeight, originX, originY, depth } = this.core;
-    visual.setTexture(powered ? 'runtime-core-on' : offTexture)
-      .setOrigin(originX, originY)
-      .setDisplaySize(displayWidth, displayHeight)
-      .setDepth(depth);
+    for (const { visual, offTexture, displayWidth, displayHeight, originX, originY, depth } of this.cores) {
+      visual.setTexture(powered ? 'runtime-core-on' : offTexture)
+        .setOrigin(originX, originY)
+        .setDisplaySize(displayWidth, displayHeight)
+        .setDepth(depth);
+    }
+  }
+
+  private showSecurityEntranceOpen() {
+    if (!this.securityLock) return;
+    const swapFrame = (visual: Phaser.GameObjects.Image, texture: string) => {
+      const transform = {
+        x: visual.x,
+        y: visual.y,
+        width: visual.displayWidth,
+        height: visual.displayHeight,
+        originX: visual.originX,
+        originY: visual.originY,
+        depth: visual.depth,
+      };
+      visual.setTexture(texture).setPosition(transform.x, transform.y)
+        .setOrigin(transform.originX, transform.originY)
+        .setDisplaySize(transform.width, transform.height).setDepth(transform.depth);
+    };
+    swapFrame(this.securityLock.left, 'runtime-secure-left-open');
+    swapFrame(this.securityLock.right, 'runtime-secure-right-open');
+    for (const center of this.securityLock.centers) center.setVisible(false);
+    this.securityLock.collider.body!.enable = false;
+  }
+
+  private async animateSecurityEntranceOpen() {
+    const timing = RUNTIME_VISUAL_CONFIG.secureEntranceOpen;
+    this.robot?.setVelocity(0, 0);
+    await this.presentationDelay(timing.unlockPauseMs);
+    this.showSecurityEntranceOpen();
+    await this.presentationDelay(timing.openHoldMs);
+  }
+
+  private async animateSubdueLunge(zoneId: string) {
+    if (!this.robot) return;
+    const targets = Object.values(this.presentation.entities).filter(entity => entity.zoneId === zoneId);
+    const encounter = targets[0];
+    if (!encounter) return;
+    const length = Math.hypot(encounter.incomingDirection.x, encounter.incomingDirection.y) || 1;
+    const direction = {
+      x: encounter.incomingDirection.x / length,
+      y: encounter.incomingDirection.y / length,
+    };
+    const start = { x: this.robot.x, y: this.robot.y };
+    const available = Math.max(0,
+      (encounter.contactPosition.x - start.x) * direction.x
+      + (encounter.contactPosition.y - start.y) * direction.y);
+    const maximum = Math.min(RUNTIME_VISUAL_CONFIG.subdueLunge.distance, available);
+    const map = this.maps[this.floor - 1];
+    const bounds = { x: 0, y: 0, width: map.width * map.tilewidth, height: map.height * map.tileheight };
+    const targetIds = new Set(targets.map(entity => entity.id));
+    const blockers = this.movementBlockers(this.floor).filter(blocker => !targetIds.has(blocker.id));
+    const distances = [...new Set([maximum, 12, 8, 4])].filter(distance => distance > 0 && distance <= maximum);
+    const target = distances.map(distance => ({ x: start.x + direction.x * distance, y: start.y + direction.y * distance }))
+      .find(point => movementPathIsClear([start, point], runtimeVisualFootprint('ROBOT'), bounds, this.movementWalls(this.floor), blockers))
+      ?? start;
+
+    this.lastDirection = directionForSegment({ x: 0, y: 0 }, direction);
+    this.setRobotVisualState('COMBAT');
+    this.robot.setVelocity(0, 0);
+    await this.tweenTo(this.robot, target, RUNTIME_VISUAL_CONFIG.subdueLunge.forwardMs);
+    await this.presentationDelay(RUNTIME_VISUAL_CONFIG.subdueLunge.impactHoldMs);
+    await this.tweenTo(this.robot, start, RUNTIME_VISUAL_CONFIG.subdueLunge.returnMs);
+    this.showRobotVisual();
+  }
+
+  private setRobotVisualState(state: RuntimeRobotVisualState) {
+    if (this.robotVisualState === 'NEUTRALIZED' && state !== 'NEUTRALIZED') return;
+    this.robotVisualState = state;
+    this.showRobotVisual();
+  }
+
+  private showRobotVisual() {
+    if (!this.robot) return;
+    this.robot.anims.stop();
+    this.robot.setTexture(runtimeRobotTexture(this.robotVisualState, this.lastDirection)).setOrigin(0.5, 1);
+    this.scaleSprite(this.robot, RUNTIME_VISUAL_CONFIG.robotDisplayHeight);
   }
 
   private async animateCorePowerOn(command: Extract<RuntimeCommand, { type: 'STATE_CHANGE' }>) {
@@ -515,11 +645,11 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       const total = lengths.reduce((sum, length) => sum + length, 0) || 1;
       for (const [index, point] of targetsToContact.entries()) {
         this.lastDirection = directionForSegment({ x: this.robot.x, y: this.robot.y }, point);
-        this.robot.play(`runtime-robot-walk-${this.lastDirection}`, true);
+        this.showRobotVisual();
         await this.tweenTo(this.robot, point, RUNTIME_VISUAL_CONFIG.pushDurationMs * 0.3 * lengths[index] / total);
       }
       this.lastDirection = directionForSegment({ x: 0, y: 0 }, motion.direction);
-      this.robot.play(`runtime-robot-walk-${this.lastDirection}`, true);
+      this.showRobotVisual();
       const via = entity.via ?? entity.to;
       const robotVia = motion.robotPushTo!;
       await Promise.all([
@@ -527,8 +657,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         this.tweenTo(targets[0], via, RUNTIME_VISUAL_CONFIG.pushDurationMs * 0.45),
       ]);
       await this.tweenTo(targets[0], entity.to, RUNTIME_VISUAL_CONFIG.pushDurationMs * 0.25);
-      this.robot.anims.stop();
-      this.robot.setTexture(`runtime-robot-idle-${this.lastDirection}`);
+      this.showRobotVisual();
       return;
     }
     if (motion.kind === 'DISTRACT' && this.robot) {
@@ -544,7 +673,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
       for (const point of plan.points.slice(1)) {
         const direction = directionForSegment({ x: this.robot.x, y: this.robot.y }, point);
         this.lastDirection = direction;
-        this.robot.play(`runtime-robot-walk-${direction}`, true);
+        this.showRobotVisual();
         await Promise.all([
           this.tweenTo(this.robot, point, RUNTIME_VISUAL_CONFIG.distractSideDurationMs),
           ...motion.entities.map((entity, index) => this.tweenTo(
@@ -554,8 +683,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
           )),
         ]);
       }
-      this.robot.anims.stop();
-      this.robot.setPosition(center.x, center.y).setTexture(`runtime-robot-idle-${this.lastDirection}`);
+      this.robot.setPosition(center.x, center.y);
+      this.showRobotVisual();
       await Promise.all(motion.entities.map((entity, index) =>
         this.tweenTo(targets[index], entity.to, RUNTIME_VISUAL_CONFIG.distractFinalDurationMs)));
       return;
@@ -576,7 +705,7 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     const destination = this.transitionGate.consume(object);
     if (!destination || destination.targetFloor !== command.targetFloor || destination.targetSpawn !== command.targetSpawn) throw new Error(`Runtime transition ${command.transitionId} contract mismatch`);
     await this.renderFloor(destination.targetFloor, destination.targetSpawn);
-    this.nextCommandAt = this.time.now + EVENT_DELAY / this.playbackSpeed;
+    this.nextCommandAt = this.time.now + EVENT_DELAY / this.eventPlaybackSpeed;
   }
 
   private restoreFloorEntities(floor: number) {
@@ -646,10 +775,43 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     }
   }
 
-  private setPlaybackSpeed(value: number) { this.playbackSpeed = [1, 2, 4].includes(value) ? value : 1; }
+  private startPlayback() {
+    if (this.started || this.terminal) return;
+    this.started = true;
+    this.nextCommandAt = this.time.now;
+  }
 
-  private emitStatus(trace: string, simulationTime: number) {
-    this.game.events.emit('reinforcement-runtime-status', { floor: this.floor, trace, simulationTime });
+  private applyTerminal(command: Extract<RuntimeCommand, { type: 'TERMINAL' }>) {
+    if (this.terminalEmitted) return;
+    this.terminal = true;
+    this.terminalEmitted = true;
+    this.move = undefined;
+    this.presentationBusy = false;
+    this.robot?.setVelocity(0, 0).anims.stop();
+    this.setRobotVisualState(command.reason === 'ROBOT_DISABLED' ? 'NEUTRALIZED' : 'NORMAL');
+    this.game.events.emit('reinforcement-runtime-terminal', command.reason, command.simulationTime);
+  }
+
+  private finishAtLogicalTerminal(error: unknown) {
+    console.error(error);
+    this.game.events.emit('reinforcement-runtime-error', error instanceof Error ? error.message : String(error));
+    for (let index = this.commands.length - 1; index >= 0; index--) {
+      const command = this.commands[index];
+      if (command.type !== 'TERMINAL') continue;
+      this.emitStatus(this.describe(command), command.simulationTime, command);
+      this.applyTerminal(command);
+      return;
+    }
+  }
+
+  private setPlaybackSpeed(value: number | { movement: number; event: number }) {
+    const clamp = (speed: number) => Number.isFinite(speed) ? Phaser.Math.Clamp(speed, 0.25, 8) : 1;
+    this.movementPlaybackSpeed = clamp(typeof value === 'number' ? value : value.movement);
+    this.eventPlaybackSpeed = clamp(typeof value === 'number' ? value : value.event);
+  }
+
+  private emitStatus(trace: string, simulationTime: number, command?: RuntimeCommand) {
+    this.game.events.emit('reinforcement-runtime-status', { floor: this.floor, trace, simulationTime, command });
   }
 
   private describe(command: RuntimeCommand) {
