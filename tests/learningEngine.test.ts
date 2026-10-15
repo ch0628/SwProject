@@ -70,24 +70,24 @@ test('reward normalization is centered, monotonic, clamped, and finite', () => {
   assert.throws(() => normalizeReward(Number.POSITIVE_INFINITY, weights));
 });
 
-test('failed episodes receive no speed reward', () => {
-  for (const terminalReason of ['CITIZEN_MISUNDERSTANDING', 'TIMEOUT'] as const) {
+test('speed is an actual elapsed-time cost regardless of terminal reason', () => {
+  for (const terminalReason of ['MISUNDERSTANDING', 'TIMEOUT'] as const) {
     const reward = evaluateEpisode({
       goalReached: false,
       elapsedTime: 1,
       facilityDamageCount: 0,
       citizenRiskCount: 0,
-      citizenMisunderstanding: terminalReason === 'CITIZEN_MISUNDERSTANDING',
+      citizenMisunderstanding: terminalReason === 'MISUNDERSTANDING',
       terminalReason,
     }, PROFILES.FAST);
-    assert.equal(reward.speedValue, 0);
+    assert.ok(reward.speedValue > 0);
   }
 });
 
 test('only the four specified events are terminal', () => {
   assert.equal(isTerminalEvent('CITIZEN_RISK'), false);
   assert.equal(isTerminalEvent('FACILITY_DAMAGE'), false);
-  assert.equal(isTerminalEvent('CITIZEN_MISUNDERSTANDING'), true);
+  assert.equal(isTerminalEvent('MISUNDERSTANDING'), true);
   assert.equal(isTerminalEvent('GOAL_REACHED'), true);
   assert.equal(isTerminalEvent('TIMEOUT'), true);
   assert.equal(isTerminalEvent('ROBOT_DISABLED'), true);
@@ -137,31 +137,23 @@ test('reward profiles create meaningfully different learned preferences', () => 
   const safe = runProfile('SAFE', 42).finalPolicy;
   const fast = runProfile('FAST', 42).finalPolicy;
   assert.notDeepEqual(safe, fast);
-  assert.ok(safe.OBSTACLE.PUSH < fast.OBSTACLE.PUSH);
-  assert.ok(safe.CITIZEN_NEARBY.FAST_PASS < fast.CITIZEN_NEARBY.FAST_PASS);
+  assert.notDeepEqual(safe.ROUTE_CHOICE, fast.ROUTE_CHOICE);
+  assert.notDeepEqual(safe.AMBIGUOUS_PERSON, fast.AMBIGUOUS_PERSON);
 });
 
-test('forced scenarios A-D: direct penalty credit is negative for SAFE and higher for FAST', () => {
-  const safePushLocal = calculateLocalReturn('OBSTACLE', 2, ['FACILITY_DAMAGE'], PROFILES.SAFE);
-  const fastPushLocal = calculateLocalReturn('OBSTACLE', 2, ['FACILITY_DAMAGE'], PROFILES.FAST);
-  const safePushCredit = calculateActionCredit(successfulReward('SAFE', 'damage').episodeReturn, safePushLocal);
-  const fastPushCredit = calculateActionCredit(successfulReward('FAST', 'damage').episodeReturn, fastPushLocal);
-  assert.ok(safePushLocal < 0);
-  assert.ok(safePushCredit < 0);
-  assert.ok(fastPushCredit > safePushCredit);
-
-  const safePassLocal = calculateLocalReturn('CITIZEN_NEARBY', 0.5, ['CITIZEN_RISK'], PROFILES.SAFE);
-  const fastPassLocal = calculateLocalReturn('CITIZEN_NEARBY', 0.5, ['CITIZEN_RISK'], PROFILES.FAST);
-  const safePassCredit = calculateActionCredit(successfulReward('SAFE', 'risk').episodeReturn, safePassLocal);
-  const fastPassCredit = calculateActionCredit(successfulReward('FAST', 'risk').episodeReturn, fastPassLocal);
-  assert.ok(safePassLocal < 0);
-  assert.ok(safePassCredit < 0);
-  assert.ok(fastPassCredit > safePassCredit);
+test('robot damage is a fixed penalty independent of user reward dimensions', () => {
+  const clean = calculateLocalReturn('VILLAIN_ENCOUNTER', 2, [], PROFILES.BALANCED, 0, 'FORCE_PASS');
+  const damaged = calculateLocalReturn('VILLAIN_ENCOUNTER', 2, ['ROBOT_DAMAGE'], PROFILES.BALANCED, 0.4, 'FORCE_PASS');
+  assert.ok(damaged < clean);
+  assert.equal(
+    calculateLocalReturn('OBSTACLE', 2, ['FACILITY_DAMAGE'], PROFILES.SAFE),
+    calculateLocalReturn('OBSTACLE', 2, [], PROFILES.SAFE),
+  );
 });
 
 test('citizen SUBDUE is terminal while TRACK requires six cumulative simulation-time units', () => {
   const subdued = resolveAmbiguousPerson('CITIZEN', 'SUBDUE');
-  assert.deepEqual(subdued.events, ['CITIZEN_MISUNDERSTANDING']);
+  assert.deepEqual(subdued.events, ['MISUNDERSTANDING']);
 
   const firstTrack = resolveAmbiguousPerson('CITIZEN', 'TRACK');
   assert.equal(firstTrack.elapsedCost, 3);
@@ -169,7 +161,8 @@ test('citizen SUBDUE is terminal while TRACK requires six cumulative simulation-
   assert.deepEqual(firstTrack.events, []);
   const secondTrack = resolveAmbiguousPerson('CITIZEN', 'TRACK', firstTrack.cumulativeTrackTime);
   assert.equal(secondTrack.cumulativeTrackTime, 6);
-  assert.deepEqual(secondTrack.events, ['CITIZEN_MISUNDERSTANDING']);
+  assert.deepEqual(secondTrack.events, []);
+  assert.equal(secondTrack.localOutcome, 'CONFIRMED_CITIZEN');
 
   const reward = evaluateEpisode({
     goalReached: false,
@@ -177,14 +170,14 @@ test('citizen SUBDUE is terminal while TRACK requires six cumulative simulation-
     facilityDamageCount: 0,
     citizenRiskCount: 0,
     citizenMisunderstanding: true,
-    terminalReason: 'CITIZEN_MISUNDERSTANDING',
+    terminalReason: 'MISUNDERSTANDING',
   }, PROFILES.SAFE);
-  const local = calculateLocalReturn('AMBIGUOUS_PERSON', secondTrack.elapsedCost, secondTrack.events, PROFILES.SAFE);
-  assert.equal(reward.speedValue, 0);
+  const local = calculateLocalReturn('AMBIGUOUS_PERSON', subdued.elapsedCost, subdued.events, PROFILES.SAFE, 0, 'SUBDUE');
+  assert.ok(reward.speedValue > 0);
   assert.ok(calculateActionCredit(reward.episodeReturn, local) <= -0.5);
 });
 
-test('forced scenario G: timeout is a failed episode with no speed reward', () => {
+test('forced scenario G: timeout occurs from actual elapsed time and carries full speed cost', () => {
   const reward = evaluateEpisode({
     goalReached: false,
     elapsedTime: 32,
@@ -193,18 +186,18 @@ test('forced scenario G: timeout is a failed episode with no speed reward', () =
     citizenMisunderstanding: false,
     terminalReason: 'TIMEOUT',
   }, PROFILES.FAST);
-  assert.equal(reward.goalValue, -1);
-  assert.equal(reward.speedValue, 0);
+  assert.equal(reward.goalValue, 0);
+  assert.equal(reward.speedValue, 32 / 62.5);
   assert.equal(isTerminalEvent('TIMEOUT'), true);
 });
 
-test('forced scenario H: route segment uses actual events and FAST credit exceeds SAFE credit', () => {
-  const events = ['CITIZEN_RISK', 'FACILITY_DAMAGE'] as const;
+test('forced scenario H: route segment uses judgment outcomes while removed dimensions have no reward weight', () => {
+  const events = ['MISUNDERSTANDING'] as const;
   const safeSegment = calculateSegmentReturn(10, events, PROFILES.SAFE);
   const fastSegment = calculateSegmentReturn(10, events, PROFILES.FAST);
   const episodeReturn = 0.5;
   assert.ok(safeSegment < calculateSegmentReturn(10, [], PROFILES.SAFE));
-  assert.ok(calculateActionCredit(episodeReturn, fastSegment) > calculateActionCredit(episodeReturn, safeSegment));
+  assert.ok(safeSegment < fastSegment);
 });
 
 test('route actions store segment results, raw credit, and v1.2 relative advantage', () => {
@@ -222,23 +215,23 @@ test('route actions store segment results, raw credit, and v1.2 relative advanta
   }
 });
 
-test('forced route R1-R2: SAFE favors clean corridor while FAST values the same risky shortcut more', () => {
+test('forced route R1-R2: actual shorter total time earns the better relative route credit', () => {
   const episodeReturn = 0.5;
   const safeShortcut = calculateActionCredit(
     episodeReturn,
-    calculateSegmentReturn(6, ['CITIZEN_RISK', 'FACILITY_DAMAGE'], PROFILES.SAFE),
+    calculateSegmentReturn(55, [], PROFILES.SAFE),
   );
-  const safeCorridor = calculateActionCredit(episodeReturn, calculateSegmentReturn(11, [], PROFILES.SAFE));
+  const safeCorridor = calculateActionCredit(episodeReturn, calculateSegmentReturn(70, [], PROFILES.SAFE));
   const fastShortcut = calculateActionCredit(
     episodeReturn,
-    calculateSegmentReturn(6, ['CITIZEN_RISK', 'FACILITY_DAMAGE'], PROFILES.FAST),
+    calculateSegmentReturn(55, [], PROFILES.FAST),
   );
   const advantages = calculateRouteAdvantages([
     { context: 'F1', action: 'FAST_SHORTCUT', rawRouteCredit: safeShortcut },
     { context: 'F1', action: 'SAFE_CORRIDOR', rawRouteCredit: safeCorridor },
   ]);
-  assert.ok(advantages[1].routeAdvantage > advantages[0].routeAdvantage);
-  assert.ok(fastShortcut > safeShortcut);
+  assert.ok(advantages[0].routeAdvantage > advantages[1].routeAdvantage);
+  assert.ok(fastShortcut > calculateActionCredit(episodeReturn, calculateSegmentReturn(70, [], PROFILES.FAST)));
 });
 
 test('forced route R3: advantages are zero-mean, common-offset invariant, and context-local', () => {
@@ -306,7 +299,7 @@ test('Map Integration v1 exposes only the approved action pools and numeric trai
   assert.equal(ACTIONS.OBSTACLE.includes('SQUEEZE' as never), false);
   assert.equal(ACTIONS.OBSTACLE.includes('WAIT' as never), false);
   assert.deepEqual(ACTIONS.VILLAIN_ENCOUNTER, ['SUBDUE', 'FORCE_PASS', 'DISTRACT', 'BYPASS', 'RETREAT']);
-  assert.deepEqual(ACTIONS.BOSS_ENCOUNTER, ['SUBDUE', 'DISTRACT', 'RETREAT']);
+  assert.deepEqual(ACTIONS.BOSS_ENCOUNTER, ['SUBDUE', 'RETREAT']);
   assert.deepEqual(ROUTE_TRAITS, { NONE: 0, LOW: 0.25, MEDIUM: 0.5, HIGH: 0.75 });
   assert.deepEqual(ENCOUNTER_RATES, { LOW: 0.25, MEDIUM: 0.5, HIGH: 0.75, MANDATORY: 1 });
 });
@@ -353,15 +346,15 @@ test('MOBILITY_DAMAGE applies to the next route segment only', () => {
   assert.deepEqual(consumeMobilityDamage(10, first.mobilityDamaged), { elapsedCost: 10, mobilityDamaged: false });
 });
 
-test('BOSS SUBDUE is 80%, DISTRACT raises it to 95%, and BYPASS is absent', () => {
+test('BOSS SUBDUE uses combat skill, remains fallible, and only RETREAT is the alternative', () => {
   assert.equal(resolveBossEncounter('SUBDUE', 0.79).neutralized, true);
   assert.deepEqual(resolveBossEncounter('SUBDUE', 0.80).events, ['ROBOT_DISABLED']);
-  assert.deepEqual(resolveBossEncounter('DISTRACT').events, ['BOSS_DISTRACTED']);
-  assert.equal(resolveBossEncounter('SUBDUE', 0.94, true).neutralized, true);
-  assert.deepEqual(resolveBossEncounter('SUBDUE', 0.95, true).events, ['ROBOT_DISABLED']);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.84, false, 0, { baseSubdueSuccess: 0.4, combatSkill: 1, combatSkillBonus: 0.45 }).neutralized, true);
+  assert.deepEqual(resolveBossEncounter('SUBDUE', 0.86, false, 0, { baseSubdueSuccess: 0.4, combatSkill: 1, combatSkillBonus: 0.45 }).events, ['ROBOT_DISABLED']);
   assert.equal(resolveBossEncounter('SUBDUE', 0.75, false, 0, { baseSubdueSuccess: 0.80 }).neutralized, true);
   assert.equal(resolveBossEncounter('SUBDUE', 0.90, true, 0, { distractedSubdueSuccess: 0.95 }).neutralized, true);
   assert.equal(ACTIONS.BOSS_ENCOUNTER.includes('BYPASS' as never), false);
+  assert.equal(ACTIONS.BOSS_ENCOUNTER.includes('DISTRACT' as never), false);
 });
 
 test('episode-seeded Encounter decisions are reproducible and cached per zone', () => {

@@ -12,7 +12,9 @@
     "validate:reinforcement": "node --experimental-strip-types scripts/reinforcement/runThreeRoundValidation.ts",
     "validate:actual-map": "node --experimental-strip-types scripts/reinforcement/runActualMapValidation.ts",
     "validate:actual-map-confirmation": "node --experimental-strip-types scripts/reinforcement/runActualMapValidation.ts",
-    "validate:actual-map-tuning": "node --experimental-strip-types scripts/reinforcement/runActualMapEnvironmentSweep.ts"
+    "validate:actual-map-tuning": "node --experimental-strip-types scripts/reinforcement/runActualMapEnvironmentSweep.ts",
+    "validate:reward-redesign": "node --experimental-strip-types scripts/reinforcement/evaluateRewardRedesign.ts",
+    "validate:reward-failure-v3": "node --experimental-strip-types scripts/reinforcement/evaluateRewardFailureV3.ts"
   },
   "dependencies": { "phaser": "4.2.1", "react": "^19.1.1", "react-dom": "^19.1.1" },
   "devDependencies": { "@types/react": "^19.1.10", "@types/react-dom": "^19.1.9", "typescript": "~5.9.2", "vite": "^7.1.3" }

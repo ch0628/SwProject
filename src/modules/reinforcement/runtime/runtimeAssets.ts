@@ -19,6 +19,11 @@ const frames = (directory: string) => Object.entries(characterUrls)
 
 const directions = <T>(up: T, down: T, left: T, right: T): Record<RuntimeDirection, T> => ({ UP: up, DOWN: down, LEFT: left, RIGHT: right });
 
+const robotState = (state: 'combat' | 'neutralized' | 'work') => directions(
+  asset(`/robot/base/robot_${state}_up.png`), asset(`/robot/base/robot_${state}_down.png`),
+  asset(`/robot/base/robot_${state}_left.png`), asset(`/robot/base/robot_${state}_right.png`),
+);
+
 const robot = {
   idle: directions(
     asset('/robot/base/robot_up.png'), asset('/robot/base/robot_down.png'),
@@ -28,6 +33,9 @@ const robot = {
     frames('/robot/animations/processed/walk_up/'), frames('/robot/animations/processed/walk_down/'),
     frames('/robot/animations/processed/walk_left/'), frames('/robot/animations/processed/walk_right/'),
   ),
+  combat: robotState('combat'),
+  work: robotState('work'),
+  neutralized: robotState('neutralized'),
 };
 
 const villain = (variant: 1 | 2 | 3 | 4, upFile: string) => {
@@ -86,6 +94,8 @@ export const RUNTIME_ASSETS = {
     LEFT: '/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE.png',
     CENTER: '/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE_GLASS.png',
     RIGHT: '/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE_2.png',
+    LEFT_OPEN: '/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE_3.png',
+    RIGHT_OPEN: '/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE_4.png',
   },
   F5_SECURITY_LOCK: {
     CLOSED: '/assets/environment/reinforcement/floor5_room_shell_manual/F5_SECURE_RIGHT.png',

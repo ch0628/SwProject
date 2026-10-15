@@ -31,6 +31,7 @@ import {
   type Policy,
   type PreferenceChange,
   type ProfileName,
+  type RewardWeights,
   type TerminalReason,
 } from './learningEngine.ts';
 import {
@@ -53,8 +54,35 @@ export type ActualEnvironmentParameters = {
   bossSubdue: number;
   bossDistractedSubdue: number;
   villainDistract: number;
+  initialCombatSkill?: number;
+  combatLearningRate?: number;
+  maxCombatSkillBonus?: number;
+  distractSuccessDamage?: number;
+  distractFailureDamage?: number;
+  forcePassSuccessDamage?: number;
+  forcePassFailureDamage?: number;
+  subdueSuccessDamage?: number;
+  fixedRobotDamageCost?: number;
+  robotDisabledPenalty?: number;
 };
 
+export const ACTUAL_ENVIRONMENT_PRODUCTION_V3: ActualEnvironmentParameters = {
+  villain1Subdue: 0.62,
+  villain2Subdue: 0.52,
+  bossSubdue: 0.42,
+  bossDistractedSubdue: 0.42,
+  villainDistract: 0.75,
+  initialCombatSkill: 0.10,
+  combatLearningRate: 0.035,
+  maxCombatSkillBonus: 0.45,
+  distractSuccessDamage: 0.04,
+  distractFailureDamage: 0.12,
+  forcePassSuccessDamage: 0.18,
+  forcePassFailureDamage: 0.32,
+  subdueSuccessDamage: 0.02,
+  fixedRobotDamageCost: 0.8,
+  robotDisabledPenalty: 2.5,
+};
 export const ACTUAL_ENVIRONMENT_PRODUCTION_V1: ActualEnvironmentParameters = PRODUCTION_ENCOUNTER_ENVIRONMENT_V1;
 
 export type VillainDiagnostic = {
@@ -82,6 +110,20 @@ export type ActualEpisodeMetrics = {
   controlRoomReached: boolean;
   systemRestored: boolean;
   hiddenBossExposedToPolicy: false;
+  subdueOpportunities: number;
+  subdueSelections: number;
+  subdueSuccesses: number;
+  distractSuccesses: number;
+  distractFailures: number;
+  forcePassSuccesses: number;
+  forcePassFailures: number;
+  stairReroutes: number;
+  localRetries: number;
+  repeatedSameStairLoops: number;
+  f5Retreats: number;
+  bossSuccesses: number;
+  bossFailures: number;
+  failedTransitions: string[];
 };
 
 export type ActualEpisode = EpisodeExperience & { actual: ActualEpisodeMetrics };
@@ -96,6 +138,9 @@ export type ActualRound = {
   changes: PreferenceChange[];
   policyAfter: Policy;
   updateCount: 1;
+  combatSkillSnapshot: number;
+  combatSkillAfter: number;
+  combatSkillUpdateCount: 1;
 };
 
 export type ActualRun = {
@@ -103,7 +148,12 @@ export type ActualRun = {
   seed: number;
   rounds: ActualRound[];
   finalPolicy: Policy;
+  finalCombatSkill: number;
   summary: ReturnType<typeof summarizeActualRun>;
+};
+
+export type ActualTrainingRun = Omit<ActualRun, 'profile'> & {
+  selectedRewardWeights: RewardWeights;
 };
 
 function actualInitialPolicy(environment: ActualMapEnvironment): Policy {
@@ -118,14 +168,18 @@ function actualInitialPolicy(environment: ActualMapEnvironment): Policy {
 function simulateActualEpisode(
   robot: number,
   policy: Policy,
-  profile: ProfileName,
+  weights: RewardWeights,
   seed: number,
   epsilon: number,
   environment: ActualMapEnvironment,
   parameters: ActualEnvironmentParameters,
+  combatSkill: number,
 ): ActualEpisode {
-  const weights = PROFILES[profile];
   const random = createSeededRandom(seed);
+  const fixedCosts = {
+    robotDamage: parameters.fixedRobotDamageCost ?? 0.8,
+    robotDisabled: parameters.robotDisabledPenalty ?? 2.5,
+  };
   const encounterOccurs = createEncounterDecider(seed ^ 0xa5a5a5a5);
   const identityRandom = createSeededRandom(seed ^ 0x51ed270b);
   const identities = new Map<string, 'CITIZEN' | 'VILLAIN'>();
@@ -136,9 +190,13 @@ function simulateActualEpisode(
   let citizenMisunderstanding = false;
   let terminalReason: TerminalReason | undefined;
   let mobilityDamaged = false;
+  let robotDamage = 0;
+  let combatExperience = 0;
+  let successfulNeutralizations = 0;
   const actionHistory: ActionExperience[] = [];
   const eventHistory: EventRecord[] = [];
   const handledZones = new Set<string>();
+  const failedTransitions = new Set<string>();
   const trackTime = new Map<string, number>();
   const snapshotSignature = JSON.stringify(policy);
   const actual: ActualEpisodeMetrics = {
@@ -146,13 +204,17 @@ function simulateActualEpisode(
     ambiguousActions: 0, villainActions: 0, bossActions: 0, bossRoom,
     searchedRooms: [], roomsSearchedBeforeBoss: 0, guardNeutralizations: 0,
     bossNeutralized: false, controlRoomReached: false, systemRestored: false, hiddenBossExposedToPolicy: false,
+    subdueOpportunities: 0, subdueSelections: 0, subdueSuccesses: 0,
+    distractSuccesses: 0, distractFailures: 0, forcePassSuccesses: 0, forcePassFailures: 0,
+    stairReroutes: 0, localRetries: 0, repeatedSameStairLoops: 0, f5Retreats: 0,
+    bossSuccesses: 0, bossFailures: 0, failedTransitions: [],
   };
 
   const recordEvent = (type: EventType, location: string, causedBy: Action | 'ENVIRONMENT'): void => {
     eventHistory.push({ type, elapsedTime: roundNumber(elapsedTime), location, causedBy });
     if (type === 'FACILITY_DAMAGE') facilityDamageCount++;
     if (type === 'CITIZEN_RISK') citizenRiskCount++;
-    if (type === 'CITIZEN_MISUNDERSTANDING') {
+    if (type === 'MISUNDERSTANDING') {
       citizenMisunderstanding = true;
       terminalReason = type;
     }
@@ -168,13 +230,19 @@ function simulateActualEpisode(
     return terminalReason === 'TIMEOUT';
   };
 
-  const recordAction = (state: DecisionState, action: Action, elapsedCost: number, events: EventType[], outcome: string, location: string): ActionExperience => {
+  const recordAction = (state: DecisionState, action: Action, elapsedCost: number, events: EventType[], outcome: string, location: string, robotDamageDelta = 0): ActionExperience => {
     elapsedTime += elapsedCost;
+    if (robotDamageDelta > 0) {
+      robotDamage = Math.min(1, robotDamage + robotDamageDelta);
+      if (!events.includes('ROBOT_DAMAGE')) events = [...events, 'ROBOT_DAMAGE'];
+      if (robotDamage >= 1 && !events.includes('ROBOT_DISABLED')) events = [...events, 'ROBOT_DISABLED'];
+    }
     for (const event of events) recordEvent(event, location, action);
     const experience: ActionExperience = {
       state, action, location, elapsedCost, immediateEvents: events, localOutcome: outcome,
-      localReturn: state === 'ROUTE_CHOICE' ? 0 : calculateLocalReturn(state, elapsedCost, events, weights),
+      localReturn: state === 'ROUTE_CHOICE' ? 0 : calculateLocalReturn(state, elapsedCost, events, weights, robotDamageDelta, action, fixedCosts),
       actionCredit: 0,
+      robotDamageAfter: robotDamage,
     };
     actionHistory.push(experience);
     finishIfTimedOut(location);
@@ -192,7 +260,7 @@ function simulateActualEpisode(
     return identities.get(zoneId)!;
   };
 
-  const processZone = (zone: ActualEncounterZone, option: ActualRouteOption | F5RoomPath): 'PASS' | 'RETREAT' | 'TERMINAL' => {
+  const processZone = (zone: ActualEncounterZone, option: ActualRouteOption | F5RoomPath): 'PASS' | 'RETREAT' | 'REROUTE' | 'TERMINAL' => {
     if (handledZones.has(zone.id) || !encounterOccurs(zone.id, zone.rate)) return 'PASS';
     actual.encounterTriggers[zone.kind]++;
     const detourAvailable = 'detourAvailable' in option && option.detourAvailable;
@@ -228,37 +296,68 @@ function simulateActualEpisode(
         trackTime.set(zone.id, resolution.cumulativeTrackTime);
         recordAction('AMBIGUOUS_PERSON', action, resolution.elapsedCost, resolution.events, resolution.localOutcome, zone.id);
         actual.ambiguousActions++;
-        retry = action === 'TRACK' && !terminalReason;
+        retry = action === 'TRACK' && resolution.cumulativeTrackTime < 6 && !terminalReason;
       }
       if (!terminalReason) handledZones.add(zone.id);
       return terminalReason ? 'TERMINAL' : 'PASS';
     }
 
     const roomGuard = zone.floor === 5;
+    actual.subdueOpportunities++;
     while (!terminalReason) {
-      const available = availableVillainActions(zone.bypassAvailable);
+      const available = roomGuard ? (['SUBDUE', 'RETREAT'] as const) : availableVillainActions(zone.bypassAvailable);
       const action = chooseAction(policy, 'VILLAIN_ENCOUNTER', available, random, epsilon) as (typeof ACTIONS.VILLAIN_ENCOUNTER)[number];
-      const retreatTime = 'guardApproachTime' in option ? option.guardApproachTime : option.movementTime;
+      const retreatTime = 'guardApproachTime' in option ? option.guardApproachTime : Math.max(ACTION_TIME.SMALL, option.movementTime);
       const resolution = resolveVillainEncounter(zone.villainCount ?? 1, action, random(), {
         bypassAvailable: zone.bypassAvailable,
         bypassTimeCost: ACTION_TIME.LARGE,
         retreatTimeCost: retreatTime,
         subdueSuccessByCount: { 1: parameters.villain1Subdue, 2: parameters.villain2Subdue },
         distractPassSuccess: parameters.villainDistract,
+        combatSkill,
+        combatSkillBonus: parameters.maxCombatSkillBonus ?? 0,
+        distractSuccessDamage: parameters.distractSuccessDamage,
+        distractFailureDamage: parameters.distractFailureDamage,
+        forcePassSuccessDamage: parameters.forcePassSuccessDamage,
+        forcePassFailureDamage: parameters.forcePassFailureDamage,
+        subdueSuccessDamage: parameters.subdueSuccessDamage,
       });
       actual.villainDiagnostics.push({ zoneId: zone.id, villainCount: zone.villainCount ?? 1, action, outcome: resolution.localOutcome });
-      recordAction('VILLAIN_ENCOUNTER', action, resolution.elapsedCost, resolution.events, resolution.localOutcome, zone.id);
+      recordAction('VILLAIN_ENCOUNTER', action, resolution.elapsedCost, resolution.events, resolution.localOutcome, zone.id, resolution.robotDamageDelta);
       actual.villainActions++;
+      if (action === 'SUBDUE') {
+        actual.subdueSelections++;
+        combatExperience += resolution.combatExperience ?? 0;
+        if (resolution.neutralized) actual.subdueSuccesses++;
+      }
+      if (action === 'DISTRACT') resolution.passed ? actual.distractSuccesses++ : actual.distractFailures++;
+      if (action === 'FORCE_PASS') resolution.passed ? actual.forcePassSuccesses++ : actual.forcePassFailures++;
       mobilityDamaged ||= resolution.mobilityDamaged;
       if (terminalReason) return 'TERMINAL';
       if (resolution.neutralized) {
+        successfulNeutralizations++;
         handledZones.add(zone.id);
         if (roomGuard) actual.guardNeutralizations++;
         return 'PASS';
       }
-      if (action === 'RETREAT') return 'RETREAT';
+      if (action === 'RETREAT' && roomGuard) {
+        actual.f5Retreats++;
+        return 'RETREAT';
+      }
       if (roomGuard) continue;
       if (resolution.passed) return 'PASS';
+      const context = environment.contexts.find(candidate => candidate.id === (option as ActualRouteOption).contextId);
+      const transitionCount = new Set(context?.options.map(candidate => candidate.transitionId) ?? []).size;
+      const transitionId = (option as ActualRouteOption).transitionId;
+      if (transitionCount > 1 && !failedTransitions.has(transitionId)) {
+        failedTransitions.add(transitionId);
+        actual.failedTransitions.push(transitionId);
+        if (failedTransitions.size < transitionCount) {
+          actual.stairReroutes++;
+          return 'REROUTE';
+        }
+      }
+      actual.localRetries++;
     }
     return 'TERMINAL';
   };
@@ -266,9 +365,11 @@ function simulateActualEpisode(
   const contextById = new Map(environment.contexts.map(context => [context.id, context]));
   let context: ActualRouteContext | undefined = contextById.get('F1_ENTRY_SPLIT');
   while (context && !terminalReason) {
-    const actions = context.options.map(option => option.action);
+    const eligibleOptions = context.options.filter(option => !failedTransitions.has(option.transitionId));
+    const candidateOptions = eligibleOptions.length ? eligibleOptions : context.options;
+    const actions = candidateOptions.map(option => option.action);
     const action = chooseAction(policy, 'ROUTE_CHOICE', actions, random, epsilon) as ActualRouteOption['action'];
-    const option = context.options.find(candidate => candidate.action === action)!;
+    const option = candidateOptions.find(candidate => candidate.action === action)!;
     const movement = consumeMobilityDamage(option.movementTime, mobilityDamaged);
     mobilityDamaged = movement.mobilityDamaged;
     const routeExperience = recordAction('ROUTE_CHOICE', action, movement.elapsedCost, [], 'MOVING', option.id);
@@ -276,12 +377,12 @@ function simulateActualEpisode(
     routeExperience.routeOptions = actions;
     actual.routeChoices.push(option.id);
     if (terminalReason) break;
-    let outcome: 'PASS' | 'RETREAT' | 'TERMINAL' = 'PASS';
+    let outcome: 'PASS' | 'RETREAT' | 'REROUTE' | 'TERMINAL' = 'PASS';
     for (const zoneId of option.encounterZoneIds) {
       outcome = processZone(environment.zones.find(zone => zone.id === zoneId)!, option);
       if (outcome !== 'PASS') break;
     }
-    if (outcome === 'RETREAT') continue;
+    if (outcome === 'RETREAT' || outcome === 'REROUTE') continue;
     if (outcome === 'TERMINAL') break;
     if (!actual.reachedFloors.includes(option.targetFloor)) actual.reachedFloors.push(option.targetFloor);
     if (option.targetFloor === 3) context = contextById.get('F3_STAIR_SPLIT');
@@ -329,10 +430,24 @@ function simulateActualEpisode(
       const resolution = resolveBossEncounter(bossAction, random(), distracted, retreatCost, {
         baseSubdueSuccess: parameters.bossSubdue,
         distractedSubdueSuccess: parameters.bossDistractedSubdue,
+        combatSkill,
+        combatSkillBonus: parameters.maxCombatSkillBonus ?? 0,
+        subdueSuccessDamage: parameters.subdueSuccessDamage,
       });
-      const bossExperience = recordAction('BOSS_ENCOUNTER', bossAction, resolution.elapsedCost, resolution.events, resolution.localOutcome, roomPath.room);
+      const bossExperience = recordAction('BOSS_ENCOUNTER', bossAction, resolution.elapsedCost, resolution.events, resolution.localOutcome, roomPath.room, resolution.robotDamageDelta);
       actual.bossActions++;
-      distracted ||= bossAction === 'DISTRACT';
+      if (bossAction === 'SUBDUE') {
+        actual.subdueOpportunities++;
+        actual.subdueSelections++;
+        combatExperience += resolution.combatExperience ?? 0;
+        if (resolution.neutralized) {
+          actual.subdueSuccesses++;
+          actual.bossSuccesses++;
+          successfulNeutralizations++;
+        } else actual.bossFailures++;
+      } else {
+        actual.f5Retreats++;
+      }
       if (resolution.neutralized) {
         actual.bossNeutralized = true;
         const edgeTime = (id: string): number => environment.edges.find(edge => edge.id === id)!.simulationTime;
@@ -370,12 +485,16 @@ function simulateActualEpisode(
     facilityDamageCount,
     citizenRiskCount,
     citizenMisunderstanding,
+    successfulNeutralizations,
+    robotDamage,
+    combatExperience,
+    combatSkillSnapshot: combatSkill,
     terminalReason,
     actionHistory,
     eventHistory,
     snapshotSignature,
   };
-  const reward = evaluateEpisode(baseEpisode, weights, environment.timeLimit);
+  const reward = evaluateEpisode(baseEpisode, weights, environment.timeLimit, fixedCosts);
   for (let index = 0; index < actionHistory.length; index++) {
     const experience = actionHistory[index];
     if (experience.state === 'ROUTE_CHOICE') {
@@ -383,7 +502,7 @@ function simulateActualEpisode(
       const segment = actionHistory.slice(index, nextRoute === -1 ? actionHistory.length : nextRoute);
       experience.segmentElapsedCost = segment.reduce((sum, candidate) => sum + candidate.elapsedCost, 0);
       experience.segmentEvents = segment.flatMap(candidate => candidate.immediateEvents);
-      experience.segmentReturn = calculateSegmentReturn(experience.segmentElapsedCost, experience.segmentEvents, weights);
+      experience.segmentReturn = calculateSegmentReturn(experience.segmentElapsedCost, experience.segmentEvents, weights, fixedCosts);
       experience.localReturn = experience.segmentReturn;
       experience.rawRouteCredit = calculateActionCredit(reward.episodeReturn, experience.segmentReturn);
     }
@@ -400,14 +519,28 @@ export function runActualMapProfile(
   robotsPerRound = 5,
   parameters: ActualEnvironmentParameters = ACTUAL_ENVIRONMENT_PRODUCTION_V1,
 ): ActualRun {
+  const run = runActualMapTraining(environment, PROFILES[profile], seed, roundCount, robotsPerRound, parameters);
+  return { profile, seed: run.seed, rounds: run.rounds, finalPolicy: run.finalPolicy, finalCombatSkill: run.finalCombatSkill, summary: run.summary };
+}
+
+export function runActualMapTraining(
+  environment: ActualMapEnvironment,
+  selectedRewardWeights: RewardWeights,
+  seed = 42,
+  roundCount = 20,
+  robotsPerRound = 5,
+  parameters: ActualEnvironmentParameters = ACTUAL_ENVIRONMENT_PRODUCTION_V3,
+): ActualTrainingRun {
   let centralPolicy = actualInitialPolicy(environment);
+  let combatSkill = parameters.initialCombatSkill ?? 0;
   const rounds: ActualRound[] = [];
   for (let round = 1; round <= roundCount; round++) {
     const epsilon = epsilonForRound(round);
     const snapshot = clonePolicy(centralPolicy);
+    const combatSkillSnapshot = combatSkill;
     const centralBefore = JSON.stringify(centralPolicy);
     const episodes = Array.from({ length: robotsPerRound }, (_, index) => simulateActualEpisode(
-      index + 1, snapshot, profile, episodeSeed(seed, round, index + 1), epsilon, environment, parameters,
+      index + 1, snapshot, selectedRewardWeights, episodeSeed(seed, round, index + 1), epsilon, environment, parameters, combatSkillSnapshot,
     ));
     const centralPolicyUnchangedDuringEpisodes = JSON.stringify(centralPolicy) === centralBefore;
     const { policyAfter, changes } = (() => {
@@ -415,20 +548,38 @@ export function runActualMapProfile(
       return { policyAfter: update.policy, changes: update.changes };
     })();
     centralPolicy = policyAfter;
+    const averageCombatExperience = episodes.reduce((sum, episode) => sum + Math.min(episode.combatExperience, 1), 0) / robotsPerRound;
+    combatSkill = Math.min(1, Math.max(0, combatSkill + (parameters.combatLearningRate ?? 0) * averageCombatExperience));
     rounds.push({
       round, epsilon, snapshot, snapshotSignatures: episodes.map(episode => episode.snapshotSignature),
       centralPolicyUnchangedDuringEpisodes, episodes, changes, policyAfter: clonePolicy(policyAfter), updateCount: 1,
+      combatSkillSnapshot, combatSkillAfter: combatSkill, combatSkillUpdateCount: 1,
     });
   }
-  const run = { profile, seed, rounds, finalPolicy: centralPolicy } as Omit<ActualRun, 'summary'>;
-  return { ...run, summary: summarizeActualRun(run) };
+  const run = { seed, rounds, finalPolicy: centralPolicy, finalCombatSkill: combatSkill };
+  return {
+    ...run,
+    selectedRewardWeights: { ...selectedRewardWeights },
+    summary: summarizeActualRun(run),
+  };
+}
+
+export function runActualMapEvaluation(
+  environment: ActualMapEnvironment,
+  finalPolicy: Policy,
+  selectedRewardWeights: RewardWeights,
+  seed = 42,
+  parameters: ActualEnvironmentParameters = ACTUAL_ENVIRONMENT_PRODUCTION_V3,
+  combatSkill = parameters.initialCombatSkill ?? 0,
+): ActualEpisode {
+  return simulateActualEpisode(1, clonePolicy(finalPolicy), selectedRewardWeights, seed, 0, environment, parameters, combatSkill);
 }
 
 export function summarizeActualRun(run: Pick<ActualRun, 'rounds' | 'finalPolicy'>) {
   const episodes = run.rounds.flatMap(round => round.episodes);
   const successful = episodes.filter(episode => episode.goalReached);
   const bossEncountered = episodes.filter(episode => episode.actual.bossActions > 0);
-  const terminalCounts = Object.fromEntries(['GOAL_REACHED', 'TIMEOUT', 'CITIZEN_MISUNDERSTANDING', 'ROBOT_DISABLED'].map(reason => [reason, episodes.filter(episode => episode.terminalReason === reason).length]));
+  const terminalCounts = Object.fromEntries(['GOAL_REACHED', 'TIMEOUT', 'MISUNDERSTANDING', 'ROBOT_DISABLED'].map(reason => [reason, episodes.filter(episode => episode.terminalReason === reason).length]));
   const actionCount = (state: DecisionState, action: string): number => episodes.reduce((sum, episode) => sum + episode.actionHistory.filter(item => item.state === state && item.action === action).length, 0);
   const preferences = (state: DecisionState): Record<string, number> => ({ ...run.finalPolicy[state] });
   const clampHits = Object.values(run.finalPolicy).flatMap(Object.values).filter(value => Math.abs(value) === 2).length;
@@ -441,6 +592,15 @@ export function summarizeActualRun(run: Pick<ActualRun, 'rounds' | 'finalPolicy'
     averageElapsedTime: episodes.reduce((sum, episode) => sum + episode.elapsedTime, 0) / episodes.length,
     facilityDamageCount: episodes.reduce((sum, episode) => sum + episode.facilityDamageCount, 0),
     citizenRiskCount: episodes.reduce((sum, episode) => sum + episode.citizenRiskCount, 0),
+    averageReward: episodes.reduce((sum, episode) => sum + episode.reward.rawReward, 0) / episodes.length,
+    averageRobotDamage: episodes.reduce((sum, episode) => sum + episode.robotDamage, 0) / episodes.length,
+    combatSkill: run.rounds.at(-1)?.combatSkillAfter ?? 0,
+    subdueOpportunities: episodes.reduce((sum, episode) => sum + episode.actual.subdueOpportunities, 0),
+    subdueSelections: actionCount('VILLAIN_ENCOUNTER', 'SUBDUE') + actionCount('BOSS_ENCOUNTER', 'SUBDUE'),
+    subdueSuccesses: episodes.reduce((sum, episode) => sum + episode.actual.subdueSuccesses, 0),
+    stairReroutes: episodes.reduce((sum, episode) => sum + episode.actual.stairReroutes, 0),
+    localRetries: episodes.reduce((sum, episode) => sum + episode.actual.localRetries, 0),
+    repeatedSameStairLoops: episodes.reduce((sum, episode) => sum + episode.actual.repeatedSameStairLoops, 0),
     encounterTriggerCounts: Object.fromEntries(['OBSTACLE', 'CITIZEN_NEARBY', 'AMBIGUOUS_PERSON', 'VILLAIN_ENCOUNTER'].map(kind => [kind, episodes.reduce((sum, episode) => sum + episode.actual.encounterTriggers[kind as EncounterKind], 0)])),
     routeChoiceCounts: Object.fromEntries([...new Set(episodes.flatMap(episode => episode.actual.routeChoices))].sort().map(route => [route, episodes.reduce((sum, episode) => sum + episode.actual.routeChoices.filter(choice => choice === route).length, 0)])),
     obstacleActionCounts: Object.fromEntries(ACTIONS.OBSTACLE.map(action => [action, actionCount('OBSTACLE', action)])),

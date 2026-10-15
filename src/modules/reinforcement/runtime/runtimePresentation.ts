@@ -7,7 +7,7 @@ import {
   type RuntimeFootprint,
   type RuntimePoint,
 } from './runtimeCommands.ts';
-import { runtimeVisualFootprint } from './runtimeMovement.ts';
+import { runtimeVisualFootprint } from './runtimeFootprints.ts';
 
 export type RuntimeEntityKind = 'OBSTACLE' | 'CITIZEN' | 'AMBIGUOUS' | 'VILLAIN' | 'GUARD' | 'BOSS';
 export type RuntimeEntityVisualState = 'NORMAL' | 'NEUTRALIZED' | 'CLEARED';

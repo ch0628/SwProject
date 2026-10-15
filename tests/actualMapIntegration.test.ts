@@ -62,9 +62,10 @@ test('actual map batch learning is reproducible, batched once per round, and ter
   assert.equal(first.summary.episodes, 100);
   assert.equal(first.summary.updates, 20);
   assert.ok(first.rounds.every(round => round.updateCount === 1 && round.centralPolicyUnchangedDuringEpisodes));
+  assert.ok(first.rounds.every(round => round.combatSkillUpdateCount === 1));
   assert.ok(first.rounds.every(round => new Set(round.snapshotSignatures).size === 1));
   const episodes = first.rounds.flatMap(round => round.episodes);
-  assert.ok(episodes.every(episode => ['GOAL_REACHED', 'TIMEOUT', 'CITIZEN_MISUNDERSTANDING', 'ROBOT_DISABLED'].includes(episode.terminalReason)));
+  assert.ok(episodes.every(episode => ['GOAL_REACHED', 'TIMEOUT', 'MISUNDERSTANDING', 'ROBOT_DISABLED'].includes(episode.terminalReason)));
   assert.ok(episodes.every(episode => episode.actual.hiddenBossExposedToPolicy === false));
   assert.ok(episodes.every(episode => new Set(episode.actual.searchedRooms).size === episode.actual.searchedRooms.length));
   assert.ok(episodes.every(episode => episode.actual.guardNeutralizations >= episode.actual.searchedRooms.length));
@@ -76,11 +77,9 @@ test('actual map batch learning is reproducible, batched once per round, and ter
   }));
 });
 
-test('SAFE and FAST learn measurably different action distributions on actual maps', () => {
+test('v3 judgment and speed profiles learn measurably different outcomes on actual maps', () => {
   const safe = runActualMapProfile(environment, 'SAFE', 42, 20, 5).summary;
   const fast = runActualMapProfile(environment, 'FAST', 42, 20, 5).summary;
-  assert.ok(safe.facilityDamageCount < fast.facilityDamageCount);
-  assert.ok(safe.citizenRiskCount < fast.citizenRiskCount);
-  assert.ok(safe.obstacleActionCounts.PUSH < fast.obstacleActionCounts.PUSH);
-  assert.ok(safe.citizenActionCounts.FAST_PASS < fast.citizenActionCounts.FAST_PASS);
+  assert.ok(safe.terminalCounts.MISUNDERSTANDING < fast.terminalCounts.MISUNDERSTANDING);
+  assert.notDeepEqual(safe.finalPreferences.routes, fast.finalPreferences.routes);
 });

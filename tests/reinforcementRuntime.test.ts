@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { axisAlignedBounds, decompressTileLayers, properties } from '../src/modules/reinforcement/debug/floor1Tiled.ts';
-import { episodeSeed } from '../src/modules/reinforcement/sim/learningEngine.ts';
+import { episodeSeed, PROFILES } from '../src/modules/reinforcement/sim/learningEngine.ts';
 import { ACTUAL_GRAPH_FILE, ACTUAL_MAP_FILES, buildActualMapEnvironment } from '../src/modules/reinforcement/sim/actualMapEnvironment.ts';
-import { runActualMapProfile } from '../src/modules/reinforcement/sim/actualMapSimulation.ts';
+import { runActualMapProfile, runActualMapTraining } from '../src/modules/reinforcement/sim/actualMapSimulation.ts';
 import { FiveRobotRuntimeController } from '../src/modules/reinforcement/runtime/runtimeController.ts';
 import {
   applyRuntimeCommand,
@@ -13,7 +13,9 @@ import {
   directionForSegment,
   initialRuntimePlaybackState,
   orientedPath,
+  RUNTIME_CHARACTER_STAGING_GAP,
   RUNTIME_CONTACT_FOOTPRINTS,
+  RUNTIME_SECURE_ENTRANCE_FOOTPRINT,
   RUNTIME_STAGING_GAP,
   stageEncounterOnPath,
   type RuntimePoint,
@@ -40,6 +42,8 @@ import {
   RUNTIME_ENVIRONMENT_VISUAL_CONFIG,
   RUNTIME_VISUAL_CONFIG,
   planSecureEntrance,
+  runtimeRobotEncounterState,
+  runtimeRobotTexture,
   runtimeSearchDoorTexture,
 } from '../src/modules/reinforcement/runtime/runtimeVisualConfig.ts';
 
@@ -77,11 +81,42 @@ const distanceOnPath = (points: readonly RuntimePoint[], target: RuntimePoint) =
   return best.distance;
 };
 
+const footprintGap = (
+  left: RuntimePoint,
+  leftFootprint: { width: number; height: number },
+  right: RuntimePoint,
+  rightFootprint: { width: number; height: number },
+) => Math.hypot(
+  Math.max(0, Math.abs(left.x - right.x) - (leftFootprint.width + rightFootprint.width) / 2),
+  Math.max(0, Math.abs(left.y - right.y) - (leftFootprint.height + rightFootprint.height) / 2),
+);
+
 test('runtime adapter deterministically replays only headless-selected decisions', () => {
   assert.deepEqual(commands, createRuntimeCommands(environment, episode, seed));
   assert.deepEqual(commands.filter(command => command.type === 'ACTION').map(command => command.action), episode.actionHistory.filter(action => action.state !== 'ROUTE_CHOICE').map(action => action.action));
   assert.equal(commands.at(-1)?.type, 'TERMINAL');
   assert.equal(commands.at(-1)?.simulationTime, episode.elapsedTime);
+});
+
+test('TIMEOUT at an F5 route boundary emits no post-terminal MOVE and terminates once', () => {
+  const timedOut = runActualMapTraining(environment, PROFILES.BALANCED, 42, 5, 5).rounds[0].episodes[0];
+  assert.equal(timedOut.terminalReason, 'TIMEOUT');
+  assert.ok(timedOut.actionHistory.slice(-2).every(action => action.action === 'RETREAT'));
+
+  const replay = createRuntimeCommands(environment, timedOut, episodeSeed(42, 1, 1));
+  assert.equal(replay.filter(command => command.type === 'TERMINAL').length, 1);
+  assert.deepEqual(replay.at(-1), {
+    type: 'TERMINAL',
+    floor: 5,
+    simulationTime: timedOut.elapsedTime,
+    reason: 'TIMEOUT',
+  });
+  const terminalIndex = replay.findIndex(command => command.type === 'TERMINAL');
+  assert.equal(replay.slice(terminalIndex + 1).some(command => command.type === 'MOVE' || command.type === 'ENCOUNTER'), false);
+
+  const sceneSource = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
+  assert.match(sceneSource, /if \(this\.terminalEmitted\) return;[\s\S]*this\.move = undefined;[\s\S]*this\.game\.events\.emit\('reinforcement-runtime-terminal'/);
+  assert.equal(sceneSource.match(/\.emit\('reinforcement-runtime-terminal'/g)?.length, 1);
 });
 
 test('runtime MOVE commands preserve actual Navigation Edge polylines', () => {
@@ -180,6 +215,48 @@ test('all encounter footprints stage at least 32px apart on the incoming polylin
     assert.equal(staging.fallback, false);
     assert.equal(pointOnSegment(staging.stagingPosition, path[0], path[1]), true);
   }
+});
+
+test('all five training rounds stage Citizen, Tiger, Villain and Boss visuals with a 64px clear footprint gap', () => {
+  const training = runActualMapTraining(environment, PROFILES.BALANCED, 42, 5, 5);
+  let checked = 0;
+  for (const round of training.rounds) {
+    for (const episode of round.episodes) {
+      const replay = createRuntimeCommands(environment, episode, episodeSeed(42, round.round, episode.robot));
+      const state = createRuntimePresentation(replay, mapSources);
+      for (const command of replay) {
+        if (command.type !== 'ENCOUNTER' || command.phase !== 'START') continue;
+        if (!['CITIZEN_NEARBY', 'AMBIGUOUS_PERSON', 'VILLAIN_ENCOUNTER', 'BOSS_ENCOUNTER'].includes(command.encounter)) continue;
+        const entities = Object.values(state.entities).filter(entity => entity.zoneId === command.zoneId);
+        assert.ok(entities.length > 0, command.zoneId);
+        const nearestGap = Math.min(...entities.map(entity => footprintGap(
+          command.stagingPosition,
+          runtimeVisualFootprint('ROBOT'),
+          entity.position,
+          runtimeVisualFootprint(entity.kind),
+        )));
+        assert.ok(nearestGap + 0.001 >= RUNTIME_CHARACTER_STAGING_GAP, `${command.zoneId}: ${nearestGap}`);
+
+        const robotFootprint = runtimeVisualFootprint('ROBOT');
+        const bounds = {
+          x: command.stagingPosition.x - robotFootprint.width / 2,
+          y: command.stagingPosition.y - robotFootprint.height / 2,
+          width: robotFootprint.width,
+          height: robotFootprint.height,
+        };
+        const map = mapSources[command.floor - 1];
+        assert.ok(bounds.x >= 0 && bounds.y >= 0 && bounds.x + bounds.width <= map.width * map.tilewidth && bounds.y + bounds.height <= map.height * map.tileheight, command.zoneId);
+        const collisionObjects = map.layers.find((layer: { name: string }) => layer.name === 'Collision')?.objects ?? [];
+        assert.equal(collisionObjects.filter((object: { width?: number; height?: number }) => (object.width ?? 0) > 0 && (object.height ?? 0) > 0).some(object => {
+          const collision = axisAlignedBounds(object);
+          return bounds.x < collision.x + collision.width && bounds.x + bounds.width > collision.x
+            && bounds.y < collision.y + collision.height && bounds.y + bounds.height > collision.y;
+        }), false, command.zoneId);
+        checked++;
+      }
+    }
+  }
+  assert.ok(checked > 0);
 });
 
 test('active encounter staging footprints do not overlap permanent map collision', () => {
@@ -665,6 +742,39 @@ test('DISTRACT Robot motion falls back to one safe side or no lateral motion in 
   assert.deepEqual(blocked.points, [center]);
 });
 
+test('successful Villain SUBDUE adds one collision-checked combat lunge without route progress', () => {
+  const option = environment.contexts.flatMap(context => context.options).find(candidate =>
+    candidate.encounterZoneIds.some(id => environment.zones.find(zone => zone.id === id)?.kind === 'VILLAIN_ENCOUNTER'))!;
+  const zone = option.encounterZoneIds.map(id => environment.zones.find(candidate => candidate.id === id)!)
+    .find(candidate => candidate.kind === 'VILLAIN_ENCOUNTER')!;
+  const routeTemplate = structuredClone(episode.actionHistory.find(action => action.state === 'ROUTE_CHOICE')!);
+  const villainTemplate = structuredClone(episode.actionHistory.find(action => action.state === 'VILLAIN_ENCOUNTER')!);
+  const syntheticEpisode = structuredClone(episode);
+  syntheticEpisode.actionHistory = [
+    { ...routeTemplate, action: option.action, location: option.id, routeContext: option.contextId, routeOptions: [option.action], elapsedCost: 1, immediateEvents: [], localOutcome: 'MOVING' },
+    { ...villainTemplate, action: 'SUBDUE', location: zone.id, elapsedCost: 1, immediateEvents: ['VILLAIN_NEUTRALIZED'], localOutcome: 'VILLAIN_NEUTRALIZED' },
+  ];
+  syntheticEpisode.elapsedTime = 2;
+  syntheticEpisode.actual.reachedFloors = [option.floor];
+  const replay = createRuntimeCommands(environment, syntheticEpisode, seed);
+  assert.equal(replay.filter(command => command.type === 'STATE_CHANGE' && command.change === 'VILLAIN_NEUTRALIZED').length, 1);
+
+  const failedEpisode = structuredClone(syntheticEpisode);
+  failedEpisode.actionHistory[1] = { ...villainTemplate, action: 'SUBDUE', location: zone.id, elapsedCost: 1, immediateEvents: ['ROBOT_DISABLED'], localOutcome: 'ROBOT_DISABLED' };
+  assert.equal(createRuntimeCommands(environment, failedEpisode, seed)
+    .some(command => command.type === 'STATE_CHANGE' && command.change === 'VILLAIN_NEUTRALIZED'), false);
+
+  assert.deepEqual(RUNTIME_VISUAL_CONFIG.subdueLunge, { distance: 16, forwardMs: 140, impactHoldMs: 80, returnMs: 160 });
+  const total = RUNTIME_VISUAL_CONFIG.subdueLunge.forwardMs + RUNTIME_VISUAL_CONFIG.subdueLunge.impactHoldMs + RUNTIME_VISUAL_CONFIG.subdueLunge.returnMs;
+  assert.ok(total >= 300 && total <= 500);
+  const sceneSource = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
+  assert.match(sceneSource, /lastAction\?\.zoneId === command\.location[\s\S]*lastAction\.state === 'VILLAIN_ENCOUNTER'[\s\S]*lastAction\.action === 'SUBDUE'/);
+  const lunge = sceneSource.slice(sceneSource.indexOf('private async animateSubdueLunge'), sceneSource.indexOf('private setRobotVisualState'));
+  assert.match(lunge, /movementPathIsClear/);
+  assert.match(lunge, /setRobotVisualState\('COMBAT'\)[\s\S]*forwardMs[\s\S]*impactHoldMs[\s\S]*returnMs/);
+  assert.doesNotMatch(lunge, /routeCursor|projectRouteProgress/);
+});
+
 test('runtime character scale ratios are centralized and neutralized characters keep the same display height', () => {
   assert.equal(RUNTIME_CHARACTER_SCALE.ROBOT, 0.85);
   assert.equal(RUNTIME_CHARACTER_SCALE.CITIZEN, 1.2);
@@ -676,6 +786,29 @@ test('runtime character scale ratios are centralized and neutralized characters 
   assert.equal(RUNTIME_VISUAL_CONFIG.ambiguousDisplayHeight / RUNTIME_BASE_DISPLAY_HEIGHT.AMBIGUOUS, 1.2);
   assert.equal(RUNTIME_VISUAL_CONFIG.villainDisplayHeight / RUNTIME_BASE_DISPLAY_HEIGHT.VILLAIN, 1.2);
   assert.equal(RUNTIME_VISUAL_CONFIG.bossDisplayHeight / RUNTIME_BASE_DISPLAY_HEIGHT.BOSS, 1.2);
+});
+
+test('Robot normal, combat, work and neutralized visuals map all directions without changing its transform contract', () => {
+  const directions = ['UP', 'DOWN', 'LEFT', 'RIGHT'] as const;
+  for (const direction of directions) {
+    assert.equal(runtimeRobotTexture('NORMAL', direction), `runtime-robot-idle-${direction}`);
+    for (const state of ['COMBAT', 'WORK', 'NEUTRALIZED'] as const) {
+      assert.equal(runtimeRobotTexture(state, direction), `runtime-robot-${state.toLowerCase()}-${direction}`);
+      assert.equal(fs.existsSync(`assets/characters/robot/base/robot_${state.toLowerCase()}_${direction.toLowerCase()}.png`), true);
+    }
+  }
+  assert.equal(runtimeRobotEncounterState('START', 'VILLAIN_ENCOUNTER'), 'COMBAT');
+  assert.equal(runtimeRobotEncounterState('START', 'BOSS_ENCOUNTER'), 'COMBAT');
+  assert.equal(runtimeRobotEncounterState('END', 'VILLAIN_ENCOUNTER'), 'NORMAL');
+  assert.equal(runtimeRobotEncounterState('START', 'CITIZEN_NEARBY'), 'WORK');
+  assert.equal(runtimeRobotEncounterState('END', 'CITIZEN_NEARBY'), 'NORMAL');
+
+  const sceneSource = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
+  assert.match(sceneSource, /command\.state === 'OBSTACLE'.*command\.action === 'PUSH'.*command\.action === 'CLEAR'/);
+  assert.match(sceneSource, /command\.reason === 'ROBOT_DISABLED' \? 'NEUTRALIZED' : 'NORMAL'/);
+  assert.match(sceneSource, /robotVisualState === 'NEUTRALIZED' && state !== 'NEUTRALIZED'/);
+  assert.match(sceneSource, /setTexture\(runtimeRobotTexture\(this\.robotVisualState, this\.lastDirection\)\)\.setOrigin\(0\.5, 1\)/);
+  assert.match(sceneSource, /scaleSprite\(this\.robot, RUNTIME_VISUAL_CONFIG\.robotDisplayHeight\)/);
 });
 
 test('F5 doors use explicit closed/open assets at frame size and Secure entrance repeats native tiles across the TMJ span', () => {
@@ -702,6 +835,9 @@ test('F5 doors use explicit closed/open assets at frame size and Secure entrance
   assert.equal(tiles[0].x - tiles[0].width / 2, lock.x);
   assert.equal(tiles.at(-1)!.x + tiles.at(-1)!.width / 2, lock.x + lock.width);
   assert.ok(tiles.slice(1).every((tile, index) => tile.x - tile.width / 2 === tiles[index].x + tiles[index].width / 2));
+  assert.equal(fs.existsSync('public/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE_3.png'), true);
+  assert.equal(fs.existsSync('public/assets/environment/reinforcement/floor5_room_shell_manual/F2_SECURE_4.png'), true);
+  assert.deepEqual(RUNTIME_VISUAL_CONFIG.secureEntranceOpen, { unlockPauseMs: 550, openHoldMs: 400 });
 
   const sceneSource = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
   const gates = sceneSource.slice(sceneSource.indexOf('private createF5Gates'), sceneSource.indexOf('private execute'));
@@ -709,6 +845,36 @@ test('F5 doors use explicit closed/open assets at frame size and Secure entrance
   assert.match(gates, /runtimeSearchDoorTexture\(true\)/);
   assert.match(gates, /collider\.body!\.enable = false/);
   assert.doesNotMatch(gates, /RUNTIME_CHARACTER_SCALE|RUNTIME_VISUAL_CONFIG/);
+  const opening = sceneSource.slice(sceneSource.indexOf('private showSecurityEntranceOpen'), sceneSource.indexOf('private async animateSubdueLunge'));
+  assert.match(opening, /runtime-secure-left-open/);
+  assert.match(opening, /runtime-secure-right-open/);
+  assert.match(opening, /centers\) center\.setVisible\(false\)/);
+  assert.match(opening, /unlockPauseMs[\s\S]*showSecurityEntranceOpen\(\)[\s\S]*openHoldMs/);
+  const lockOpen = commands.findIndex(command => command.type === 'STATE_CHANGE' && command.change === 'SECURITY_LOCK_OPEN');
+  const entranceMove = commands.findIndex((command, index) => index > lockOpen && command.type === 'MOVE' && command.edgeIds.includes('E_F5_LOCK_CONTROL'));
+  assert.ok(lockOpen >= 0 && entranceMove > lockOpen);
+
+  const robotFootprint = runtimeVisualFootprint('ROBOT');
+  const moveBefore = (index: number) => commands.slice(0, index).findLast(command => command.type === 'MOVE' && command.points.length > 0);
+  for (const [index, command] of commands.entries()) {
+    if (command.type !== 'STATE_CHANGE' || command.change !== 'F5_DOOR_OPEN') continue;
+    const door = collision.find(object => properties(object).roomId === command.room)!;
+    const bounds = axisAlignedBounds(door);
+    const previous = moveBefore(index);
+    assert.ok(previous?.type === 'MOVE');
+    assert.ok(footprintGap(previous.points.at(-1)!, robotFootprint, {
+      x: bounds.x + bounds.width / 2,
+      y: bounds.y + bounds.height / 2,
+    }, { width: bounds.width, height: bounds.height }) + 0.001 >= RUNTIME_CHARACTER_STAGING_GAP);
+  }
+
+  const lockBounds = axisAlignedBounds(lock);
+  const lockApproach = moveBefore(lockOpen);
+  assert.ok(lockApproach?.type === 'MOVE');
+  assert.ok(footprintGap(lockApproach.points.at(-1)!, robotFootprint, {
+    x: lockBounds.x + lockBounds.width / 2,
+    y: lockBounds.y + lockBounds.height / 2,
+  }, RUNTIME_SECURE_ENTRANCE_FOOTPRINT) + 0.001 >= RUNTIME_CHARACTER_STAGING_GAP);
 });
 
 test('Floor 5 Core keeps the authored placement and swaps only after the powered presentation state', async () => {

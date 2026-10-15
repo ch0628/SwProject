@@ -4,18 +4,19 @@ export const ACTIONS = {
   CITIZEN_NEARBY: ['WIDE_DETOUR', 'SLOW_PASS', 'WAIT', 'FAST_PASS'],
   AMBIGUOUS_PERSON: ['OBSERVE', 'BYPASS', 'TRACK', 'SUBDUE'],
   VILLAIN_ENCOUNTER: ['SUBDUE', 'FORCE_PASS', 'DISTRACT', 'BYPASS', 'RETREAT'],
-  BOSS_ENCOUNTER: ['SUBDUE', 'DISTRACT', 'RETREAT'],
+  BOSS_ENCOUNTER: ['SUBDUE', 'RETREAT'],
 } as const;
 
 export type DecisionState = keyof typeof ACTIONS;
 export type SimulationState = 'MOVING' | DecisionState;
 export type Action = (typeof ACTIONS)[DecisionState][number] | `ACTUAL_ROUTE:${string}`;
-export type TerminalReason = 'GOAL_REACHED' | 'CITIZEN_MISUNDERSTANDING' | 'TIMEOUT' | 'ROBOT_DISABLED';
+export type TerminalReason = 'GOAL_REACHED' | 'MISUNDERSTANDING' | 'TIMEOUT' | 'ROBOT_DISABLED';
 export type EventType = TerminalReason
   | 'CITIZEN_RISK'
   | 'FACILITY_DAMAGE'
   | 'BLOCKED'
   | 'MOBILITY_DAMAGE'
+  | 'ROBOT_DAMAGE'
   | 'VILLAIN_NEUTRALIZED'
   | 'BOSS_DISTRACTED'
   | 'BOSS_NEUTRALIZED'
@@ -37,16 +38,58 @@ export const PRODUCTION_ENCOUNTER_ENVIRONMENT_V1 = {
 export type RewardWeights = {
   goal: number;
   speed: number;
-  facilityDamage: number;
-  citizenRisk: number;
-  citizenMisunderstanding: number;
+  judgment: number;
+  threat: number;
 };
 
+export const REWARD_STAR_FIELDS = ['speed', 'judgment', 'threat'] as const;
+export type RewardStarField = (typeof REWARD_STAR_FIELDS)[number];
+export type RewardStars = Record<RewardStarField, number>;
+export const REWARD_STAR_TOTAL = 6;
+export const REWARD_STAR_TO_WEIGHT = [0, 1, 2.5, 5] as const;
+export const FIXED_GOAL_REWARD_WEIGHT = 3;
+export const DEFAULT_REWARD_STARS: RewardStars = {
+  speed: 2,
+  judgment: 2,
+  threat: 2,
+};
+
+export function assertRewardStars(stars: RewardStars): void {
+  const keys = Object.keys(stars);
+  if (keys.length !== REWARD_STAR_FIELDS.length || REWARD_STAR_FIELDS.some(field => !keys.includes(field))) {
+    throw new Error('Reward stars must contain exactly three user-selectable fields');
+  }
+  if (REWARD_STAR_FIELDS.some(field => !Number.isInteger(stars[field]) || stars[field] < 0 || stars[field] > 3)) {
+    throw new Error('Reward stars must be integers from 0 to 3');
+  }
+  if (REWARD_STAR_FIELDS.reduce((sum, field) => sum + stars[field], 0) !== REWARD_STAR_TOTAL) {
+    throw new Error(`Reward stars must total exactly ${REWARD_STAR_TOTAL}`);
+  }
+}
+
+export function rewardWeightsFromStars(stars: RewardStars): RewardWeights {
+  assertRewardStars(stars);
+  return {
+    goal: FIXED_GOAL_REWARD_WEIGHT,
+    speed: REWARD_STAR_TO_WEIGHT[stars.speed],
+    judgment: REWARD_STAR_TO_WEIGHT[stars.judgment],
+    threat: REWARD_STAR_TO_WEIGHT[stars.threat],
+  };
+}
+
 export const PROFILES = {
-  SAFE: { goal: 3, speed: 1, facilityDamage: 3, citizenRisk: 3, citizenMisunderstanding: 3 },
-  FAST: { goal: 3, speed: 3, facilityDamage: 0, citizenRisk: 0, citizenMisunderstanding: 1 },
-  BALANCED: { goal: 3, speed: 2, facilityDamage: 2, citizenRisk: 2, citizenMisunderstanding: 2 },
+  SAFE: { goal: 3, speed: 1, judgment: 5, threat: 1 },
+  FAST: { goal: 3, speed: 5, judgment: 1, threat: 0 },
+  BALANCED: { goal: 3, speed: 2.5, judgment: 2.5, threat: 2.5 },
 } as const satisfies Record<string, RewardWeights>;
+
+export const FIXED_ROBOT_DAMAGE_COST = 0.8;
+export const FIXED_ROBOT_DISABLED_PENALTY = 2.5;
+export type FixedRewardCosts = { robotDamage: number; robotDisabled: number };
+export const DEFAULT_FIXED_REWARD_COSTS: FixedRewardCosts = {
+  robotDamage: FIXED_ROBOT_DAMAGE_COST,
+  robotDisabled: FIXED_ROBOT_DISABLED_PENALTY,
+};
 
 export type ProfileName = keyof typeof PROFILES;
 export type Policy = Record<DecisionState, Record<string, number>>;
@@ -67,6 +110,7 @@ export type ActionExperience = {
   rawRouteCredit?: number;
   routeAdvantage?: number;
   actionCredit: number;
+  robotDamageAfter?: number;
 };
 
 export type RouteCreditSample = {
@@ -85,9 +129,10 @@ export type EventRecord = {
 export type RewardBreakdown = {
   goalValue: number;
   speedValue: number;
-  damageValue: number;
-  riskValue: number;
-  misunderstandingValue: number;
+  judgmentValue: number;
+  neutralizationValue: number;
+  robotDamageCost: number;
+  robotDisabledCost: number;
   rawReward: number;
   experienceScore: number;
   episodeReturn: number;
@@ -100,6 +145,10 @@ export type EpisodeExperience = {
   facilityDamageCount: number;
   citizenRiskCount: number;
   citizenMisunderstanding: boolean;
+  successfulNeutralizations: number;
+  robotDamage: number;
+  combatExperience: number;
+  combatSkillSnapshot: number;
   terminalReason: TerminalReason;
   actionHistory: ActionExperience[];
   eventHistory: EventRecord[];
@@ -269,10 +318,11 @@ export function chooseAction(
   return availableActions.at(-1)! as Action;
 }
 
-export function normalizeReward(rawReward: number, weights: RewardWeights): number {
+export function normalizeReward(rawReward: number, weights: RewardWeights, fixedCosts = DEFAULT_FIXED_REWARD_COSTS): number {
   if (!Number.isFinite(rawReward)) throw new Error('rawReward must be finite');
-  const positiveMaximum = weights.goal + weights.speed;
-  const negativeMagnitude = weights.goal + weights.facilityDamage + weights.citizenRisk + weights.citizenMisunderstanding;
+  const positiveMaximum = weights.goal + weights.threat;
+  const negativeMagnitude = weights.goal + weights.speed + weights.judgment
+    + fixedCosts.robotDamage + fixedCosts.robotDisabled;
   const score = rawReward >= 0
     ? 50 + 50 * (positiveMaximum === 0 ? 0 : rawReward / positiveMaximum)
     : 50 + 50 * (negativeMagnitude === 0 ? 0 : rawReward / negativeMagnitude);
@@ -280,27 +330,32 @@ export function normalizeReward(rawReward: number, weights: RewardWeights): numb
 }
 
 export function evaluateEpisode(
-  episode: Pick<EpisodeExperience, 'goalReached' | 'elapsedTime' | 'facilityDamageCount' | 'citizenRiskCount' | 'citizenMisunderstanding' | 'terminalReason'>,
+  episode: Pick<EpisodeExperience, 'goalReached' | 'elapsedTime' | 'citizenMisunderstanding' | 'terminalReason'>
+    & Partial<Pick<EpisodeExperience, 'successfulNeutralizations' | 'robotDamage'>>,
   weights: RewardWeights,
   timeLimit = MOCK_TIME_LIMIT,
+  fixedCosts = DEFAULT_FIXED_REWARD_COSTS,
 ): RewardBreakdown {
-  const goalValue = episode.terminalReason === 'GOAL_REACHED' ? 1 : -1;
-  const speedValue = episode.goalReached ? clamp(1 - episode.elapsedTime / timeLimit, 0, 1) : 0;
-  const damageValue = Math.min(episode.facilityDamageCount / 3, 1);
-  const riskValue = Math.min(episode.citizenRiskCount / 3, 1);
-  const misunderstandingValue = episode.citizenMisunderstanding ? 1 : 0;
+  const goalValue = episode.terminalReason === 'GOAL_REACHED' ? 1 : 0;
+  const speedValue = clamp(episode.elapsedTime / timeLimit, 0, 1);
+  const judgmentValue = episode.citizenMisunderstanding ? 1 : 0;
+  const neutralizationValue = clamp((episode.successfulNeutralizations ?? 0) / 5, 0, 1);
+  const robotDamageCost = fixedCosts.robotDamage * clamp(episode.robotDamage ?? 0, 0, 1);
+  const robotDisabledCost = episode.terminalReason === 'ROBOT_DISABLED' ? fixedCosts.robotDisabled : 0;
   const rawReward = weights.goal * goalValue
-    + weights.speed * speedValue
-    - weights.facilityDamage * damageValue
-    - weights.citizenRisk * riskValue
-    - weights.citizenMisunderstanding * misunderstandingValue;
-  const experienceScore = normalizeReward(rawReward, weights);
+    - weights.speed * speedValue
+    - weights.judgment * judgmentValue
+    + weights.threat * neutralizationValue
+    - robotDamageCost
+    - robotDisabledCost;
+  const experienceScore = normalizeReward(rawReward, weights, fixedCosts);
   return {
     goalValue,
     speedValue,
-    damageValue,
-    riskValue,
-    misunderstandingValue,
+    judgmentValue,
+    neutralizationValue,
+    robotDamageCost,
+    robotDisabledCost,
     rawReward,
     experienceScore,
     episodeReturn: (experienceScore - 50) / 50,
@@ -308,7 +363,7 @@ export function evaluateEpisode(
 }
 
 export function isTerminalEvent(event: EventType): event is TerminalReason {
-  return event === 'GOAL_REACHED' || event === 'CITIZEN_MISUNDERSTANDING' || event === 'TIMEOUT' || event === 'ROBOT_DISABLED';
+  return event === 'GOAL_REACHED' || event === 'MISUNDERSTANDING' || event === 'TIMEOUT' || event === 'ROBOT_DISABLED';
 }
 
 function scaledOutcome(cost: number, minimum: number, maximum: number): number {
@@ -322,6 +377,9 @@ export function calculateLocalReturn(
   elapsedCost: number,
   immediateEvents: readonly EventType[],
   weights: RewardWeights,
+  robotDamageDelta = 0,
+  action?: Action,
+  fixedCosts = DEFAULT_FIXED_REWARD_COSTS,
 ): number {
   let numerator = 0;
   let denominator = 0;
@@ -334,16 +392,19 @@ export function calculateLocalReturn(
   if (state === 'ROUTE_CHOICE') add(weights.speed, scaledOutcome(elapsedCost, 5, 11));
   if (state === 'OBSTACLE') {
     add(weights.speed, scaledOutcome(elapsedCost, ACTION_TIME.SMALL, ACTION_TIME.LARGE));
-    add(weights.facilityDamage, immediateEvents.includes('FACILITY_DAMAGE') ? -1 : 1);
   }
   if (state === 'CITIZEN_NEARBY') {
     add(weights.speed, scaledOutcome(elapsedCost, 0.5, 5));
-    add(weights.citizenRisk, immediateEvents.includes('CITIZEN_RISK') ? -1 : 1);
   }
-  if (state === 'AMBIGUOUS_PERSON' || state === 'VILLAIN_ENCOUNTER' || state === 'BOSS_ENCOUNTER') {
+  if (state === 'AMBIGUOUS_PERSON') {
     add(weights.speed, scaledOutcome(elapsedCost, ACTION_TIME.VERY_SMALL, ACTION_TIME.LARGE));
-    add(weights.citizenMisunderstanding, immediateEvents.includes('CITIZEN_MISUNDERSTANDING') ? -1 : 1);
+    add(weights.judgment, immediateEvents.includes('MISUNDERSTANDING') ? -1 : action === 'TRACK' ? 1 : action === 'OBSERVE' ? 0.5 : 0);
   }
+  if (state === 'VILLAIN_ENCOUNTER' || state === 'BOSS_ENCOUNTER') {
+    add(weights.threat, immediateEvents.includes('VILLAIN_NEUTRALIZED') || immediateEvents.includes('BOSS_NEUTRALIZED') ? 1 : -0.25);
+  }
+  if (robotDamageDelta > 0) add(fixedCosts.robotDamage, -robotDamageDelta);
+  if (immediateEvents.includes('ROBOT_DISABLED')) add(fixedCosts.robotDisabled, -1);
   return denominator === 0 ? 0 : clamp(numerator / denominator, -1, 1);
 }
 
@@ -351,6 +412,7 @@ export function calculateSegmentReturn(
   elapsedCost: number,
   events: readonly EventType[],
   weights: RewardWeights,
+  fixedCosts = DEFAULT_FIXED_REWARD_COSTS,
 ): number {
   let numerator = 0;
   let denominator = 0;
@@ -360,10 +422,10 @@ export function calculateSegmentReturn(
       denominator += weight;
     }
   };
-  add(weights.speed, scaledOutcome(elapsedCost, 5, 26));
-  add(weights.facilityDamage, events.includes('FACILITY_DAMAGE') ? -1 : 1);
-  add(weights.citizenRisk, events.includes('CITIZEN_RISK') ? -1 : 1);
-  add(weights.citizenMisunderstanding, events.includes('CITIZEN_MISUNDERSTANDING') ? -1 : 1);
+  add(weights.speed, scaledOutcome(elapsedCost, 40, 100));
+  add(weights.judgment, events.includes('MISUNDERSTANDING') ? -1 : 1);
+  add(weights.threat, events.includes('VILLAIN_NEUTRALIZED') || events.includes('BOSS_NEUTRALIZED') ? 1 : 0);
+  add(fixedCosts.robotDisabled, events.includes('ROBOT_DISABLED') ? -1 : 1);
   return denominator === 0 ? 0 : clamp(numerator / denominator, -1, 1);
 }
 
@@ -402,6 +464,8 @@ export type EncounterResolution = {
   retry: boolean;
   neutralized: boolean;
   mobilityDamaged: boolean;
+  robotDamageDelta?: number;
+  combatExperience?: number;
 };
 
 export type VillainResolutionOptions = {
@@ -410,11 +474,21 @@ export type VillainResolutionOptions = {
   retreatTimeCost?: number;
   subdueSuccessByCount?: Readonly<Record<1 | 2, number>>;
   distractPassSuccess?: number;
+  combatSkill?: number;
+  combatSkillBonus?: number;
+  distractSuccessDamage?: number;
+  distractFailureDamage?: number;
+  forcePassSuccessDamage?: number;
+  forcePassFailureDamage?: number;
+  subdueSuccessDamage?: number;
 };
 
 export type BossResolutionOptions = {
   baseSubdueSuccess?: number;
   distractedSubdueSuccess?: number;
+  combatSkill?: number;
+  combatSkillBonus?: number;
+  subdueSuccessDamage?: number;
 };
 
 const validProbability = (value: number, name: string): number => {
@@ -459,23 +533,24 @@ export function resolveVillainEncounter(
 ): EncounterResolution {
   if (!availableVillainActions(options.bypassAvailable ?? false).includes(action)) throw new Error(`${action} is unavailable`);
   if (action === 'SUBDUE') {
-    const successThreshold = validProbability(options.subdueSuccessByCount?.[villainCount]
-      ?? (villainCount === 1 ? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.villain1Subdue : PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.villain2Subdue), 'villain SUBDUE success');
+    const baseProbability = options.subdueSuccessByCount?.[villainCount]
+      ?? (villainCount === 1 ? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.villain1Subdue : PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.villain2Subdue);
+    const successThreshold = clamp(validProbability(baseProbability, 'villain SUBDUE success') + (options.combatSkill ?? 0) * (options.combatSkillBonus ?? 0), 0, 1);
     const success = roll < successThreshold;
     return success
-      ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['VILLAIN_NEUTRALIZED'], localOutcome: 'VILLAIN_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false }
-      : { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['ROBOT_DISABLED'], localOutcome: 'ROBOT_DISABLED', passed: false, retry: false, neutralized: false, mobilityDamaged: false };
+      ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['VILLAIN_NEUTRALIZED'], localOutcome: 'VILLAIN_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false, robotDamageDelta: options.subdueSuccessDamage ?? 0, combatExperience: 1 }
+      : { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['ROBOT_DISABLED'], localOutcome: 'ROBOT_DISABLED', passed: false, retry: false, neutralized: false, mobilityDamaged: false, robotDamageDelta: 1, combatExperience: 0.6 };
   }
   if (action === 'FORCE_PASS') {
     const passThreshold = villainCount === 1 ? 0.70 : 0.50;
     const blockedThreshold = villainCount === 1 ? 0.90 : 0.80;
-    if (roll < passThreshold) return { elapsedCost: ACTION_TIME.SMALL, events: [], localOutcome: 'PASS', passed: true, retry: false, neutralized: false, mobilityDamaged: false };
-    if (roll < blockedThreshold) return { elapsedCost: ACTION_TIME.SMALL + 3, events: ['BLOCKED'], localOutcome: 'BLOCKED', passed: false, retry: true, neutralized: false, mobilityDamaged: false };
-    return { elapsedCost: ACTION_TIME.SMALL, events: ['MOBILITY_DAMAGE'], localOutcome: 'MOBILITY_DAMAGE', passed: true, retry: false, neutralized: false, mobilityDamaged: true };
+    if (roll < passThreshold) return { elapsedCost: ACTION_TIME.SMALL, events: [], localOutcome: 'PASS', passed: true, retry: false, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.forcePassSuccessDamage ?? 0.25 };
+    if (roll < blockedThreshold) return { elapsedCost: ACTION_TIME.SMALL + 3, events: ['BLOCKED'], localOutcome: 'BLOCKED', passed: false, retry: true, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.forcePassFailureDamage ?? 0.4 };
+    return { elapsedCost: ACTION_TIME.SMALL, events: ['MOBILITY_DAMAGE'], localOutcome: 'MOBILITY_DAMAGE', passed: true, retry: false, neutralized: false, mobilityDamaged: true, robotDamageDelta: options.forcePassFailureDamage ?? 0.4 };
   }
   if (action === 'DISTRACT') {
     const passed = roll < validProbability(options.distractPassSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.villainDistract, 'villain DISTRACT success');
-    return { elapsedCost: ACTION_TIME.MEDIUM, events: passed ? [] : ['BLOCKED'], localOutcome: passed ? 'PASS' : 'BLOCKED', passed, retry: !passed, neutralized: false, mobilityDamaged: false };
+    return { elapsedCost: ACTION_TIME.MEDIUM, events: passed ? [] : ['BLOCKED'], localOutcome: passed ? 'PASS' : 'BLOCKED', passed, retry: !passed, neutralized: false, mobilityDamaged: false, robotDamageDelta: passed ? (options.distractSuccessDamage ?? 0.05) : (options.distractFailureDamage ?? 0.15) };
   }
   if (action === 'BYPASS') return { elapsedCost: options.bypassTimeCost ?? ACTION_TIME.LARGE, events: [], localOutcome: 'SAFE_BYPASS', passed: true, retry: false, neutralized: false, mobilityDamaged: false };
   return { elapsedCost: options.retreatTimeCost ?? 0, events: [], localOutcome: 'RETREAT', passed: false, retry: false, neutralized: false, mobilityDamaged: false };
@@ -493,15 +568,15 @@ export function resolveBossEncounter(
   options: BossResolutionOptions = {},
 ): EncounterResolution {
   if (action === 'SUBDUE') {
-    const successThreshold = distracted
+    const baseProbability = distracted
       ? validProbability(options.distractedSubdueSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.bossDistractedSubdue, 'distracted Boss SUBDUE success')
       : validProbability(options.baseSubdueSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.bossSubdue, 'Boss SUBDUE success');
+    const successThreshold = clamp(baseProbability + (options.combatSkill ?? 0) * (options.combatSkillBonus ?? 0), 0, 1);
     const success = roll < successThreshold;
     return success
-      ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['BOSS_NEUTRALIZED'], localOutcome: 'BOSS_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false }
-      : { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['ROBOT_DISABLED'], localOutcome: 'ROBOT_DISABLED', passed: false, retry: false, neutralized: false, mobilityDamaged: false };
+      ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['BOSS_NEUTRALIZED'], localOutcome: 'BOSS_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false, robotDamageDelta: options.subdueSuccessDamage ?? 0, combatExperience: 1 }
+      : { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['ROBOT_DISABLED'], localOutcome: 'ROBOT_DISABLED', passed: false, retry: false, neutralized: false, mobilityDamaged: false, robotDamageDelta: 1, combatExperience: 0.6 };
   }
-  if (action === 'DISTRACT') return { elapsedCost: ACTION_TIME.MEDIUM, events: ['BOSS_DISTRACTED'], localOutcome: 'BOSS_DISTRACTED', passed: false, retry: true, neutralized: false, mobilityDamaged: false };
   return { elapsedCost: retreatTimeCost, events: [], localOutcome: 'RETREAT_TO_SEARCH', passed: false, retry: false, neutralized: false, mobilityDamaged: false };
 }
 
@@ -513,11 +588,11 @@ export function resolveAmbiguousPerson(
   const costs: Record<string, number> = { OBSERVE: ACTION_TIME.SMALL, BYPASS: ACTION_TIME.SMALL, TRACK: 3, SUBDUE: ACTION_TIME.VERY_SMALL };
   const elapsedCost = costs[action] ?? 0;
   const nextTrackTime = cumulativeTrackTime + (action === 'TRACK' ? elapsedCost : 0);
-  const misunderstanding = actualType === 'CITIZEN' && (action === 'SUBDUE' || (action === 'TRACK' && nextTrackTime >= 6));
+  const misunderstanding = actualType === 'CITIZEN' && action === 'SUBDUE';
   return {
     elapsedCost,
-    events: misunderstanding ? ['CITIZEN_MISUNDERSTANDING'] : [],
-    localOutcome: misunderstanding ? 'MISIDENTIFIED_CITIZEN' : `${actualType}_${action}`,
+    events: misunderstanding ? ['MISUNDERSTANDING'] : [],
+    localOutcome: misunderstanding ? 'MISIDENTIFIED_CITIZEN' : action === 'TRACK' && nextTrackTime >= 6 ? `CONFIRMED_${actualType}` : `${actualType}_${action}`,
     cumulativeTrackTime: nextTrackTime,
   };
 }
@@ -536,6 +611,7 @@ function simulateEpisode(
   let facilityDamageCount = 0;
   let citizenRiskCount = 0;
   let citizenMisunderstanding = false;
+  let successfulNeutralizations = 0;
   let terminalReason: TerminalReason | undefined;
   const actionHistory: ActionExperience[] = [];
   const eventHistory: EventRecord[] = [];
@@ -545,7 +621,7 @@ function simulateEpisode(
     eventHistory.push({ type, elapsedTime: roundNumber(elapsedTime), location, causedBy });
     if (type === 'FACILITY_DAMAGE') facilityDamageCount++;
     if (type === 'CITIZEN_RISK') citizenRiskCount++;
-    if (type === 'CITIZEN_MISUNDERSTANDING') {
+    if (type === 'MISUNDERSTANDING') {
       citizenMisunderstanding = true;
       terminalReason = type;
     }
@@ -576,7 +652,7 @@ function simulateEpisode(
       elapsedCost,
       immediateEvents,
       localOutcome,
-      localReturn: state === 'ROUTE_CHOICE' ? 0 : calculateLocalReturn(state, elapsedCost, immediateEvents, weights),
+      localReturn: state === 'ROUTE_CHOICE' ? 0 : calculateLocalReturn(state, elapsedCost, immediateEvents, weights, 0, action),
       actionCredit: 0,
     });
   };
@@ -640,6 +716,10 @@ function simulateEpisode(
     facilityDamageCount,
     citizenRiskCount,
     citizenMisunderstanding,
+    successfulNeutralizations,
+    robotDamage: 0,
+    combatExperience: 0,
+    combatSkillSnapshot: 0,
     terminalReason,
     actionHistory,
     eventHistory,
@@ -772,7 +852,7 @@ export function runProfile(profile: ProfileName, seed = 42, roundCount = 3, robo
     summary: {
       successRate: average((episode) => Number(episode.terminalReason === 'GOAL_REACHED')),
       timeoutRate: average((episode) => Number(episode.terminalReason === 'TIMEOUT')),
-      misunderstandingRate: average((episode) => Number(episode.terminalReason === 'CITIZEN_MISUNDERSTANDING')),
+      misunderstandingRate: average((episode) => Number(episode.terminalReason === 'MISUNDERSTANDING')),
       avgElapsedTime: average((episode) => episode.elapsedTime),
       avgCitizenRisk: average((episode) => episode.citizenRiskCount),
       avgFacilityDamage: average((episode) => episode.facilityDamageCount),

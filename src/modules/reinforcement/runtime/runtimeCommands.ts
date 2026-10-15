@@ -6,9 +6,16 @@ import type {
   F5Room,
 } from '../sim/actualMapEnvironment.ts';
 import type { ActualEpisode } from '../sim/actualMapSimulation.ts';
+import {
+  RUNTIME_CONTACT_FOOTPRINTS,
+  runtimeVisualFootprint,
+  type RuntimeFootprint,
+} from './runtimeFootprints.ts';
+
+export { RUNTIME_CONTACT_FOOTPRINTS } from './runtimeFootprints.ts';
 
 export type RuntimePoint = { x: number; y: number };
-export type RuntimeFootprint = { width: number; height: number };
+export type { RuntimeFootprint } from './runtimeFootprints.ts';
 export type RuntimeDirection = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 export type RuntimeStateChange =
   | 'OBSTACLE_ACTIVE'
@@ -64,14 +71,8 @@ export const directionForSegment = (from: RuntimePoint, to: RuntimePoint): Runti
 const samePoint = (left: RuntimePoint, right: RuntimePoint) => left.x === right.x && left.y === right.y;
 
 export const RUNTIME_STAGING_GAP = 32;
-export const RUNTIME_CONTACT_FOOTPRINTS = {
-  ROBOT: { width: 20, height: 12 },
-  OBSTACLE: { width: 48, height: 24 },
-  CITIZEN_NEARBY: { width: 24, height: 16 },
-  AMBIGUOUS_PERSON: { width: 26, height: 18 },
-  VILLAIN_ENCOUNTER: { width: 28, height: 18 },
-  BOSS_ENCOUNTER: { width: 34, height: 22 },
-} as const satisfies Record<'ROBOT' | Exclude<DecisionState, 'ROUTE_CHOICE'>, RuntimeFootprint>;
+export const RUNTIME_CHARACTER_STAGING_GAP = 64;
+export const RUNTIME_SECURE_ENTRANCE_FOOTPRINT = { width: 192, height: 32 } as const;
 
 export type RuntimeStaging = {
   stagingPosition: RuntimePoint;
@@ -137,6 +138,12 @@ const projectDistance = (points: readonly RuntimePoint[], target: RuntimePoint):
 const projectedHalfExtent = (footprint: RuntimeFootprint, tangent: RuntimePoint) =>
   Math.abs(tangent.x) * footprint.width / 2 + Math.abs(tangent.y) * footprint.height / 2;
 
+const footprintGap = (left: RuntimePoint, leftFootprint: RuntimeFootprint, right: RuntimePoint, rightFootprint: RuntimeFootprint) => {
+  const dx = Math.max(0, Math.abs(left.x - right.x) - (leftFootprint.width + rightFootprint.width) / 2);
+  const dy = Math.max(0, Math.abs(left.y - right.y) - (leftFootprint.height + rightFootprint.height) / 2);
+  return Math.hypot(dx, dy);
+};
+
 const slicePath = (points: readonly RuntimePoint[], fromDistance: number, toDistance: number): RuntimePoint[] => {
   if (points.length < 2 || toDistance <= fromDistance) return [];
   const cumulative = pathMetrics(points);
@@ -154,6 +161,7 @@ export function stageEncounterOnPath(
   encounterPosition: RuntimePoint,
   entityFootprint: RuntimeFootprint,
   minimumGap = RUNTIME_STAGING_GAP,
+  robotFootprint: RuntimeFootprint = RUNTIME_CONTACT_FOOTPRINTS.ROBOT,
 ): RuntimeStaging {
   if (points.length < 2) throw new Error('Runtime staging requires a polyline with at least two points');
   const cumulative = pathMetrics(points);
@@ -165,20 +173,25 @@ export function stageEncounterOnPath(
   const length = Math.hypot(to.x - from.x, to.y - from.y) || 1;
   const tangent = { x: (to.x - from.x) / length, y: (to.y - from.y) / length };
   const requiredDistance = minimumGap
-    + projectedHalfExtent(RUNTIME_CONTACT_FOOTPRINTS.ROBOT, tangent)
+    + projectedHalfExtent(robotFootprint, tangent)
     + projectedHalfExtent(entityFootprint, tangent);
-  const stagingDistance = Math.max(0, encounterDistance - requiredDistance);
+  let stagingDistance = 0;
+  for (let distance = encounterDistance; distance >= 0; distance = Math.max(0, distance - 1)) {
+    if (footprintGap(pointAt(points, cumulative, distance), robotFootprint, encounterPosition, entityFootprint) + 0.001 >= minimumGap) {
+      stagingDistance = distance;
+      break;
+    }
+    if (distance === 0) break;
+  }
   const contactDistance = Math.max(stagingDistance, encounterDistance - requiredDistance + minimumGap);
-  const centerDistance = encounterDistance - stagingDistance;
-  const gap = centerDistance
-    - projectedHalfExtent(RUNTIME_CONTACT_FOOTPRINTS.ROBOT, tangent)
-    - projectedHalfExtent(entityFootprint, tangent);
+  const stagingPosition = pointAt(points, cumulative, stagingDistance);
+  const gap = footprintGap(stagingPosition, robotFootprint, encounterPosition, entityFootprint);
   const normal = { x: -tangent.y, y: tangent.x };
   const clearance = projectedHalfExtent(entityFootprint, normal)
-    + projectedHalfExtent(RUNTIME_CONTACT_FOOTPRINTS.ROBOT, normal)
+    + projectedHalfExtent(robotFootprint, normal)
     + minimumGap;
   return {
-    stagingPosition: pointAt(points, cumulative, stagingDistance),
+    stagingPosition,
     routePosition: pointAt(points, cumulative, encounterDistance),
     incomingDirection: tangent,
     contactPosition: pointAt(points, cumulative, contactDistance),
@@ -190,13 +203,32 @@ export function stageEncounterOnPath(
   };
 }
 
+const visualStaging = (points: readonly RuntimePoint[], zone: ActualEncounterZone) => {
+  const character = zone.kind === 'CITIZEN_NEARBY' || zone.kind === 'AMBIGUOUS_PERSON' || zone.kind === 'VILLAIN_ENCOUNTER';
+  const kind = zone.kind === 'CITIZEN_NEARBY' ? 'CITIZEN'
+    : zone.kind === 'VILLAIN_ENCOUNTER' ? 'VILLAIN'
+      : zone.kind === 'AMBIGUOUS_PERSON' ? 'AMBIGUOUS'
+        : 'OBSTACLE';
+  const base = character ? runtimeVisualFootprint(kind) : RUNTIME_CONTACT_FOOTPRINTS[zone.kind];
+  const footprint = zone.kind === 'VILLAIN_ENCOUNTER' && zone.villainCount === 2
+    ? { ...base, width: base.width + 64 }
+    : base;
+  return stageEncounterOnPath(
+    points,
+    zone,
+    footprint,
+    character ? RUNTIME_CHARACTER_STAGING_GAP : RUNTIME_STAGING_GAP,
+    character ? runtimeVisualFootprint('ROBOT') : RUNTIME_CONTACT_FOOTPRINTS.ROBOT,
+  );
+};
+
 const variantFor = (seed: number, zoneId: string): 1 | 2 | 3 | 4 => {
   let hash = seed >>> 0;
   for (const character of zoneId) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619) >>> 0;
   return ((hash % 4) + 1) as 1 | 2 | 3 | 4;
 };
 
-const isTerminal = (events: readonly EventType[]) => events.some(event => event === 'GOAL_REACHED' || event === 'ROBOT_DISABLED' || event === 'TIMEOUT' || event === 'CITIZEN_MISUNDERSTANDING');
+const isTerminal = (events: readonly EventType[]) => events.some(event => event === 'GOAL_REACHED' || event === 'ROBOT_DISABLED' || event === 'TIMEOUT' || event === 'MISUNDERSTANDING');
 
 const zoneState = (zone: ActualEncounterZone): Exclude<DecisionState, 'ROUTE_CHOICE'> => zone.kind;
 
@@ -280,10 +312,11 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
       const roomPath = environment.f5Rooms.find(candidate => candidate.room === room)!;
       const guard = environment.zones.find(candidate => candidate.id === roomPath.guardZoneId)!;
       const approach = orientedPath(environment, roomPath.approachEdgeIds, 'F5_SEARCH_HUB').points;
-      const guardStaging = stageEncounterOnPath(approach, guard, RUNTIME_CONTACT_FOOTPRINTS.VILLAIN_ENCOUNTER);
-      commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, 0, guardStaging.stagingDistance), routeTime));
       const guardActions = followups.filter(action => action.state === 'VILLAIN_ENCOUNTER' && action.location === guard.id);
-      if (guardActions.length) commands.push(...actionCommands(5, guard, guardActions, actionEndTimes, seed, guardStaging));
+      if (!guardActions.length) break;
+      const guardStaging = visualStaging(approach, guard);
+      commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, 0, guardStaging.stagingDistance), routeTime));
+      commands.push(...actionCommands(5, guard, guardActions, actionEndTimes, seed, guardStaging));
       if (guardActions.some(action => isTerminal(action.immediateEvents))) break;
       const guardNeutralized = guardActions.some(action => action.immediateEvents.includes('VILLAIN_NEUTRALIZED'));
       const guardRetreated = guardActions.at(-1)?.localOutcome === 'RETREAT';
@@ -300,7 +333,13 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
         commands.push(...edgeCommand(environment, 5, roomPath.noBossReturnEdgeId, routeTime));
       } else {
         const roomPosition = approach.at(-1)!;
-        const bossStaging = stageEncounterOnPath(approach, roomPosition, RUNTIME_CONTACT_FOOTPRINTS.BOSS_ENCOUNTER);
+        const bossStaging = stageEncounterOnPath(
+          approach,
+          roomPosition,
+          runtimeVisualFootprint('BOSS'),
+          RUNTIME_CHARACTER_STAGING_GAP,
+          runtimeVisualFootprint('ROBOT'),
+        );
         commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, guardStaging.stagingDistance, bossStaging.stagingDistance), routeTime));
         commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: routeTime, change: 'BOSS_FOUND', location: room, room, position: roomPosition });
         const bossActions = followups.filter(action => action.state === 'BOSS_ENCOUNTER');
@@ -338,8 +377,25 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
           const bossTime = actionEndTimes.get(followups.at(-1)!) ?? routeTime;
           commands.push(...moveCommand(5, roomPath.approachEdgeIds, slicePath(approach, bossStaging.stagingDistance, pathMetrics(approach).at(-1)!), bossTime));
           commands.push(...edgeCommand(environment, 5, roomPath.postBossEdgeId, bossTime));
-          commands.push(...edgeCommand(environment, 5, 'E_F5_HALL_LOCK', bossTime));
+          const lockEdge = environment.edges.find(edge => edge.id === 'E_F5_HALL_LOCK')!;
+          const lockPath = lockEdge.points;
+          const lockEnd = lockPath.at(-1)!;
+          const lockBefore = lockPath.at(-2)!;
+          const lockLength = Math.hypot(lockEnd.x - lockBefore.x, lockEnd.y - lockBefore.y) || 1;
+          const lockCenter = {
+            x: lockEnd.x + (lockEnd.x - lockBefore.x) / lockLength * 32,
+            y: lockEnd.y + (lockEnd.y - lockBefore.y) / lockLength * 32,
+          };
+          const lockStaging = stageEncounterOnPath(
+            lockPath,
+            lockCenter,
+            RUNTIME_SECURE_ENTRANCE_FOOTPRINT,
+            RUNTIME_CHARACTER_STAGING_GAP,
+            runtimeVisualFootprint('ROBOT'),
+          );
+          commands.push(...moveCommand(5, ['E_F5_HALL_LOCK'], slicePath(lockPath, 0, lockStaging.stagingDistance), bossTime));
           commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: bossTime, change: 'SECURITY_LOCK_OPEN', location: 'F5_SECURITY_LOCK' });
+          commands.push(...moveCommand(5, ['E_F5_HALL_LOCK'], slicePath(lockPath, lockStaging.stagingDistance, pathMetrics(lockPath).at(-1)!), bossTime));
           commands.push(...edgeCommand(environment, 5, 'E_F5_LOCK_CONTROL', bossTime));
           commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: bossTime, change: 'SYSTEM_RESTORED', location: 'F5_CONTROL_ROOM' });
           commands.push(...edgeCommand(environment, 5, 'E_F5_CONTROL_GOAL', bossTime));
@@ -374,8 +430,7 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
         && visualZone.kind === 'VILLAIN_ENCOUNTER' && visualZone.villainCount === 2
         ? { ...visualZone, ...path.at(-1)! }
         : visualZone;
-      const encounter = zoneState(zone);
-      const staging = stageEncounterOnPath(path, zone, RUNTIME_CONTACT_FOOTPRINTS[encounter]);
+      const staging = visualStaging(path, zone);
       return { ...stop, zone, distance: projectDistance(path, zone), staging };
     });
     let travelled = 0;
