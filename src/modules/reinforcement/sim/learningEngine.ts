@@ -466,6 +466,7 @@ export type EncounterResolution = {
   mobilityDamaged: boolean;
   robotDamageDelta?: number;
   combatExperience?: number;
+  subdueFailed?: boolean;
 };
 
 export type VillainResolutionOptions = {
@@ -481,6 +482,8 @@ export type VillainResolutionOptions = {
   forcePassSuccessDamage?: number;
   forcePassFailureDamage?: number;
   subdueSuccessDamage?: number;
+  subdueFailureDamage?: number;
+  retryCombatBonus?: number;
 };
 
 export type BossResolutionOptions = {
@@ -489,6 +492,8 @@ export type BossResolutionOptions = {
   combatSkill?: number;
   combatSkillBonus?: number;
   subdueSuccessDamage?: number;
+  subdueFailureDamage?: number;
+  retryCombatBonus?: number;
 };
 
 const validProbability = (value: number, name: string): number => {
@@ -535,22 +540,24 @@ export function resolveVillainEncounter(
   if (action === 'SUBDUE') {
     const baseProbability = options.subdueSuccessByCount?.[villainCount]
       ?? (villainCount === 1 ? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.villain1Subdue : PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.villain2Subdue);
-    const successThreshold = clamp(validProbability(baseProbability, 'villain SUBDUE success') + (options.combatSkill ?? 0) * (options.combatSkillBonus ?? 0), 0, 1);
+    const successThreshold = clamp(validProbability(baseProbability, 'villain SUBDUE success')
+      + (options.combatSkill ?? 0) * (options.combatSkillBonus ?? 0)
+      + (options.retryCombatBonus ?? 0), 0, 1);
     const success = roll < successThreshold;
     return success
-      ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['VILLAIN_NEUTRALIZED'], localOutcome: 'VILLAIN_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false, robotDamageDelta: options.subdueSuccessDamage ?? 0, combatExperience: 1 }
-      : { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['ROBOT_DISABLED'], localOutcome: 'ROBOT_DISABLED', passed: false, retry: false, neutralized: false, mobilityDamaged: false, robotDamageDelta: 1, combatExperience: 0.6 };
+      ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['VILLAIN_NEUTRALIZED'], localOutcome: 'VILLAIN_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false, robotDamageDelta: options.subdueSuccessDamage ?? 0.01, combatExperience: 1 }
+      : { elapsedCost: ACTION_TIME.VERY_SMALL + 5, events: [], localOutcome: 'SUBDUE_RECOVERY', passed: false, retry: true, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.subdueFailureDamage ?? 0.4, combatExperience: 0.6, subdueFailed: true };
   }
   if (action === 'FORCE_PASS') {
     const passThreshold = villainCount === 1 ? 0.70 : 0.50;
     const blockedThreshold = villainCount === 1 ? 0.90 : 0.80;
-    if (roll < passThreshold) return { elapsedCost: ACTION_TIME.SMALL, events: [], localOutcome: 'PASS', passed: true, retry: false, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.forcePassSuccessDamage ?? 0.25 };
-    if (roll < blockedThreshold) return { elapsedCost: ACTION_TIME.SMALL + 3, events: ['BLOCKED'], localOutcome: 'BLOCKED', passed: false, retry: true, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.forcePassFailureDamage ?? 0.4 };
-    return { elapsedCost: ACTION_TIME.SMALL, events: ['MOBILITY_DAMAGE'], localOutcome: 'MOBILITY_DAMAGE', passed: true, retry: false, neutralized: false, mobilityDamaged: true, robotDamageDelta: options.forcePassFailureDamage ?? 0.4 };
+    if (roll < passThreshold) return { elapsedCost: ACTION_TIME.SMALL, events: [], localOutcome: 'PASS', passed: true, retry: false, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.forcePassSuccessDamage ?? 0.15 };
+    if (roll < blockedThreshold) return { elapsedCost: ACTION_TIME.SMALL + 3, events: ['BLOCKED'], localOutcome: 'BLOCKED', passed: false, retry: true, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.forcePassFailureDamage ?? 0.25 };
+    return { elapsedCost: ACTION_TIME.SMALL, events: ['MOBILITY_DAMAGE'], localOutcome: 'MOBILITY_DAMAGE', passed: true, retry: false, neutralized: false, mobilityDamaged: true, robotDamageDelta: options.forcePassFailureDamage ?? 0.25 };
   }
   if (action === 'DISTRACT') {
     const passed = roll < validProbability(options.distractPassSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.villainDistract, 'villain DISTRACT success');
-    return { elapsedCost: ACTION_TIME.MEDIUM, events: passed ? [] : ['BLOCKED'], localOutcome: passed ? 'PASS' : 'BLOCKED', passed, retry: !passed, neutralized: false, mobilityDamaged: false, robotDamageDelta: passed ? (options.distractSuccessDamage ?? 0.05) : (options.distractFailureDamage ?? 0.15) };
+    return { elapsedCost: ACTION_TIME.MEDIUM, events: passed ? [] : ['BLOCKED'], localOutcome: passed ? 'PASS' : 'BLOCKED', passed, retry: !passed, neutralized: false, mobilityDamaged: false, robotDamageDelta: passed ? (options.distractSuccessDamage ?? 0.01) : (options.distractFailureDamage ?? 0.05) };
   }
   if (action === 'BYPASS') return { elapsedCost: options.bypassTimeCost ?? ACTION_TIME.LARGE, events: [], localOutcome: 'SAFE_BYPASS', passed: true, retry: false, neutralized: false, mobilityDamaged: false };
   return { elapsedCost: options.retreatTimeCost ?? 0, events: [], localOutcome: 'RETREAT', passed: false, retry: false, neutralized: false, mobilityDamaged: false };
@@ -571,11 +578,13 @@ export function resolveBossEncounter(
     const baseProbability = distracted
       ? validProbability(options.distractedSubdueSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.bossDistractedSubdue, 'distracted Boss SUBDUE success')
       : validProbability(options.baseSubdueSuccess ?? PRODUCTION_ENCOUNTER_ENVIRONMENT_V1.bossSubdue, 'Boss SUBDUE success');
-    const successThreshold = clamp(baseProbability + (options.combatSkill ?? 0) * (options.combatSkillBonus ?? 0), 0, 1);
+    const successThreshold = clamp(baseProbability
+      + (options.combatSkill ?? 0) * (options.combatSkillBonus ?? 0)
+      + (options.retryCombatBonus ?? 0), 0, 1);
     const success = roll < successThreshold;
     return success
-      ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['BOSS_NEUTRALIZED'], localOutcome: 'BOSS_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false, robotDamageDelta: options.subdueSuccessDamage ?? 0, combatExperience: 1 }
-      : { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['ROBOT_DISABLED'], localOutcome: 'ROBOT_DISABLED', passed: false, retry: false, neutralized: false, mobilityDamaged: false, robotDamageDelta: 1, combatExperience: 0.6 };
+      ? { elapsedCost: ACTION_TIME.VERY_SMALL, events: ['BOSS_NEUTRALIZED'], localOutcome: 'BOSS_NEUTRALIZED', passed: true, retry: false, neutralized: true, mobilityDamaged: false, robotDamageDelta: options.subdueSuccessDamage ?? 0.01, combatExperience: 1 }
+      : { elapsedCost: ACTION_TIME.VERY_SMALL + 5, events: [], localOutcome: 'SUBDUE_RECOVERY', passed: false, retry: true, neutralized: false, mobilityDamaged: false, robotDamageDelta: options.subdueFailureDamage ?? 0.4, combatExperience: 0.6, subdueFailed: true };
   }
   return { elapsedCost: retreatTimeCost, events: [], localOutcome: 'RETREAT_TO_SEARCH', passed: false, retry: false, neutralized: false, mobilityDamaged: false };
 }

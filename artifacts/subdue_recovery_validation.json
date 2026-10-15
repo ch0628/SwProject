@@ -1,0 +1,4681 @@
+{
+  "generatedAt": "2026-10-15T10:14:51.752Z",
+  "contract": {
+    "checkpoints": [
+      1,
+      5,
+      10,
+      15,
+      20
+    ],
+    "trainingSeeds": [
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110
+    ],
+    "evaluationSeedsPerTrainingSeed": [
+      10001,
+      10002,
+      10003,
+      10004,
+      10005,
+      10006,
+      10007,
+      10008,
+      10009,
+      10010,
+      10011,
+      10012,
+      10013,
+      10014,
+      10015,
+      10016,
+      10017,
+      10018,
+      10019,
+      10020
+    ],
+    "profiles": 10,
+    "rounds": 20,
+    "robotsPerRound": 5
+  },
+  "productionParameters": {
+    "villain1Subdue": 0.62,
+    "villain2Subdue": 0.52,
+    "bossSubdue": 0.42,
+    "bossDistractedSubdue": 0.42,
+    "villainDistract": 0.75,
+    "initialCombatSkill": 0.1,
+    "combatLearningRate": 0.035,
+    "maxCombatSkillBonus": 0.45,
+    "distractSuccessDamage": 0.01,
+    "distractFailureDamage": 0.05,
+    "forcePassSuccessDamage": 0.15,
+    "forcePassFailureDamage": 0.25,
+    "subdueSuccessDamage": 0.01,
+    "subdueFailureDamage": 0.4,
+    "retryCombatBonusStep": 0.025,
+    "retryCombatBonusCap": 0.05,
+    "fixedRobotDamageCost": 0.8,
+    "robotDisabledPenalty": 2.5
+  },
+  "initialDefaultAssessment": "TOO_STRONG",
+  "selectedAssessment": "BALANCED",
+  "recommendation": {
+    "step": 0.025,
+    "cap": 0.05,
+    "alternativesEvaluated": true,
+    "reason": "The initial 0.05/0.10 default crossed the strong threshold; 0.025/0.05 reduces retry saturation while preserving recovery viability."
+  },
+  "candidateSearch": [
+    {
+      "step": 0.025,
+      "cap": 0.05,
+      "round1": {
+        "goalReachedRate": 0.05,
+        "robotDisabledRate": 0.36,
+        "retrySuccessRate": 0.734177,
+        "averageReward": -2.595273
+      },
+      "round20": {
+        "goalReachedRate": 0.84,
+        "robotDisabledRate": 0.05,
+        "retrySuccessRate": 0.922414,
+        "averageReward": 2.67343
+      }
+    },
+    {
+      "step": 0.05,
+      "cap": 0.1,
+      "round1": {
+        "goalReachedRate": 0.06,
+        "robotDisabledRate": 0.35,
+        "retrySuccessRate": 0.759494,
+        "averageReward": -2.536326
+      },
+      "round20": {
+        "goalReachedRate": 0.9,
+        "robotDisabledRate": 0.005,
+        "retrySuccessRate": 1,
+        "averageReward": 3.017095
+      }
+    },
+    {
+      "step": 0.075,
+      "cap": 0.15,
+      "round1": {
+        "goalReachedRate": 0.055,
+        "robotDisabledRate": 0.35,
+        "retrySuccessRate": 0.75641,
+        "averageReward": -2.558081
+      },
+      "round20": {
+        "goalReachedRate": 0.9,
+        "robotDisabledRate": 0.005,
+        "retrySuccessRate": 1,
+        "averageReward": 3.01959
+      }
+    }
+  ],
+  "baselineComparison": [
+    {
+      "round": 1,
+      "baseline": {
+        "goalReachedRate": 0.05,
+        "timeoutRate": 0.105,
+        "misunderstandingRate": 0.24,
+        "robotDisabledRate": 0.605,
+        "averageReward": -3.125589,
+        "averageCompletionTime": 366.224212,
+        "subdueSuccessRate": 0.595318,
+        "combatSkill": 0.12618
+      },
+      "current": {
+        "round": 1,
+        "episodes": 200,
+        "goalReachedRate": 0.05,
+        "timeoutRate": 0.35,
+        "misunderstandingRate": 0.24,
+        "robotDisabledRate": 0.36,
+        "averageReward": -2.595273,
+        "averageCompletionTime": 576.886239,
+        "subdueAttempts": 562,
+        "averageSubdueAttemptsPerEpisode": 2.81,
+        "averageAttemptsPerEncounter": 1.163561,
+        "subdueSuccesses": 367,
+        "subdueSuccessRate": 0.653025,
+        "firstAttemptSuccessRate": 0.639752,
+        "retrySuccessRate": 0.734177,
+        "failureCounts": {
+          "first": 174,
+          "second": 21,
+          "thirdOrTerminal": 72
+        },
+        "averageRetryBonusUsed": 0.025,
+        "recoveryThenSuccessfulNeutralizationRate": 0.333333,
+        "defeatThenEpisodeSuccessRate": 0.016129,
+        "cumulativeDamageDisabledCount": 72,
+        "combatDisabledCount": 72,
+        "averageTerminalDamage": 1,
+        "averageRobotDamage": 0.62705,
+        "damageDistribution": {
+          "zero": 38,
+          "low": 20,
+          "medium": 28,
+          "high": 42,
+          "disabled": 72
+        },
+        "combatSkill": 0.13122,
+        "enemyBreakdown": {
+          "VILLAIN_1": {
+            "encounters": 0,
+            "attempts": 0,
+            "firstSuccesses": 0,
+            "firstAttemptSuccessRate": 0,
+            "retrySuccesses": 0,
+            "retrySuccessRate": 0,
+            "finalNeutralizations": 0,
+            "disabledCaused": 0
+          },
+          "VILLAIN_2": {
+            "encounters": 538,
+            "attempts": 272,
+            "firstSuccesses": 95,
+            "firstAttemptSuccessRate": 0.439815,
+            "retrySuccesses": 47,
+            "retrySuccessRate": 0.839286,
+            "finalNeutralizations": 142,
+            "disabledCaused": 40
+          },
+          "F5_GUARD": {
+            "encounters": 547,
+            "attempts": 243,
+            "firstSuccesses": 205,
+            "firstAttemptSuccessRate": 0.876068,
+            "retrySuccesses": 9,
+            "retrySuccessRate": 1,
+            "finalNeutralizations": 214,
+            "disabledCaused": 20
+          },
+          "BOSS": {
+            "encounters": 81,
+            "attempts": 47,
+            "firstSuccesses": 9,
+            "firstAttemptSuccessRate": 0.272727,
+            "retrySuccesses": 2,
+            "retrySuccessRate": 0.142857,
+            "finalNeutralizations": 11,
+            "disabledCaused": 12
+          }
+        }
+      },
+      "delta": {
+        "goalReachedRate": 0,
+        "robotDisabledRate": -0.245,
+        "averageReward": 0.530316,
+        "averageCompletionTime": 210.662027,
+        "subdueSuccessRate": 0.057707,
+        "combatSkill": 0.00504
+      }
+    },
+    {
+      "round": 5,
+      "baseline": {
+        "goalReachedRate": 0.075,
+        "timeoutRate": 0.06,
+        "misunderstandingRate": 0.23,
+        "robotDisabledRate": 0.635,
+        "averageReward": -2.812455,
+        "averageCompletionTime": 348.343165,
+        "subdueSuccessRate": 0.68,
+        "combatSkill": 0.23692
+      },
+      "current": {
+        "round": 5,
+        "episodes": 200,
+        "goalReachedRate": 0.105,
+        "timeoutRate": 0.155,
+        "misunderstandingRate": 0.21,
+        "robotDisabledRate": 0.53,
+        "averageReward": -2.377424,
+        "averageCompletionTime": 533.641319,
+        "subdueAttempts": 792,
+        "averageSubdueAttemptsPerEpisode": 3.96,
+        "averageAttemptsPerEncounter": 1.18209,
+        "subdueSuccesses": 504,
+        "subdueSuccessRate": 0.636364,
+        "firstAttemptSuccessRate": 0.635821,
+        "retrySuccessRate": 0.696429,
+        "failureCounts": {
+          "first": 244,
+          "second": 44,
+          "thirdOrTerminal": 106
+        },
+        "averageRetryBonusUsed": 0.027049,
+        "recoveryThenSuccessfulNeutralizationRate": 0.319672,
+        "defeatThenEpisodeSuccessRate": 0.068027,
+        "cumulativeDamageDisabledCount": 106,
+        "combatDisabledCount": 106,
+        "averageTerminalDamage": 1,
+        "averageRobotDamage": 0.71555,
+        "damageDistribution": {
+          "zero": 30,
+          "low": 13,
+          "medium": 22,
+          "high": 29,
+          "disabled": 106
+        },
+        "combatSkill": 0.2631,
+        "enemyBreakdown": {
+          "VILLAIN_1": {
+            "encounters": 0,
+            "attempts": 0,
+            "firstSuccesses": 0,
+            "firstAttemptSuccessRate": 0,
+            "retrySuccesses": 0,
+            "retrySuccessRate": 0,
+            "finalNeutralizations": 0,
+            "disabledCaused": 0
+          },
+          "VILLAIN_2": {
+            "encounters": 549,
+            "attempts": 394,
+            "firstSuccesses": 173,
+            "firstAttemptSuccessRate": 0.538941,
+            "retrySuccesses": 60,
+            "retrySuccessRate": 0.821918,
+            "finalNeutralizations": 233,
+            "disabledCaused": 36
+          },
+          "F5_GUARD": {
+            "encounters": 517,
+            "attempts": 298,
+            "firstSuccesses": 233,
+            "firstAttemptSuccessRate": 0.823322,
+            "retrySuccesses": 5,
+            "retrySuccessRate": 0.333333,
+            "finalNeutralizations": 238,
+            "disabledCaused": 34
+          },
+          "BOSS": {
+            "encounters": 84,
+            "attempts": 100,
+            "firstSuccesses": 20,
+            "firstAttemptSuccessRate": 0.30303,
+            "retrySuccesses": 13,
+            "retrySuccessRate": 0.541667,
+            "finalNeutralizations": 33,
+            "disabledCaused": 36
+          }
+        }
+      },
+      "delta": {
+        "goalReachedRate": 0.03,
+        "robotDisabledRate": -0.105,
+        "averageReward": 0.435031,
+        "averageCompletionTime": 185.298154,
+        "subdueSuccessRate": -0.043636,
+        "combatSkill": 0.02618
+      }
+    },
+    {
+      "round": 10,
+      "baseline": {
+        "goalReachedRate": 0.085,
+        "timeoutRate": 0.01,
+        "misunderstandingRate": 0.16,
+        "robotDisabledRate": 0.745,
+        "averageReward": -2.791055,
+        "averageCompletionTime": 337.477365,
+        "subdueSuccessRate": 0.684,
+        "combatSkill": 0.37972
+      },
+      "current": {
+        "round": 10,
+        "episodes": 200,
+        "goalReachedRate": 0.395,
+        "timeoutRate": 0.06,
+        "misunderstandingRate": 0.16,
+        "robotDisabledRate": 0.385,
+        "averageReward": -0.392497,
+        "averageCompletionTime": 532.082554,
+        "subdueAttempts": 1088,
+        "averageSubdueAttemptsPerEpisode": 5.44,
+        "averageAttemptsPerEncounter": 1.176216,
+        "subdueSuccesses": 811,
+        "subdueSuccessRate": 0.745404,
+        "firstAttemptSuccessRate": 0.735135,
+        "retrySuccessRate": 0.929078,
+        "failureCounts": {
+          "first": 245,
+          "second": 32,
+          "thirdOrTerminal": 77
+        },
+        "averageRetryBonusUsed": 0.028374,
+        "recoveryThenSuccessfulNeutralizationRate": 0.534694,
+        "defeatThenEpisodeSuccessRate": 0.360294,
+        "cumulativeDamageDisabledCount": 77,
+        "combatDisabledCount": 77,
+        "averageTerminalDamage": 1,
+        "averageRobotDamage": 0.62735,
+        "damageDistribution": {
+          "zero": 27,
+          "low": 35,
+          "medium": 22,
+          "high": 39,
+          "disabled": 77
+        },
+        "combatSkill": 0.43012,
+        "enemyBreakdown": {
+          "VILLAIN_1": {
+            "encounters": 0,
+            "attempts": 0,
+            "firstSuccesses": 0,
+            "firstAttemptSuccessRate": 0,
+            "retrySuccesses": 0,
+            "retrySuccessRate": 0,
+            "finalNeutralizations": 0,
+            "disabledCaused": 0
+          },
+          "VILLAIN_2": {
+            "encounters": 556,
+            "attempts": 487,
+            "firstSuccesses": 277,
+            "firstAttemptSuccessRate": 0.690773,
+            "retrySuccesses": 74,
+            "retrySuccessRate": 1,
+            "finalNeutralizations": 351,
+            "disabledCaused": 14
+          },
+          "F5_GUARD": {
+            "encounters": 497,
+            "attempts": 415,
+            "firstSuccesses": 329,
+            "firstAttemptSuccessRate": 0.865789,
+            "retrySuccesses": 34,
+            "retrySuccessRate": 0.971429,
+            "finalNeutralizations": 363,
+            "disabledCaused": 17
+          },
+          "BOSS": {
+            "encounters": 182,
+            "attempts": 186,
+            "firstSuccesses": 74,
+            "firstAttemptSuccessRate": 0.513889,
+            "retrySuccesses": 23,
+            "retrySuccessRate": 0.71875,
+            "finalNeutralizations": 97,
+            "disabledCaused": 46
+          }
+        }
+      },
+      "delta": {
+        "goalReachedRate": 0.31,
+        "robotDisabledRate": -0.36,
+        "averageReward": 2.398558,
+        "averageCompletionTime": 194.605189,
+        "subdueSuccessRate": 0.061404,
+        "combatSkill": 0.0504
+      }
+    },
+    {
+      "round": 15,
+      "baseline": {
+        "goalReachedRate": 0.225,
+        "timeoutRate": 0.03,
+        "misunderstandingRate": 0.11,
+        "robotDisabledRate": 0.635,
+        "averageReward": -1.696522,
+        "averageCompletionTime": 348.409832,
+        "subdueSuccessRate": 0.775,
+        "combatSkill": 0.52392
+      },
+      "current": {
+        "round": 15,
+        "episodes": 200,
+        "goalReachedRate": 0.72,
+        "timeoutRate": 0.02,
+        "misunderstandingRate": 0.105,
+        "robotDisabledRate": 0.155,
+        "averageReward": 1.665614,
+        "averageCompletionTime": 532.171546,
+        "subdueAttempts": 1271,
+        "averageSubdueAttemptsPerEpisode": 6.355,
+        "averageAttemptsPerEncounter": 1.164986,
+        "subdueSuccesses": 1035,
+        "subdueSuccessRate": 0.814319,
+        "firstAttemptSuccessRate": 0.797434,
+        "retrySuccessRate": 0.970588,
+        "failureCounts": {
+          "first": 221,
+          "second": 15,
+          "thirdOrTerminal": 31
+        },
+        "averageRetryBonusUsed": 0.026389,
+        "recoveryThenSuccessfulNeutralizationRate": 0.746606,
+        "defeatThenEpisodeSuccessRate": 0.742647,
+        "cumulativeDamageDisabledCount": 31,
+        "combatDisabledCount": 31,
+        "averageTerminalDamage": 1,
+        "averageRobotDamage": 0.54815,
+        "damageDistribution": {
+          "zero": 21,
+          "low": 43,
+          "medium": 45,
+          "high": 60,
+          "disabled": 31
+        },
+        "combatSkill": 0.59742,
+        "enemyBreakdown": {
+          "VILLAIN_1": {
+            "encounters": 0,
+            "attempts": 0,
+            "firstSuccesses": 0,
+            "firstAttemptSuccessRate": 0,
+            "retrySuccesses": 0,
+            "retrySuccessRate": 0,
+            "finalNeutralizations": 0,
+            "disabledCaused": 0
+          },
+          "VILLAIN_2": {
+            "encounters": 571,
+            "attempts": 551,
+            "firstSuccesses": 358,
+            "firstAttemptSuccessRate": 0.769892,
+            "retrySuccesses": 73,
+            "retrySuccessRate": 0.960526,
+            "finalNeutralizations": 431,
+            "disabledCaused": 7
+          },
+          "F5_GUARD": {
+            "encounters": 505,
+            "attempts": 517,
+            "firstSuccesses": 407,
+            "firstAttemptSuccessRate": 0.869658,
+            "retrySuccesses": 49,
+            "retrySuccessRate": 1,
+            "finalNeutralizations": 456,
+            "disabledCaused": 15
+          },
+          "BOSS": {
+            "encounters": 181,
+            "attempts": 203,
+            "firstSuccesses": 105,
+            "firstAttemptSuccessRate": 0.664557,
+            "retrySuccesses": 43,
+            "retrySuccessRate": 0.955556,
+            "finalNeutralizations": 148,
+            "disabledCaused": 9
+          }
+        }
+      },
+      "delta": {
+        "goalReachedRate": 0.495,
+        "robotDisabledRate": -0.48,
+        "averageReward": 3.362136,
+        "averageCompletionTime": 183.761714,
+        "subdueSuccessRate": 0.039319,
+        "combatSkill": 0.0735
+      }
+    },
+    {
+      "round": 20,
+      "baseline": {
+        "goalReachedRate": 0.285,
+        "timeoutRate": 0.015,
+        "misunderstandingRate": 0.13,
+        "robotDisabledRate": 0.57,
+        "averageReward": -1.067058,
+        "averageCompletionTime": 360.923266,
+        "subdueSuccessRate": 0.840559,
+        "combatSkill": 0.68058
+      },
+      "current": {
+        "round": 20,
+        "episodes": 200,
+        "goalReachedRate": 0.84,
+        "timeoutRate": 0,
+        "misunderstandingRate": 0.11,
+        "robotDisabledRate": 0.05,
+        "averageReward": 2.67343,
+        "averageCompletionTime": 483.919757,
+        "subdueAttempts": 1226,
+        "averageSubdueAttemptsPerEpisode": 6.13,
+        "averageAttemptsPerEncounter": 1.113533,
+        "subdueSuccesses": 1084,
+        "subdueSuccessRate": 0.884176,
+        "firstAttemptSuccessRate": 0.887375,
+        "retrySuccessRate": 0.922414,
+        "failureCounts": {
+          "first": 124,
+          "second": 9,
+          "thirdOrTerminal": 10
+        },
+        "averageRetryBonusUsed": 0.0268,
+        "recoveryThenSuccessfulNeutralizationRate": 0.862903,
+        "defeatThenEpisodeSuccessRate": 0.89011,
+        "cumulativeDamageDisabledCount": 10,
+        "combatDisabledCount": 10,
+        "averageTerminalDamage": 1,
+        "averageRobotDamage": 0.35735,
+        "damageDistribution": {
+          "zero": 21,
+          "low": 88,
+          "medium": 47,
+          "high": 34,
+          "disabled": 10
+        },
+        "combatSkill": 0.76962,
+        "enemyBreakdown": {
+          "VILLAIN_1": {
+            "encounters": 0,
+            "attempts": 0,
+            "firstSuccesses": 0,
+            "firstAttemptSuccessRate": 0,
+            "retrySuccesses": 0,
+            "retrySuccessRate": 0,
+            "finalNeutralizations": 0,
+            "disabledCaused": 0
+          },
+          "VILLAIN_2": {
+            "encounters": 549,
+            "attempts": 537,
+            "firstSuccesses": 439,
+            "firstAttemptSuccessRate": 0.892276,
+            "retrySuccesses": 45,
+            "retrySuccessRate": 1,
+            "finalNeutralizations": 484,
+            "disabledCaused": 0
+          },
+          "F5_GUARD": {
+            "encounters": 453,
+            "attempts": 445,
+            "firstSuccesses": 419,
+            "firstAttemptSuccessRate": 0.969907,
+            "retrySuccesses": 13,
+            "retrySuccessRate": 1,
+            "finalNeutralizations": 432,
+            "disabledCaused": 1
+          },
+          "BOSS": {
+            "encounters": 181,
+            "attempts": 244,
+            "firstSuccesses": 119,
+            "firstAttemptSuccessRate": 0.672316,
+            "retrySuccesses": 49,
+            "retrySuccessRate": 0.844828,
+            "finalNeutralizations": 168,
+            "disabledCaused": 9
+          }
+        }
+      },
+      "delta": {
+        "goalReachedRate": 0.555,
+        "robotDisabledRate": -0.52,
+        "averageReward": 3.740488,
+        "averageCompletionTime": 122.996491,
+        "subdueSuccessRate": 0.043617,
+        "combatSkill": 0.08904
+      }
+    }
+  ],
+  "results": [
+    {
+      "stars": {
+        "speed": 0,
+        "judgment": 3,
+        "threat": 3
+      },
+      "key": "0-3-3",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.05,
+          "timeoutRate": 0.38,
+          "misunderstandingRate": 0.21,
+          "robotDisabledRate": 0.36,
+          "averageReward": -0.39356,
+          "averageCompletionTime": 608.680491,
+          "subdueAttempts": 605,
+          "averageSubdueAttemptsPerEpisode": 3.025,
+          "averageAttemptsPerEncounter": 1.15458,
+          "subdueSuccesses": 403,
+          "subdueSuccessRate": 0.666116,
+          "firstAttemptSuccessRate": 0.656489,
+          "retrySuccessRate": 0.728395,
+          "failureCounts": {
+            "first": 180,
+            "second": 22,
+            "thirdOrTerminal": 72
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.327778,
+          "defeatThenEpisodeSuccessRate": 0.007874,
+          "cumulativeDamageDisabledCount": 72,
+          "combatDisabledCount": 72,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.64195,
+          "damageDistribution": {
+            "zero": 32,
+            "low": 22,
+            "medium": 29,
+            "high": 45,
+            "disabled": 72
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 560,
+              "attempts": 289,
+              "firstSuccesses": 109,
+              "firstAttemptSuccessRate": 0.471861,
+              "retrySuccesses": 49,
+              "retrySuccessRate": 0.844828,
+              "finalNeutralizations": 158,
+              "disabledCaused": 35
+            },
+            "F5_GUARD": {
+              "encounters": 606,
+              "attempts": 266,
+              "firstSuccesses": 223,
+              "firstAttemptSuccessRate": 0.867704,
+              "retrySuccesses": 9,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 232,
+              "disabledCaused": 24
+            },
+            "BOSS": {
+              "encounters": 86,
+              "attempts": 50,
+              "firstSuccesses": 12,
+              "firstAttemptSuccessRate": 0.333333,
+              "retrySuccesses": 1,
+              "retrySuccessRate": 0.071429,
+              "finalNeutralizations": 13,
+              "disabledCaused": 13
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.09,
+          "timeoutRate": 0.18,
+          "misunderstandingRate": 0.165,
+          "robotDisabledRate": 0.565,
+          "averageReward": 0.0909,
+          "averageCompletionTime": 558.294084,
+          "subdueAttempts": 849,
+          "averageSubdueAttemptsPerEpisode": 4.245,
+          "averageAttemptsPerEncounter": 1.182451,
+          "subdueSuccesses": 542,
+          "subdueSuccessRate": 0.638398,
+          "firstAttemptSuccessRate": 0.639276,
+          "retrySuccessRate": 0.697479,
+          "failureCounts": {
+            "first": 259,
+            "second": 47,
+            "thirdOrTerminal": 113
+          },
+          "averageRetryBonusUsed": 0.02729,
+          "recoveryThenSuccessfulNeutralizationRate": 0.320463,
+          "defeatThenEpisodeSuccessRate": 0.046053,
+          "cumulativeDamageDisabledCount": 113,
+          "combatDisabledCount": 113,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.7395,
+          "damageDistribution": {
+            "zero": 26,
+            "low": 9,
+            "medium": 27,
+            "high": 25,
+            "disabled": 113
+          },
+          "combatSkill": 0.26506,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 563,
+              "attempts": 422,
+              "firstSuccesses": 199,
+              "firstAttemptSuccessRate": 0.576812,
+              "retrySuccesses": 59,
+              "retrySuccessRate": 0.786667,
+              "finalNeutralizations": 258,
+              "disabledCaused": 37
+            },
+            "F5_GUARD": {
+              "encounters": 564,
+              "attempts": 333,
+              "firstSuccesses": 242,
+              "firstAttemptSuccessRate": 0.780645,
+              "retrySuccesses": 13,
+              "retrySuccessRate": 0.565217,
+              "finalNeutralizations": 255,
+              "disabledCaused": 36
+            },
+            "BOSS": {
+              "encounters": 83,
+              "attempts": 94,
+              "firstSuccesses": 18,
+              "firstAttemptSuccessRate": 0.285714,
+              "retrySuccesses": 11,
+              "retrySuccessRate": 0.52381,
+              "finalNeutralizations": 29,
+              "disabledCaused": 40
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.53,
+          "timeoutRate": 0.06,
+          "misunderstandingRate": 0.04,
+          "robotDisabledRate": 0.37,
+          "averageReward": 4.09728,
+          "averageCompletionTime": 590.114919,
+          "subdueAttempts": 1267,
+          "averageSubdueAttemptsPerEpisode": 6.335,
+          "averageAttemptsPerEncounter": 1.189671,
+          "subdueSuccesses": 955,
+          "subdueSuccessRate": 0.753749,
+          "firstAttemptSuccessRate": 0.737089,
+          "retrySuccessRate": 0.939227,
+          "failureCounts": {
+            "first": 280,
+            "second": 32,
+            "thirdOrTerminal": 74
+          },
+          "averageRetryBonusUsed": 0.027599,
+          "recoveryThenSuccessfulNeutralizationRate": 0.607143,
+          "defeatThenEpisodeSuccessRate": 0.483871,
+          "cumulativeDamageDisabledCount": 74,
+          "combatDisabledCount": 74,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.68465,
+          "damageDistribution": {
+            "zero": 8,
+            "low": 37,
+            "medium": 30,
+            "high": 51,
+            "disabled": 74
+          },
+          "combatSkill": 0.4325,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 627,
+              "attempts": 583,
+              "firstSuccesses": 333,
+              "firstAttemptSuccessRate": 0.704017,
+              "retrySuccesses": 98,
+              "retrySuccessRate": 0.989899,
+              "finalNeutralizations": 431,
+              "disabledCaused": 13
+            },
+            "F5_GUARD": {
+              "encounters": 554,
+              "attempts": 464,
+              "firstSuccesses": 369,
+              "firstAttemptSuccessRate": 0.866197,
+              "retrySuccesses": 35,
+              "retrySuccessRate": 0.921053,
+              "finalNeutralizations": 404,
+              "disabledCaused": 21
+            },
+            "BOSS": {
+              "encounters": 216,
+              "attempts": 220,
+              "firstSuccesses": 83,
+              "firstAttemptSuccessRate": 0.5,
+              "retrySuccesses": 37,
+              "retrySuccessRate": 0.840909,
+              "finalNeutralizations": 120,
+              "disabledCaused": 40
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.835,
+          "timeoutRate": 0.03,
+          "misunderstandingRate": 0,
+          "robotDisabledRate": 0.135,
+          "averageReward": 6.33098,
+          "averageCompletionTime": 595.394981,
+          "subdueAttempts": 1367,
+          "averageSubdueAttemptsPerEpisode": 6.835,
+          "averageAttemptsPerEncounter": 1.168376,
+          "subdueSuccesses": 1130,
+          "subdueSuccessRate": 0.826628,
+          "firstAttemptSuccessRate": 0.805983,
+          "retrySuccessRate": 1,
+          "failureCounts": {
+            "first": 227,
+            "second": 10,
+            "thirdOrTerminal": 27
+          },
+          "averageRetryBonusUsed": 0.026269,
+          "recoveryThenSuccessfulNeutralizationRate": 0.823789,
+          "defeatThenEpisodeSuccessRate": 0.791667,
+          "cumulativeDamageDisabledCount": 27,
+          "combatDisabledCount": 27,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.5769,
+          "damageDistribution": {
+            "zero": 0,
+            "low": 56,
+            "medium": 52,
+            "high": 65,
+            "disabled": 27
+          },
+          "combatSkill": 0.6033,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 630,
+              "attempts": 579,
+              "firstSuccesses": 372,
+              "firstAttemptSuccessRate": 0.773389,
+              "retrySuccesses": 88,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 460,
+              "disabledCaused": 9
+            },
+            "F5_GUARD": {
+              "encounters": 558,
+              "attempts": 557,
+              "firstSuccesses": 448,
+              "firstAttemptSuccessRate": 0.88189,
+              "retrySuccesses": 49,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 497,
+              "disabledCaused": 11
+            },
+            "BOSS": {
+              "encounters": 222,
+              "attempts": 231,
+              "firstSuccesses": 123,
+              "firstAttemptSuccessRate": 0.679558,
+              "retrySuccesses": 50,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 173,
+              "disabledCaused": 7
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.915,
+          "timeoutRate": 0.035,
+          "misunderstandingRate": 0,
+          "robotDisabledRate": 0.05,
+          "averageReward": 7.02912,
+          "averageCompletionTime": 602.213785,
+          "subdueAttempts": 1257,
+          "averageSubdueAttemptsPerEpisode": 6.285,
+          "averageAttemptsPerEncounter": 1.071611,
+          "subdueSuccesses": 1156,
+          "subdueSuccessRate": 0.91965,
+          "firstAttemptSuccessRate": 0.915601,
+          "retrySuccessRate": 0.987952,
+          "failureCounts": {
+            "first": 99,
+            "second": 1,
+            "thirdOrTerminal": 10
+          },
+          "averageRetryBonusUsed": 0.025298,
+          "recoveryThenSuccessfulNeutralizationRate": 0.828283,
+          "defeatThenEpisodeSuccessRate": 0.842105,
+          "cumulativeDamageDisabledCount": 10,
+          "combatDisabledCount": 10,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.30735,
+          "damageDistribution": {
+            "zero": 0,
+            "low": 124,
+            "medium": 48,
+            "high": 18,
+            "disabled": 10
+          },
+          "combatSkill": 0.77662,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 626,
+              "attempts": 517,
+              "firstSuccesses": 420,
+              "firstAttemptSuccessRate": 0.882353,
+              "retrySuccesses": 41,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 461,
+              "disabledCaused": 8
+            },
+            "F5_GUARD": {
+              "encounters": 600,
+              "attempts": 512,
+              "firstSuccesses": 502,
+              "firstAttemptSuccessRate": 0.990138,
+              "retrySuccesses": 5,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 507,
+              "disabledCaused": 0
+            },
+            "BOSS": {
+              "encounters": 216,
+              "attempts": 228,
+              "firstSuccesses": 152,
+              "firstAttemptSuccessRate": 0.8,
+              "retrySuccesses": 36,
+              "retrySuccessRate": 0.972973,
+              "finalNeutralizations": 188,
+              "disabledCaused": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stars": {
+        "speed": 1,
+        "judgment": 2,
+        "threat": 3
+      },
+      "key": "1-2-3",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.05,
+          "timeoutRate": 0.35,
+          "misunderstandingRate": 0.24,
+          "robotDisabledRate": 0.36,
+          "averageReward": -0.683625,
+          "averageCompletionTime": 581.786835,
+          "subdueAttempts": 574,
+          "averageSubdueAttemptsPerEpisode": 2.87,
+          "averageAttemptsPerEncounter": 1.161943,
+          "subdueSuccesses": 381,
+          "subdueSuccessRate": 0.663763,
+          "firstAttemptSuccessRate": 0.651822,
+          "retrySuccessRate": 0.7375,
+          "failureCounts": {
+            "first": 172,
+            "second": 21,
+            "thirdOrTerminal": 72
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.343023,
+          "defeatThenEpisodeSuccessRate": 0.008264,
+          "cumulativeDamageDisabledCount": 72,
+          "combatDisabledCount": 72,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6146,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 22,
+            "medium": 29,
+            "high": 39,
+            "disabled": 72
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 537,
+              "attempts": 275,
+              "firstSuccesses": 99,
+              "firstAttemptSuccessRate": 0.456221,
+              "retrySuccesses": 49,
+              "retrySuccessRate": 0.844828,
+              "finalNeutralizations": 148,
+              "disabledCaused": 38
+            },
+            "F5_GUARD": {
+              "encounters": 560,
+              "attempts": 251,
+              "firstSuccesses": 211,
+              "firstAttemptSuccessRate": 0.871901,
+              "retrySuccesses": 9,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 220,
+              "disabledCaused": 22
+            },
+            "BOSS": {
+              "encounters": 85,
+              "attempts": 48,
+              "firstSuccesses": 12,
+              "firstAttemptSuccessRate": 0.342857,
+              "retrySuccesses": 1,
+              "retrySuccessRate": 0.076923,
+              "finalNeutralizations": 13,
+              "disabledCaused": 12
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.095,
+          "timeoutRate": 0.16,
+          "misunderstandingRate": 0.175,
+          "robotDisabledRate": 0.57,
+          "averageReward": -0.133531,
+          "averageCompletionTime": 554.73526,
+          "subdueAttempts": 853,
+          "averageSubdueAttemptsPerEpisode": 4.265,
+          "averageAttemptsPerEncounter": 1.178177,
+          "subdueSuccesses": 546,
+          "subdueSuccessRate": 0.640094,
+          "firstAttemptSuccessRate": 0.643646,
+          "retrySuccessRate": 0.689655,
+          "failureCounts": {
+            "first": 258,
+            "second": 48,
+            "thirdOrTerminal": 114
+          },
+          "averageRetryBonusUsed": 0.027519,
+          "recoveryThenSuccessfulNeutralizationRate": 0.310078,
+          "defeatThenEpisodeSuccessRate": 0.053691,
+          "cumulativeDamageDisabledCount": 114,
+          "combatDisabledCount": 114,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.74925,
+          "damageDistribution": {
+            "zero": 25,
+            "low": 11,
+            "medium": 22,
+            "high": 28,
+            "disabled": 114
+          },
+          "combatSkill": 0.26534,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 567,
+              "attempts": 414,
+              "firstSuccesses": 201,
+              "firstAttemptSuccessRate": 0.586006,
+              "retrySuccesses": 55,
+              "retrySuccessRate": 0.797101,
+              "finalNeutralizations": 256,
+              "disabledCaused": 34
+            },
+            "F5_GUARD": {
+              "encounters": 569,
+              "attempts": 340,
+              "firstSuccesses": 247,
+              "firstAttemptSuccessRate": 0.781646,
+              "retrySuccesses": 13,
+              "retrySuccessRate": 0.565217,
+              "finalNeutralizations": 260,
+              "disabledCaused": 38
+            },
+            "BOSS": {
+              "encounters": 82,
+              "attempts": 99,
+              "firstSuccesses": 18,
+              "firstAttemptSuccessRate": 0.276923,
+              "retrySuccesses": 12,
+              "retrySuccessRate": 0.5,
+              "finalNeutralizations": 30,
+              "disabledCaused": 42
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.475,
+          "timeoutRate": 0.05,
+          "misunderstandingRate": 0.125,
+          "robotDisabledRate": 0.35,
+          "averageReward": 2.933771,
+          "averageCompletionTime": 543.971041,
+          "subdueAttempts": 1171,
+          "averageSubdueAttemptsPerEpisode": 5.855,
+          "averageAttemptsPerEncounter": 1.181635,
+          "subdueSuccesses": 879,
+          "subdueSuccessRate": 0.75064,
+          "firstAttemptSuccessRate": 0.734612,
+          "retrySuccessRate": 0.949686,
+          "failureCounts": {
+            "first": 263,
+            "second": 29,
+            "thirdOrTerminal": 70
+          },
+          "averageRetryBonusUsed": 0.027917,
+          "recoveryThenSuccessfulNeutralizationRate": 0.574144,
+          "defeatThenEpisodeSuccessRate": 0.454545,
+          "cumulativeDamageDisabledCount": 70,
+          "combatDisabledCount": 70,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6427,
+          "damageDistribution": {
+            "zero": 24,
+            "low": 33,
+            "medium": 24,
+            "high": 49,
+            "disabled": 70
+          },
+          "combatSkill": 0.43208,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 579,
+              "attempts": 529,
+              "firstSuccesses": 311,
+              "firstAttemptSuccessRate": 0.71167,
+              "retrySuccesses": 81,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 392,
+              "disabledCaused": 12
+            },
+            "F5_GUARD": {
+              "encounters": 521,
+              "attempts": 441,
+              "firstSuccesses": 340,
+              "firstAttemptSuccessRate": 0.85213,
+              "retrySuccesses": 40,
+              "retrySuccessRate": 0.952381,
+              "finalNeutralizations": 380,
+              "disabledCaused": 19
+            },
+            "BOSS": {
+              "encounters": 179,
+              "attempts": 201,
+              "firstSuccesses": 77,
+              "firstAttemptSuccessRate": 0.496774,
+              "retrySuccesses": 30,
+              "retrySuccessRate": 0.833333,
+              "finalNeutralizations": 107,
+              "disabledCaused": 39
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.8,
+          "timeoutRate": 0.04,
+          "misunderstandingRate": 0.055,
+          "robotDisabledRate": 0.105,
+          "averageReward": 5.410121,
+          "averageCompletionTime": 567.485191,
+          "subdueAttempts": 1367,
+          "averageSubdueAttemptsPerEpisode": 6.835,
+          "averageAttemptsPerEncounter": 1.175408,
+          "subdueSuccesses": 1122,
+          "subdueSuccessRate": 0.820775,
+          "firstAttemptSuccessRate": 0.797936,
+          "retrySuccessRate": 1,
+          "failureCounts": {
+            "first": 235,
+            "second": 10,
+            "thirdOrTerminal": 21
+          },
+          "averageRetryBonusUsed": 0.026225,
+          "recoveryThenSuccessfulNeutralizationRate": 0.825532,
+          "defeatThenEpisodeSuccessRate": 0.802721,
+          "cumulativeDamageDisabledCount": 21,
+          "combatDisabledCount": 21,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.57995,
+          "damageDistribution": {
+            "zero": 11,
+            "low": 42,
+            "medium": 50,
+            "high": 76,
+            "disabled": 21
+          },
+          "combatSkill": 0.60148,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 600,
+              "attempts": 587,
+              "firstSuccesses": 363,
+              "firstAttemptSuccessRate": 0.753112,
+              "retrySuccesses": 95,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 458,
+              "disabledCaused": 3
+            },
+            "F5_GUARD": {
+              "encounters": 553,
+              "attempts": 558,
+              "firstSuccesses": 449,
+              "firstAttemptSuccessRate": 0.878669,
+              "retrySuccesses": 47,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 496,
+              "disabledCaused": 16
+            },
+            "BOSS": {
+              "encounters": 197,
+              "attempts": 222,
+              "firstSuccesses": 116,
+              "firstAttemptSuccessRate": 0.682353,
+              "retrySuccesses": 52,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 168,
+              "disabledCaused": 2
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.895,
+          "timeoutRate": 0.005,
+          "misunderstandingRate": 0.035,
+          "robotDisabledRate": 0.065,
+          "averageReward": 6.038794,
+          "averageCompletionTime": 562.030705,
+          "subdueAttempts": 1252,
+          "averageSubdueAttemptsPerEpisode": 6.26,
+          "averageAttemptsPerEncounter": 1.089643,
+          "subdueSuccesses": 1128,
+          "subdueSuccessRate": 0.900958,
+          "firstAttemptSuccessRate": 0.897302,
+          "retrySuccessRate": 0.97,
+          "failureCounts": {
+            "first": 118,
+            "second": 3,
+            "thirdOrTerminal": 13
+          },
+          "averageRetryBonusUsed": 0.025728,
+          "recoveryThenSuccessfulNeutralizationRate": 0.822034,
+          "defeatThenEpisodeSuccessRate": 0.853933,
+          "cumulativeDamageDisabledCount": 13,
+          "combatDisabledCount": 13,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.358,
+          "damageDistribution": {
+            "zero": 5,
+            "low": 106,
+            "medium": 46,
+            "high": 30,
+            "disabled": 13
+          },
+          "combatSkill": 0.7748,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 606,
+              "attempts": 514,
+              "firstSuccesses": 420,
+              "firstAttemptSuccessRate": 0.884211,
+              "retrySuccesses": 39,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 459,
+              "disabledCaused": 8
+            },
+            "F5_GUARD": {
+              "encounters": 547,
+              "attempts": 497,
+              "firstSuccesses": 481,
+              "firstAttemptSuccessRate": 0.98364,
+              "retrySuccesses": 8,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 489,
+              "disabledCaused": 0
+            },
+            "BOSS": {
+              "encounters": 206,
+              "attempts": 241,
+              "firstSuccesses": 130,
+              "firstAttemptSuccessRate": 0.702703,
+              "retrySuccesses": 50,
+              "retrySuccessRate": 0.943396,
+              "finalNeutralizations": 180,
+              "disabledCaused": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stars": {
+        "speed": 1,
+        "judgment": 3,
+        "threat": 2
+      },
+      "key": "1-3-2",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.05,
+          "timeoutRate": 0.365,
+          "misunderstandingRate": 0.23,
+          "robotDisabledRate": 0.355,
+          "averageReward": -2.15734,
+          "averageCompletionTime": 588.671677,
+          "subdueAttempts": 576,
+          "averageSubdueAttemptsPerEpisode": 2.88,
+          "averageAttemptsPerEncounter": 1.156627,
+          "subdueSuccesses": 378,
+          "subdueSuccessRate": 0.65625,
+          "firstAttemptSuccessRate": 0.644578,
+          "retrySuccessRate": 0.730769,
+          "failureCounts": {
+            "first": 177,
+            "second": 21,
+            "thirdOrTerminal": 71
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.322034,
+          "defeatThenEpisodeSuccessRate": 0.008,
+          "cumulativeDamageDisabledCount": 71,
+          "combatDisabledCount": 71,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6346,
+          "damageDistribution": {
+            "zero": 36,
+            "low": 20,
+            "medium": 29,
+            "high": 44,
+            "disabled": 71
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 546,
+              "attempts": 278,
+              "firstSuccesses": 100,
+              "firstAttemptSuccessRate": 0.45045,
+              "retrySuccesses": 47,
+              "retrySuccessRate": 0.839286,
+              "finalNeutralizations": 147,
+              "disabledCaused": 37
+            },
+            "F5_GUARD": {
+              "encounters": 572,
+              "attempts": 252,
+              "firstSuccesses": 211,
+              "firstAttemptSuccessRate": 0.868313,
+              "retrySuccesses": 9,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 220,
+              "disabledCaused": 22
+            },
+            "BOSS": {
+              "encounters": 80,
+              "attempts": 46,
+              "firstSuccesses": 10,
+              "firstAttemptSuccessRate": 0.30303,
+              "retrySuccesses": 1,
+              "retrySuccessRate": 0.076923,
+              "finalNeutralizations": 11,
+              "disabledCaused": 12
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.105,
+          "timeoutRate": 0.2,
+          "misunderstandingRate": 0.17,
+          "robotDisabledRate": 0.525,
+          "averageReward": -1.721866,
+          "averageCompletionTime": 565.926411,
+          "subdueAttempts": 851,
+          "averageSubdueAttemptsPerEpisode": 4.255,
+          "averageAttemptsPerEncounter": 1.175414,
+          "subdueSuccesses": 552,
+          "subdueSuccessRate": 0.648649,
+          "firstAttemptSuccessRate": 0.646409,
+          "retrySuccessRate": 0.717949,
+          "failureCounts": {
+            "first": 256,
+            "second": 43,
+            "thirdOrTerminal": 105
+          },
+          "averageRetryBonusUsed": 0.026969,
+          "recoveryThenSuccessfulNeutralizationRate": 0.328125,
+          "defeatThenEpisodeSuccessRate": 0.066225,
+          "cumulativeDamageDisabledCount": 105,
+          "combatDisabledCount": 105,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.7315,
+          "damageDistribution": {
+            "zero": 25,
+            "low": 14,
+            "medium": 22,
+            "high": 34,
+            "disabled": 105
+          },
+          "combatSkill": 0.26408,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 569,
+              "attempts": 409,
+              "firstSuccesses": 192,
+              "firstAttemptSuccessRate": 0.569733,
+              "retrySuccesses": 60,
+              "retrySuccessRate": 0.833333,
+              "finalNeutralizations": 252,
+              "disabledCaused": 32
+            },
+            "F5_GUARD": {
+              "encounters": 581,
+              "attempts": 339,
+              "firstSuccesses": 255,
+              "firstAttemptSuccessRate": 0.801887,
+              "retrySuccesses": 11,
+              "retrySuccessRate": 0.52381,
+              "finalNeutralizations": 266,
+              "disabledCaused": 35
+            },
+            "BOSS": {
+              "encounters": 96,
+              "attempts": 103,
+              "firstSuccesses": 21,
+              "firstAttemptSuccessRate": 0.304348,
+              "retrySuccesses": 13,
+              "retrySuccessRate": 0.541667,
+              "finalNeutralizations": 34,
+              "disabledCaused": 38
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.43,
+          "timeoutRate": 0.065,
+          "misunderstandingRate": 0.115,
+          "robotDisabledRate": 0.39,
+          "averageReward": 0.493249,
+          "averageCompletionTime": 550.344224,
+          "subdueAttempts": 1140,
+          "averageSubdueAttemptsPerEpisode": 5.7,
+          "averageAttemptsPerEncounter": 1.181347,
+          "subdueSuccesses": 855,
+          "subdueSuccessRate": 0.75,
+          "firstAttemptSuccessRate": 0.73886,
+          "retrySuccessRate": 0.916129,
+          "failureCounts": {
+            "first": 252,
+            "second": 33,
+            "thirdOrTerminal": 78
+          },
+          "averageRetryBonusUsed": 0.027857,
+          "recoveryThenSuccessfulNeutralizationRate": 0.563492,
+          "defeatThenEpisodeSuccessRate": 0.408451,
+          "cumulativeDamageDisabledCount": 78,
+          "combatDisabledCount": 78,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.63755,
+          "damageDistribution": {
+            "zero": 23,
+            "low": 33,
+            "medium": 29,
+            "high": 37,
+            "disabled": 78
+          },
+          "combatSkill": 0.43208,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 572,
+              "attempts": 504,
+              "firstSuccesses": 298,
+              "firstAttemptSuccessRate": 0.716346,
+              "retrySuccesses": 77,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 375,
+              "disabledCaused": 15
+            },
+            "F5_GUARD": {
+              "encounters": 515,
+              "attempts": 434,
+              "firstSuccesses": 337,
+              "firstAttemptSuccessRate": 0.85533,
+              "retrySuccesses": 39,
+              "retrySuccessRate": 0.975,
+              "finalNeutralizations": 376,
+              "disabledCaused": 18
+            },
+            "BOSS": {
+              "encounters": 197,
+              "attempts": 202,
+              "firstSuccesses": 78,
+              "firstAttemptSuccessRate": 0.503226,
+              "retrySuccesses": 26,
+              "retrySuccessRate": 0.684211,
+              "finalNeutralizations": 104,
+              "disabledCaused": 45
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.835,
+          "timeoutRate": 0.02,
+          "misunderstandingRate": 0.005,
+          "robotDisabledRate": 0.14,
+          "averageReward": 3.322527,
+          "averageCompletionTime": 576.422021,
+          "subdueAttempts": 1388,
+          "averageSubdueAttemptsPerEpisode": 6.94,
+          "averageAttemptsPerEncounter": 1.173288,
+          "subdueSuccesses": 1135,
+          "subdueSuccessRate": 0.817723,
+          "firstAttemptSuccessRate": 0.797126,
+          "retrySuccessRate": 0.984615,
+          "failureCounts": {
+            "first": 240,
+            "second": 13,
+            "thirdOrTerminal": 28
+          },
+          "averageRetryBonusUsed": 0.02622,
+          "recoveryThenSuccessfulNeutralizationRate": 0.8,
+          "defeatThenEpisodeSuccessRate": 0.780822,
+          "cumulativeDamageDisabledCount": 28,
+          "combatDisabledCount": 28,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.59255,
+          "damageDistribution": {
+            "zero": 1,
+            "low": 53,
+            "medium": 48,
+            "high": 70,
+            "disabled": 28
+          },
+          "combatSkill": 0.60148,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 632,
+              "attempts": 609,
+              "firstSuccesses": 382,
+              "firstAttemptSuccessRate": 0.757937,
+              "retrySuccesses": 92,
+              "retrySuccessRate": 0.968421,
+              "finalNeutralizations": 474,
+              "disabledCaused": 8
+            },
+            "F5_GUARD": {
+              "encounters": 546,
+              "attempts": 549,
+              "firstSuccesses": 443,
+              "firstAttemptSuccessRate": 0.88247,
+              "retrySuccesses": 47,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 490,
+              "disabledCaused": 15
+            },
+            "BOSS": {
+              "encounters": 209,
+              "attempts": 230,
+              "firstSuccesses": 118,
+              "firstAttemptSuccessRate": 0.666667,
+              "retrySuccesses": 53,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 171,
+              "disabledCaused": 5
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.96,
+          "timeoutRate": 0,
+          "misunderstandingRate": 0.01,
+          "robotDisabledRate": 0.03,
+          "averageReward": 4.216686,
+          "averageCompletionTime": 558.271895,
+          "subdueAttempts": 1308,
+          "averageSubdueAttemptsPerEpisode": 6.54,
+          "averageAttemptsPerEncounter": 1.098237,
+          "subdueSuccesses": 1175,
+          "subdueSuccessRate": 0.898318,
+          "firstAttemptSuccessRate": 0.890008,
+          "retrySuccessRate": 0.991379,
+          "failureCounts": {
+            "first": 131,
+            "second": 1,
+            "thirdOrTerminal": 6
+          },
+          "averageRetryBonusUsed": 0.025214,
+          "recoveryThenSuccessfulNeutralizationRate": 0.877863,
+          "defeatThenEpisodeSuccessRate": 0.938144,
+          "cumulativeDamageDisabledCount": 6,
+          "combatDisabledCount": 6,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.37215,
+          "damageDistribution": {
+            "zero": 0,
+            "low": 103,
+            "medium": 54,
+            "high": 37,
+            "disabled": 6
+          },
+          "combatSkill": 0.77508,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 622,
+              "attempts": 559,
+              "firstSuccesses": 444,
+              "firstAttemptSuccessRate": 0.874016,
+              "retrySuccesses": 51,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 495,
+              "disabledCaused": 3
+            },
+            "F5_GUARD": {
+              "encounters": 532,
+              "attempts": 497,
+              "firstSuccesses": 479,
+              "firstAttemptSuccessRate": 0.981557,
+              "retrySuccesses": 9,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 488,
+              "disabledCaused": 0
+            },
+            "BOSS": {
+              "encounters": 211,
+              "attempts": 252,
+              "firstSuccesses": 137,
+              "firstAttemptSuccessRate": 0.702564,
+              "retrySuccesses": 55,
+              "retrySuccessRate": 0.982143,
+              "finalNeutralizations": 192,
+              "disabledCaused": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stars": {
+        "speed": 2,
+        "judgment": 1,
+        "threat": 3
+      },
+      "key": "2-1-3",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.05,
+          "timeoutRate": 0.34,
+          "misunderstandingRate": 0.25,
+          "robotDisabledRate": 0.36,
+          "averageReward": -1.312528,
+          "averageCompletionTime": 575.185184,
+          "subdueAttempts": 564,
+          "averageSubdueAttemptsPerEpisode": 2.82,
+          "averageAttemptsPerEncounter": 1.160494,
+          "subdueSuccesses": 375,
+          "subdueSuccessRate": 0.664894,
+          "firstAttemptSuccessRate": 0.650206,
+          "retrySuccessRate": 0.75641,
+          "failureCounts": {
+            "first": 170,
+            "second": 19,
+            "thirdOrTerminal": 72
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.347059,
+          "defeatThenEpisodeSuccessRate": 0.016667,
+          "cumulativeDamageDisabledCount": 72,
+          "combatDisabledCount": 72,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6077,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 24,
+            "medium": 28,
+            "high": 38,
+            "disabled": 72
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 535,
+              "attempts": 276,
+              "firstSuccesses": 99,
+              "firstAttemptSuccessRate": 0.454128,
+              "retrySuccesses": 49,
+              "retrySuccessRate": 0.844828,
+              "finalNeutralizations": 148,
+              "disabledCaused": 39
+            },
+            "F5_GUARD": {
+              "encounters": 546,
+              "attempts": 242,
+              "firstSuccesses": 205,
+              "firstAttemptSuccessRate": 0.876068,
+              "retrySuccesses": 8,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 213,
+              "disabledCaused": 21
+            },
+            "BOSS": {
+              "encounters": 84,
+              "attempts": 46,
+              "firstSuccesses": 12,
+              "firstAttemptSuccessRate": 0.352941,
+              "retrySuccesses": 2,
+              "retrySuccessRate": 0.166667,
+              "finalNeutralizations": 14,
+              "disabledCaused": 12
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.085,
+          "timeoutRate": 0.11,
+          "misunderstandingRate": 0.26,
+          "robotDisabledRate": 0.545,
+          "averageReward": -1.0416,
+          "averageCompletionTime": 492.552307,
+          "subdueAttempts": 739,
+          "averageSubdueAttemptsPerEpisode": 3.695,
+          "averageAttemptsPerEncounter": 1.1824,
+          "subdueSuccesses": 462,
+          "subdueSuccessRate": 0.625169,
+          "firstAttemptSuccessRate": 0.6256,
+          "retrySuccessRate": 0.68932,
+          "failureCounts": {
+            "first": 234,
+            "second": 43,
+            "thirdOrTerminal": 109
+          },
+          "averageRetryBonusUsed": 0.027412,
+          "recoveryThenSuccessfulNeutralizationRate": 0.303419,
+          "defeatThenEpisodeSuccessRate": 0.058824,
+          "cumulativeDamageDisabledCount": 109,
+          "combatDisabledCount": 109,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.68655,
+          "damageDistribution": {
+            "zero": 36,
+            "low": 14,
+            "medium": 22,
+            "high": 19,
+            "disabled": 109
+          },
+          "combatSkill": 0.26366,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 519,
+              "attempts": 390,
+              "firstSuccesses": 167,
+              "firstAttemptSuccessRate": 0.525157,
+              "retrySuccesses": 57,
+              "retrySuccessRate": 0.802817,
+              "finalNeutralizations": 224,
+              "disabledCaused": 41
+            },
+            "F5_GUARD": {
+              "encounters": 439,
+              "attempts": 259,
+              "firstSuccesses": 207,
+              "firstAttemptSuccessRate": 0.838057,
+              "retrySuccesses": 2,
+              "retrySuccessRate": 0.166667,
+              "finalNeutralizations": 209,
+              "disabledCaused": 30
+            },
+            "BOSS": {
+              "encounters": 69,
+              "attempts": 90,
+              "firstSuccesses": 17,
+              "firstAttemptSuccessRate": 0.283333,
+              "retrySuccesses": 12,
+              "retrySuccessRate": 0.6,
+              "finalNeutralizations": 29,
+              "disabledCaused": 38
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.41,
+          "timeoutRate": 0.025,
+          "misunderstandingRate": 0.24,
+          "robotDisabledRate": 0.325,
+          "averageReward": 1.67265,
+          "averageCompletionTime": 491.158642,
+          "subdueAttempts": 1027,
+          "averageSubdueAttemptsPerEpisode": 5.135,
+          "averageAttemptsPerEncounter": 1.18318,
+          "subdueSuccesses": 769,
+          "subdueSuccessRate": 0.748783,
+          "firstAttemptSuccessRate": 0.733871,
+          "retrySuccessRate": 0.963504,
+          "failureCounts": {
+            "first": 231,
+            "second": 27,
+            "thirdOrTerminal": 65
+          },
+          "averageRetryBonusUsed": 0.028459,
+          "recoveryThenSuccessfulNeutralizationRate": 0.571429,
+          "defeatThenEpisodeSuccessRate": 0.429752,
+          "cumulativeDamageDisabledCount": 65,
+          "combatDisabledCount": 65,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.56735,
+          "damageDistribution": {
+            "zero": 32,
+            "low": 46,
+            "medium": 16,
+            "high": 41,
+            "disabled": 65
+          },
+          "combatSkill": 0.4283,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 526,
+              "attempts": 486,
+              "firstSuccesses": 268,
+              "firstAttemptSuccessRate": 0.681934,
+              "retrySuccesses": 81,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 349,
+              "disabledCaused": 12
+            },
+            "F5_GUARD": {
+              "encounters": 450,
+              "attempts": 388,
+              "firstSuccesses": 300,
+              "firstAttemptSuccessRate": 0.849858,
+              "retrySuccesses": 32,
+              "retrySuccessRate": 0.914286,
+              "finalNeutralizations": 332,
+              "disabledCaused": 21
+            },
+            "BOSS": {
+              "encounters": 139,
+              "attempts": 153,
+              "firstSuccesses": 69,
+              "firstAttemptSuccessRate": 0.565574,
+              "retrySuccesses": 19,
+              "retrySuccessRate": 0.904762,
+              "finalNeutralizations": 88,
+              "disabledCaused": 32
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.63,
+          "timeoutRate": 0,
+          "misunderstandingRate": 0.205,
+          "robotDisabledRate": 0.165,
+          "averageReward": 3.252616,
+          "averageCompletionTime": 482.646892,
+          "subdueAttempts": 1152,
+          "averageSubdueAttemptsPerEpisode": 5.76,
+          "averageAttemptsPerEncounter": 1.163636,
+          "subdueSuccesses": 933,
+          "subdueSuccessRate": 0.809896,
+          "firstAttemptSuccessRate": 0.80101,
+          "retrySuccessRate": 0.933333,
+          "failureCounts": {
+            "first": 197,
+            "second": 20,
+            "thirdOrTerminal": 33
+          },
+          "averageRetryBonusUsed": 0.026852,
+          "recoveryThenSuccessfulNeutralizationRate": 0.71066,
+          "defeatThenEpisodeSuccessRate": 0.710744,
+          "cumulativeDamageDisabledCount": 33,
+          "combatDisabledCount": 33,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.50345,
+          "damageDistribution": {
+            "zero": 26,
+            "low": 53,
+            "medium": 39,
+            "high": 49,
+            "disabled": 33
+          },
+          "combatSkill": 0.5935,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 543,
+              "attempts": 543,
+              "firstSuccesses": 350,
+              "firstAttemptSuccessRate": 0.765864,
+              "retrySuccesses": 69,
+              "retrySuccessRate": 0.907895,
+              "finalNeutralizations": 419,
+              "disabledCaused": 10
+            },
+            "F5_GUARD": {
+              "encounters": 427,
+              "attempts": 441,
+              "firstSuccesses": 347,
+              "firstAttemptSuccessRate": 0.8675,
+              "retrySuccesses": 41,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 388,
+              "disabledCaused": 17
+            },
+            "BOSS": {
+              "encounters": 145,
+              "attempts": 168,
+              "firstSuccesses": 96,
+              "firstAttemptSuccessRate": 0.721805,
+              "retrySuccesses": 30,
+              "retrySuccessRate": 0.909091,
+              "finalNeutralizations": 126,
+              "disabledCaused": 6
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.77,
+          "timeoutRate": 0,
+          "misunderstandingRate": 0.215,
+          "robotDisabledRate": 0.015,
+          "averageReward": 4.456341,
+          "averageCompletionTime": 469.437825,
+          "subdueAttempts": 1114,
+          "averageSubdueAttemptsPerEpisode": 5.57,
+          "averageAttemptsPerEncounter": 1.107356,
+          "subdueSuccesses": 997,
+          "subdueSuccessRate": 0.894973,
+          "firstAttemptSuccessRate": 0.885686,
+          "retrySuccessRate": 0.990654,
+          "failureCounts": {
+            "first": 115,
+            "second": 1,
+            "thirdOrTerminal": 3
+          },
+          "averageRetryBonusUsed": 0.025231,
+          "recoveryThenSuccessfulNeutralizationRate": 0.921739,
+          "defeatThenEpisodeSuccessRate": 0.95122,
+          "cumulativeDamageDisabledCount": 3,
+          "combatDisabledCount": 3,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.3138,
+          "damageDistribution": {
+            "zero": 28,
+            "low": 90,
+            "medium": 46,
+            "high": 33,
+            "disabled": 3
+          },
+          "combatSkill": 0.7622,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 517,
+              "attempts": 498,
+              "firstSuccesses": 392,
+              "firstAttemptSuccessRate": 0.875,
+              "retrySuccesses": 50,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 442,
+              "disabledCaused": 0
+            },
+            "F5_GUARD": {
+              "encounters": 423,
+              "attempts": 413,
+              "firstSuccesses": 389,
+              "firstAttemptSuccessRate": 0.970075,
+              "retrySuccesses": 12,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 401,
+              "disabledCaused": 0
+            },
+            "BOSS": {
+              "encounters": 163,
+              "attempts": 203,
+              "firstSuccesses": 110,
+              "firstAttemptSuccessRate": 0.700637,
+              "retrySuccesses": 44,
+              "retrySuccessRate": 0.977778,
+              "finalNeutralizations": 154,
+              "disabledCaused": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stars": {
+        "speed": 2,
+        "judgment": 2,
+        "threat": 2
+      },
+      "key": "2-2-2",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.05,
+          "timeoutRate": 0.35,
+          "misunderstandingRate": 0.24,
+          "robotDisabledRate": 0.36,
+          "averageReward": -2.595273,
+          "averageCompletionTime": 576.886239,
+          "subdueAttempts": 562,
+          "averageSubdueAttemptsPerEpisode": 2.81,
+          "averageAttemptsPerEncounter": 1.163561,
+          "subdueSuccesses": 367,
+          "subdueSuccessRate": 0.653025,
+          "firstAttemptSuccessRate": 0.639752,
+          "retrySuccessRate": 0.734177,
+          "failureCounts": {
+            "first": 174,
+            "second": 21,
+            "thirdOrTerminal": 72
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.333333,
+          "defeatThenEpisodeSuccessRate": 0.016129,
+          "cumulativeDamageDisabledCount": 72,
+          "combatDisabledCount": 72,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.62705,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 20,
+            "medium": 28,
+            "high": 42,
+            "disabled": 72
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 538,
+              "attempts": 272,
+              "firstSuccesses": 95,
+              "firstAttemptSuccessRate": 0.439815,
+              "retrySuccesses": 47,
+              "retrySuccessRate": 0.839286,
+              "finalNeutralizations": 142,
+              "disabledCaused": 40
+            },
+            "F5_GUARD": {
+              "encounters": 547,
+              "attempts": 243,
+              "firstSuccesses": 205,
+              "firstAttemptSuccessRate": 0.876068,
+              "retrySuccesses": 9,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 214,
+              "disabledCaused": 20
+            },
+            "BOSS": {
+              "encounters": 81,
+              "attempts": 47,
+              "firstSuccesses": 9,
+              "firstAttemptSuccessRate": 0.272727,
+              "retrySuccesses": 2,
+              "retrySuccessRate": 0.142857,
+              "finalNeutralizations": 11,
+              "disabledCaused": 12
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.105,
+          "timeoutRate": 0.155,
+          "misunderstandingRate": 0.21,
+          "robotDisabledRate": 0.53,
+          "averageReward": -2.377424,
+          "averageCompletionTime": 533.641319,
+          "subdueAttempts": 792,
+          "averageSubdueAttemptsPerEpisode": 3.96,
+          "averageAttemptsPerEncounter": 1.18209,
+          "subdueSuccesses": 504,
+          "subdueSuccessRate": 0.636364,
+          "firstAttemptSuccessRate": 0.635821,
+          "retrySuccessRate": 0.696429,
+          "failureCounts": {
+            "first": 244,
+            "second": 44,
+            "thirdOrTerminal": 106
+          },
+          "averageRetryBonusUsed": 0.027049,
+          "recoveryThenSuccessfulNeutralizationRate": 0.319672,
+          "defeatThenEpisodeSuccessRate": 0.068027,
+          "cumulativeDamageDisabledCount": 106,
+          "combatDisabledCount": 106,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.71555,
+          "damageDistribution": {
+            "zero": 30,
+            "low": 13,
+            "medium": 22,
+            "high": 29,
+            "disabled": 106
+          },
+          "combatSkill": 0.2631,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 549,
+              "attempts": 394,
+              "firstSuccesses": 173,
+              "firstAttemptSuccessRate": 0.538941,
+              "retrySuccesses": 60,
+              "retrySuccessRate": 0.821918,
+              "finalNeutralizations": 233,
+              "disabledCaused": 36
+            },
+            "F5_GUARD": {
+              "encounters": 517,
+              "attempts": 298,
+              "firstSuccesses": 233,
+              "firstAttemptSuccessRate": 0.823322,
+              "retrySuccesses": 5,
+              "retrySuccessRate": 0.333333,
+              "finalNeutralizations": 238,
+              "disabledCaused": 34
+            },
+            "BOSS": {
+              "encounters": 84,
+              "attempts": 100,
+              "firstSuccesses": 20,
+              "firstAttemptSuccessRate": 0.30303,
+              "retrySuccesses": 13,
+              "retrySuccessRate": 0.541667,
+              "finalNeutralizations": 33,
+              "disabledCaused": 36
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.395,
+          "timeoutRate": 0.06,
+          "misunderstandingRate": 0.16,
+          "robotDisabledRate": 0.385,
+          "averageReward": -0.392497,
+          "averageCompletionTime": 532.082554,
+          "subdueAttempts": 1088,
+          "averageSubdueAttemptsPerEpisode": 5.44,
+          "averageAttemptsPerEncounter": 1.176216,
+          "subdueSuccesses": 811,
+          "subdueSuccessRate": 0.745404,
+          "firstAttemptSuccessRate": 0.735135,
+          "retrySuccessRate": 0.929078,
+          "failureCounts": {
+            "first": 245,
+            "second": 32,
+            "thirdOrTerminal": 77
+          },
+          "averageRetryBonusUsed": 0.028374,
+          "recoveryThenSuccessfulNeutralizationRate": 0.534694,
+          "defeatThenEpisodeSuccessRate": 0.360294,
+          "cumulativeDamageDisabledCount": 77,
+          "combatDisabledCount": 77,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.62735,
+          "damageDistribution": {
+            "zero": 27,
+            "low": 35,
+            "medium": 22,
+            "high": 39,
+            "disabled": 77
+          },
+          "combatSkill": 0.43012,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 556,
+              "attempts": 487,
+              "firstSuccesses": 277,
+              "firstAttemptSuccessRate": 0.690773,
+              "retrySuccesses": 74,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 351,
+              "disabledCaused": 14
+            },
+            "F5_GUARD": {
+              "encounters": 497,
+              "attempts": 415,
+              "firstSuccesses": 329,
+              "firstAttemptSuccessRate": 0.865789,
+              "retrySuccesses": 34,
+              "retrySuccessRate": 0.971429,
+              "finalNeutralizations": 363,
+              "disabledCaused": 17
+            },
+            "BOSS": {
+              "encounters": 182,
+              "attempts": 186,
+              "firstSuccesses": 74,
+              "firstAttemptSuccessRate": 0.513889,
+              "retrySuccesses": 23,
+              "retrySuccessRate": 0.71875,
+              "finalNeutralizations": 97,
+              "disabledCaused": 46
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.72,
+          "timeoutRate": 0.02,
+          "misunderstandingRate": 0.105,
+          "robotDisabledRate": 0.155,
+          "averageReward": 1.665614,
+          "averageCompletionTime": 532.171546,
+          "subdueAttempts": 1271,
+          "averageSubdueAttemptsPerEpisode": 6.355,
+          "averageAttemptsPerEncounter": 1.164986,
+          "subdueSuccesses": 1035,
+          "subdueSuccessRate": 0.814319,
+          "firstAttemptSuccessRate": 0.797434,
+          "retrySuccessRate": 0.970588,
+          "failureCounts": {
+            "first": 221,
+            "second": 15,
+            "thirdOrTerminal": 31
+          },
+          "averageRetryBonusUsed": 0.026389,
+          "recoveryThenSuccessfulNeutralizationRate": 0.746606,
+          "defeatThenEpisodeSuccessRate": 0.742647,
+          "cumulativeDamageDisabledCount": 31,
+          "combatDisabledCount": 31,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.54815,
+          "damageDistribution": {
+            "zero": 21,
+            "low": 43,
+            "medium": 45,
+            "high": 60,
+            "disabled": 31
+          },
+          "combatSkill": 0.59742,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 571,
+              "attempts": 551,
+              "firstSuccesses": 358,
+              "firstAttemptSuccessRate": 0.769892,
+              "retrySuccesses": 73,
+              "retrySuccessRate": 0.960526,
+              "finalNeutralizations": 431,
+              "disabledCaused": 7
+            },
+            "F5_GUARD": {
+              "encounters": 505,
+              "attempts": 517,
+              "firstSuccesses": 407,
+              "firstAttemptSuccessRate": 0.869658,
+              "retrySuccesses": 49,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 456,
+              "disabledCaused": 15
+            },
+            "BOSS": {
+              "encounters": 181,
+              "attempts": 203,
+              "firstSuccesses": 105,
+              "firstAttemptSuccessRate": 0.664557,
+              "retrySuccesses": 43,
+              "retrySuccessRate": 0.955556,
+              "finalNeutralizations": 148,
+              "disabledCaused": 9
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.84,
+          "timeoutRate": 0,
+          "misunderstandingRate": 0.11,
+          "robotDisabledRate": 0.05,
+          "averageReward": 2.67343,
+          "averageCompletionTime": 483.919757,
+          "subdueAttempts": 1226,
+          "averageSubdueAttemptsPerEpisode": 6.13,
+          "averageAttemptsPerEncounter": 1.113533,
+          "subdueSuccesses": 1084,
+          "subdueSuccessRate": 0.884176,
+          "firstAttemptSuccessRate": 0.887375,
+          "retrySuccessRate": 0.922414,
+          "failureCounts": {
+            "first": 124,
+            "second": 9,
+            "thirdOrTerminal": 10
+          },
+          "averageRetryBonusUsed": 0.0268,
+          "recoveryThenSuccessfulNeutralizationRate": 0.862903,
+          "defeatThenEpisodeSuccessRate": 0.89011,
+          "cumulativeDamageDisabledCount": 10,
+          "combatDisabledCount": 10,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.35735,
+          "damageDistribution": {
+            "zero": 21,
+            "low": 88,
+            "medium": 47,
+            "high": 34,
+            "disabled": 10
+          },
+          "combatSkill": 0.76962,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 549,
+              "attempts": 537,
+              "firstSuccesses": 439,
+              "firstAttemptSuccessRate": 0.892276,
+              "retrySuccesses": 45,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 484,
+              "disabledCaused": 0
+            },
+            "F5_GUARD": {
+              "encounters": 453,
+              "attempts": 445,
+              "firstSuccesses": 419,
+              "firstAttemptSuccessRate": 0.969907,
+              "retrySuccesses": 13,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 432,
+              "disabledCaused": 1
+            },
+            "BOSS": {
+              "encounters": 181,
+              "attempts": 244,
+              "firstSuccesses": 119,
+              "firstAttemptSuccessRate": 0.672316,
+              "retrySuccesses": 49,
+              "retrySuccessRate": 0.844828,
+              "finalNeutralizations": 168,
+              "disabledCaused": 9
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stars": {
+        "speed": 2,
+        "judgment": 3,
+        "threat": 1
+      },
+      "key": "2-3-1",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.06,
+          "timeoutRate": 0.35,
+          "misunderstandingRate": 0.24,
+          "robotDisabledRate": 0.35,
+          "averageReward": -3.65791,
+          "averageCompletionTime": 575.507069,
+          "subdueAttempts": 557,
+          "averageSubdueAttemptsPerEpisode": 2.785,
+          "averageAttemptsPerEncounter": 1.153209,
+          "subdueSuccesses": 365,
+          "subdueSuccessRate": 0.655296,
+          "firstAttemptSuccessRate": 0.641822,
+          "retrySuccessRate": 0.743243,
+          "failureCounts": {
+            "first": 173,
+            "second": 19,
+            "thirdOrTerminal": 70
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.317919,
+          "defeatThenEpisodeSuccessRate": 0.032258,
+          "cumulativeDamageDisabledCount": 70,
+          "combatDisabledCount": 70,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6233,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 20,
+            "medium": 29,
+            "high": 43,
+            "disabled": 70
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 536,
+              "attempts": 266,
+              "firstSuccesses": 99,
+              "firstAttemptSuccessRate": 0.458333,
+              "retrySuccesses": 44,
+              "retrySuccessRate": 0.88,
+              "finalNeutralizations": 143,
+              "disabledCaused": 38
+            },
+            "F5_GUARD": {
+              "encounters": 548,
+              "attempts": 240,
+              "firstSuccesses": 200,
+              "firstAttemptSuccessRate": 0.865801,
+              "retrySuccesses": 9,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 209,
+              "disabledCaused": 19
+            },
+            "BOSS": {
+              "encounters": 84,
+              "attempts": 51,
+              "firstSuccesses": 11,
+              "firstAttemptSuccessRate": 0.305556,
+              "retrySuccesses": 2,
+              "retrySuccessRate": 0.133333,
+              "finalNeutralizations": 13,
+              "disabledCaused": 13
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.14,
+          "timeoutRate": 0.295,
+          "misunderstandingRate": 0.175,
+          "robotDisabledRate": 0.39,
+          "averageReward": -3.078459,
+          "averageCompletionTime": 607.439369,
+          "subdueAttempts": 837,
+          "averageSubdueAttemptsPerEpisode": 4.185,
+          "averageAttemptsPerEncounter": 1.141883,
+          "subdueSuccesses": 597,
+          "subdueSuccessRate": 0.713262,
+          "firstAttemptSuccessRate": 0.713506,
+          "retrySuccessRate": 0.778947,
+          "failureCounts": {
+            "first": 210,
+            "second": 29,
+            "thirdOrTerminal": 78
+          },
+          "averageRetryBonusUsed": 0.027163,
+          "recoveryThenSuccessfulNeutralizationRate": 0.352381,
+          "defeatThenEpisodeSuccessRate": 0.080882,
+          "cumulativeDamageDisabledCount": 78,
+          "combatDisabledCount": 78,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6547,
+          "damageDistribution": {
+            "zero": 26,
+            "low": 29,
+            "medium": 22,
+            "high": 45,
+            "disabled": 78
+          },
+          "combatSkill": 0.26212,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 578,
+              "attempts": 378,
+              "firstSuccesses": 205,
+              "firstAttemptSuccessRate": 0.625,
+              "retrySuccesses": 48,
+              "retrySuccessRate": 0.979592,
+              "finalNeutralizations": 253,
+              "disabledCaused": 21
+            },
+            "F5_GUARD": {
+              "encounters": 604,
+              "attempts": 344,
+              "firstSuccesses": 284,
+              "firstAttemptSuccessRate": 0.873846,
+              "retrySuccesses": 10,
+              "retrySuccessRate": 0.526316,
+              "finalNeutralizations": 294,
+              "disabledCaused": 29
+            },
+            "BOSS": {
+              "encounters": 143,
+              "attempts": 115,
+              "firstSuccesses": 34,
+              "firstAttemptSuccessRate": 0.425,
+              "retrySuccesses": 16,
+              "retrySuccessRate": 0.592593,
+              "finalNeutralizations": 50,
+              "disabledCaused": 28
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.285,
+          "timeoutRate": 0.12,
+          "misunderstandingRate": 0.17,
+          "robotDisabledRate": 0.425,
+          "averageReward": -2.451671,
+          "averageCompletionTime": 527.025832,
+          "subdueAttempts": 907,
+          "averageSubdueAttemptsPerEpisode": 4.535,
+          "averageAttemptsPerEncounter": 1.161332,
+          "subdueSuccesses": 647,
+          "subdueSuccessRate": 0.713341,
+          "firstAttemptSuccessRate": 0.715749,
+          "retrySuccessRate": 0.8,
+          "failureCounts": {
+            "first": 222,
+            "second": 38,
+            "thirdOrTerminal": 85
+          },
+          "averageRetryBonusUsed": 0.028175,
+          "recoveryThenSuccessfulNeutralizationRate": 0.396396,
+          "defeatThenEpisodeSuccessRate": 0.251852,
+          "cumulativeDamageDisabledCount": 85,
+          "combatDisabledCount": 85,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6509,
+          "damageDistribution": {
+            "zero": 26,
+            "low": 30,
+            "medium": 30,
+            "high": 29,
+            "disabled": 85
+          },
+          "combatSkill": 0.4276,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 545,
+              "attempts": 412,
+              "firstSuccesses": 217,
+              "firstAttemptSuccessRate": 0.630814,
+              "retrySuccesses": 58,
+              "retrySuccessRate": 0.966667,
+              "finalNeutralizations": 275,
+              "disabledCaused": 28
+            },
+            "F5_GUARD": {
+              "encounters": 465,
+              "attempts": 351,
+              "firstSuccesses": 282,
+              "firstAttemptSuccessRate": 0.87037,
+              "retrySuccesses": 19,
+              "retrySuccessRate": 0.703704,
+              "finalNeutralizations": 301,
+              "disabledCaused": 21
+            },
+            "BOSS": {
+              "encounters": 162,
+              "attempts": 144,
+              "firstSuccesses": 60,
+              "firstAttemptSuccessRate": 0.530973,
+              "retrySuccesses": 11,
+              "retrySuccessRate": 0.478261,
+              "finalNeutralizations": 71,
+              "disabledCaused": 36
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.67,
+          "timeoutRate": 0.1,
+          "misunderstandingRate": 0.085,
+          "robotDisabledRate": 0.145,
+          "averageReward": 0.003891,
+          "averageCompletionTime": 588.235814,
+          "subdueAttempts": 1222,
+          "averageSubdueAttemptsPerEpisode": 6.11,
+          "averageAttemptsPerEncounter": 1.135688,
+          "subdueSuccesses": 1011,
+          "subdueSuccessRate": 0.827332,
+          "firstAttemptSuccessRate": 0.815056,
+          "retrySuccessRate": 0.985294,
+          "failureCounts": {
+            "first": 199,
+            "second": 12,
+            "thirdOrTerminal": 29
+          },
+          "averageRetryBonusUsed": 0.026712,
+          "recoveryThenSuccessfulNeutralizationRate": 0.673367,
+          "defeatThenEpisodeSuccessRate": 0.596639,
+          "cumulativeDamageDisabledCount": 29,
+          "combatDisabledCount": 29,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.51335,
+          "damageDistribution": {
+            "zero": 17,
+            "low": 64,
+            "medium": 37,
+            "high": 53,
+            "disabled": 29
+          },
+          "combatSkill": 0.5963,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 589,
+              "attempts": 505,
+              "firstSuccesses": 325,
+              "firstAttemptSuccessRate": 0.761124,
+              "retrySuccesses": 68,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 393,
+              "disabledCaused": 1
+            },
+            "F5_GUARD": {
+              "encounters": 579,
+              "attempts": 535,
+              "firstSuccesses": 428,
+              "firstAttemptSuccessRate": 0.87885,
+              "retrySuccesses": 48,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 476,
+              "disabledCaused": 11
+            },
+            "BOSS": {
+              "encounters": 236,
+              "attempts": 182,
+              "firstSuccesses": 124,
+              "firstAttemptSuccessRate": 0.765432,
+              "retrySuccesses": 18,
+              "retrySuccessRate": 0.9,
+              "finalNeutralizations": 142,
+              "disabledCaused": 17
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.91,
+          "timeoutRate": 0.01,
+          "misunderstandingRate": 0.03,
+          "robotDisabledRate": 0.05,
+          "averageReward": 1.559625,
+          "averageCompletionTime": 544.032835,
+          "subdueAttempts": 1280,
+          "averageSubdueAttemptsPerEpisode": 6.4,
+          "averageAttemptsPerEncounter": 1.102498,
+          "subdueSuccesses": 1142,
+          "subdueSuccessRate": 0.892188,
+          "firstAttemptSuccessRate": 0.88975,
+          "retrySuccessRate": 0.95614,
+          "failureCounts": {
+            "first": 128,
+            "second": 5,
+            "thirdOrTerminal": 10
+          },
+          "averageRetryBonusUsed": 0.02605,
+          "recoveryThenSuccessfulNeutralizationRate": 0.851563,
+          "defeatThenEpisodeSuccessRate": 0.884211,
+          "cumulativeDamageDisabledCount": 10,
+          "combatDisabledCount": 10,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.3716,
+          "damageDistribution": {
+            "zero": 6,
+            "low": 99,
+            "medium": 50,
+            "high": 35,
+            "disabled": 10
+          },
+          "combatSkill": 0.7692,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 602,
+              "attempts": 535,
+              "firstSuccesses": 436,
+              "firstAttemptSuccessRate": 0.887984,
+              "retrySuccesses": 44,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 480,
+              "disabledCaused": 3
+            },
+            "F5_GUARD": {
+              "encounters": 516,
+              "attempts": 493,
+              "firstSuccesses": 467,
+              "firstAttemptSuccessRate": 0.972917,
+              "retrySuccesses": 13,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 480,
+              "disabledCaused": 0
+            },
+            "BOSS": {
+              "encounters": 216,
+              "attempts": 252,
+              "firstSuccesses": 130,
+              "firstAttemptSuccessRate": 0.684211,
+              "retrySuccesses": 52,
+              "retrySuccessRate": 0.912281,
+              "finalNeutralizations": 182,
+              "disabledCaused": 7
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stars": {
+        "speed": 3,
+        "judgment": 0,
+        "threat": 3
+      },
+      "key": "3-0-3",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.05,
+          "timeoutRate": 0.31,
+          "misunderstandingRate": 0.275,
+          "robotDisabledRate": 0.365,
+          "averageReward": -2.668168,
+          "averageCompletionTime": 563.722027,
+          "subdueAttempts": 547,
+          "averageSubdueAttemptsPerEpisode": 2.735,
+          "averageAttemptsPerEncounter": 1.154008,
+          "subdueSuccesses": 364,
+          "subdueSuccessRate": 0.665448,
+          "firstAttemptSuccessRate": 0.64346,
+          "retrySuccessRate": 0.819444,
+          "failureCounts": {
+            "first": 169,
+            "second": 13,
+            "thirdOrTerminal": 73
+          },
+          "averageRetryBonusUsed": 0.025342,
+          "recoveryThenSuccessfulNeutralizationRate": 0.349112,
+          "defeatThenEpisodeSuccessRate": 0.017241,
+          "cumulativeDamageDisabledCount": 73,
+          "combatDisabledCount": 73,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.5902,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 28,
+            "medium": 29,
+            "high": 32,
+            "disabled": 73
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 531,
+              "attempts": 278,
+              "firstSuccesses": 97,
+              "firstAttemptSuccessRate": 0.444954,
+              "retrySuccesses": 50,
+              "retrySuccessRate": 0.847458,
+              "finalNeutralizations": 147,
+              "disabledCaused": 38
+            },
+            "F5_GUARD": {
+              "encounters": 530,
+              "attempts": 235,
+              "firstSuccesses": 196,
+              "firstAttemptSuccessRate": 0.863436,
+              "retrySuccesses": 8,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 204,
+              "disabledCaused": 22
+            },
+            "BOSS": {
+              "encounters": 73,
+              "attempts": 34,
+              "firstSuccesses": 12,
+              "firstAttemptSuccessRate": 0.413793,
+              "retrySuccesses": 1,
+              "retrySuccessRate": 0.2,
+              "finalNeutralizations": 13,
+              "disabledCaused": 13
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.04,
+          "timeoutRate": 0.115,
+          "misunderstandingRate": 0.285,
+          "robotDisabledRate": 0.56,
+          "averageReward": -2.323715,
+          "averageCompletionTime": 487.125762,
+          "subdueAttempts": 754,
+          "averageSubdueAttemptsPerEpisode": 3.77,
+          "averageAttemptsPerEncounter": 1.196825,
+          "subdueSuccesses": 466,
+          "subdueSuccessRate": 0.618037,
+          "firstAttemptSuccessRate": 0.598413,
+          "retrySuccessRate": 0.780702,
+          "failureCounts": {
+            "first": 253,
+            "second": 35,
+            "thirdOrTerminal": 112
+          },
+          "averageRetryBonusUsed": 0.027016,
+          "recoveryThenSuccessfulNeutralizationRate": 0.351779,
+          "defeatThenEpisodeSuccessRate": 0.036496,
+          "cumulativeDamageDisabledCount": 112,
+          "combatDisabledCount": 112,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6805,
+          "damageDistribution": {
+            "zero": 35,
+            "low": 20,
+            "medium": 15,
+            "high": 18,
+            "disabled": 112
+          },
+          "combatSkill": 0.26366,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 516,
+              "attempts": 404,
+              "firstSuccesses": 164,
+              "firstAttemptSuccessRate": 0.506173,
+              "retrySuccesses": 66,
+              "retrySuccessRate": 0.825,
+              "finalNeutralizations": 230,
+              "disabledCaused": 41
+            },
+            "F5_GUARD": {
+              "encounters": 434,
+              "attempts": 278,
+              "firstSuccesses": 204,
+              "firstAttemptSuccessRate": 0.796875,
+              "retrySuccesses": 12,
+              "retrySuccessRate": 0.545455,
+              "finalNeutralizations": 216,
+              "disabledCaused": 32
+            },
+            "BOSS": {
+              "encounters": 62,
+              "attempts": 72,
+              "firstSuccesses": 9,
+              "firstAttemptSuccessRate": 0.18,
+              "retrySuccesses": 11,
+              "retrySuccessRate": 0.916667,
+              "finalNeutralizations": 20,
+              "disabledCaused": 39
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.355,
+          "timeoutRate": 0.02,
+          "misunderstandingRate": 0.265,
+          "robotDisabledRate": 0.36,
+          "averageReward": 0.216496,
+          "averageCompletionTime": 469.77786,
+          "subdueAttempts": 1011,
+          "averageSubdueAttemptsPerEpisode": 5.055,
+          "averageAttemptsPerEncounter": 1.206444,
+          "subdueSuccesses": 735,
+          "subdueSuccessRate": 0.727003,
+          "firstAttemptSuccessRate": 0.704057,
+          "retrySuccessRate": 0.960265,
+          "failureCounts": {
+            "first": 248,
+            "second": 28,
+            "thirdOrTerminal": 72
+          },
+          "averageRetryBonusUsed": 0.028179,
+          "recoveryThenSuccessfulNeutralizationRate": 0.584677,
+          "defeatThenEpisodeSuccessRate": 0.4,
+          "cumulativeDamageDisabledCount": 72,
+          "combatDisabledCount": 72,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.5892,
+          "damageDistribution": {
+            "zero": 37,
+            "low": 37,
+            "medium": 14,
+            "high": 40,
+            "disabled": 72
+          },
+          "combatSkill": 0.4241,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 507,
+              "attempts": 489,
+              "firstSuccesses": 255,
+              "firstAttemptSuccessRate": 0.655527,
+              "retrySuccesses": 88,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 343,
+              "disabledCaused": 13
+            },
+            "F5_GUARD": {
+              "encounters": 424,
+              "attempts": 380,
+              "firstSuccesses": 278,
+              "firstAttemptSuccessRate": 0.822485,
+              "retrySuccesses": 38,
+              "retrySuccessRate": 0.904762,
+              "finalNeutralizations": 316,
+              "disabledCaused": 23
+            },
+            "BOSS": {
+              "encounters": 130,
+              "attempts": 142,
+              "firstSuccesses": 57,
+              "firstAttemptSuccessRate": 0.513514,
+              "retrySuccesses": 19,
+              "retrySuccessRate": 0.904762,
+              "finalNeutralizations": 76,
+              "disabledCaused": 36
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.535,
+          "timeoutRate": 0,
+          "misunderstandingRate": 0.265,
+          "robotDisabledRate": 0.2,
+          "averageReward": 1.629433,
+          "averageCompletionTime": 446.023179,
+          "subdueAttempts": 1072,
+          "averageSubdueAttemptsPerEpisode": 5.36,
+          "averageAttemptsPerEncounter": 1.157667,
+          "subdueSuccesses": 858,
+          "subdueSuccessRate": 0.800373,
+          "firstAttemptSuccessRate": 0.799136,
+          "retrySuccessRate": 0.893939,
+          "failureCounts": {
+            "first": 186,
+            "second": 24,
+            "thirdOrTerminal": 40
+          },
+          "averageRetryBonusUsed": 0.027397,
+          "recoveryThenSuccessfulNeutralizationRate": 0.634409,
+          "defeatThenEpisodeSuccessRate": 0.616822,
+          "cumulativeDamageDisabledCount": 40,
+          "combatDisabledCount": 40,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.4644,
+          "damageDistribution": {
+            "zero": 37,
+            "low": 56,
+            "medium": 26,
+            "high": 41,
+            "disabled": 40
+          },
+          "combatSkill": 0.57964,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 504,
+              "attempts": 530,
+              "firstSuccesses": 326,
+              "firstAttemptSuccessRate": 0.740909,
+              "retrySuccesses": 72,
+              "retrySuccessRate": 0.9,
+              "finalNeutralizations": 398,
+              "disabledCaused": 14
+            },
+            "F5_GUARD": {
+              "encounters": 388,
+              "attempts": 400,
+              "firstSuccesses": 318,
+              "firstAttemptSuccessRate": 0.871233,
+              "retrySuccesses": 35,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 353,
+              "disabledCaused": 12
+            },
+            "BOSS": {
+              "encounters": 132,
+              "attempts": 142,
+              "firstSuccesses": 96,
+              "firstAttemptSuccessRate": 0.793388,
+              "retrySuccesses": 11,
+              "retrySuccessRate": 0.647059,
+              "finalNeutralizations": 107,
+              "disabledCaused": 14
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.655,
+          "timeoutRate": 0,
+          "misunderstandingRate": 0.25,
+          "robotDisabledRate": 0.095,
+          "averageReward": 2.828433,
+          "averageCompletionTime": 432.555157,
+          "subdueAttempts": 1073,
+          "averageSubdueAttemptsPerEpisode": 5.365,
+          "averageAttemptsPerEncounter": 1.106186,
+          "subdueSuccesses": 944,
+          "subdueSuccessRate": 0.879776,
+          "firstAttemptSuccessRate": 0.892784,
+          "retrySuccessRate": 0.857143,
+          "failureCounts": {
+            "first": 104,
+            "second": 15,
+            "thirdOrTerminal": 19
+          },
+          "averageRetryBonusUsed": 0.027913,
+          "recoveryThenSuccessfulNeutralizationRate": 0.75,
+          "defeatThenEpisodeSuccessRate": 0.753247,
+          "cumulativeDamageDisabledCount": 19,
+          "combatDisabledCount": 19,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.31935,
+          "damageDistribution": {
+            "zero": 37,
+            "low": 86,
+            "medium": 33,
+            "high": 25,
+            "disabled": 19
+          },
+          "combatSkill": 0.74204,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 482,
+              "attempts": 482,
+              "firstSuccesses": 389,
+              "firstAttemptSuccessRate": 0.886105,
+              "retrySuccesses": 40,
+              "retrySuccessRate": 0.930233,
+              "finalNeutralizations": 429,
+              "disabledCaused": 3
+            },
+            "F5_GUARD": {
+              "encounters": 402,
+              "attempts": 396,
+              "firstSuccesses": 372,
+              "firstAttemptSuccessRate": 0.96875,
+              "retrySuccesses": 12,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 384,
+              "disabledCaused": 0
+            },
+            "BOSS": {
+              "encounters": 148,
+              "attempts": 195,
+              "firstSuccesses": 105,
+              "firstAttemptSuccessRate": 0.714286,
+              "retrySuccesses": 26,
+              "retrySuccessRate": 0.722222,
+              "finalNeutralizations": 131,
+              "disabledCaused": 16
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stars": {
+        "speed": 3,
+        "judgment": 1,
+        "threat": 2
+      },
+      "key": "3-1-2",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.05,
+          "timeoutRate": 0.325,
+          "misunderstandingRate": 0.265,
+          "robotDisabledRate": 0.36,
+          "averageReward": -3.835021,
+          "averageCompletionTime": 571.1204,
+          "subdueAttempts": 549,
+          "averageSubdueAttemptsPerEpisode": 2.745,
+          "averageAttemptsPerEncounter": 1.153361,
+          "subdueSuccesses": 364,
+          "subdueSuccessRate": 0.663024,
+          "firstAttemptSuccessRate": 0.644958,
+          "retrySuccessRate": 0.780822,
+          "failureCounts": {
+            "first": 169,
+            "second": 16,
+            "thirdOrTerminal": 72
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.337278,
+          "defeatThenEpisodeSuccessRate": 0.008475,
+          "cumulativeDamageDisabledCount": 72,
+          "combatDisabledCount": 72,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6032,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 25,
+            "medium": 29,
+            "high": 36,
+            "disabled": 72
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 532,
+              "attempts": 274,
+              "firstSuccesses": 96,
+              "firstAttemptSuccessRate": 0.442396,
+              "retrySuccesses": 48,
+              "retrySuccessRate": 0.842105,
+              "finalNeutralizations": 144,
+              "disabledCaused": 38
+            },
+            "F5_GUARD": {
+              "encounters": 540,
+              "attempts": 238,
+              "firstSuccesses": 200,
+              "firstAttemptSuccessRate": 0.869565,
+              "retrySuccesses": 8,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 208,
+              "disabledCaused": 22
+            },
+            "BOSS": {
+              "encounters": 76,
+              "attempts": 37,
+              "firstSuccesses": 11,
+              "firstAttemptSuccessRate": 0.37931,
+              "retrySuccesses": 1,
+              "retrySuccessRate": 0.125,
+              "finalNeutralizations": 12,
+              "disabledCaused": 12
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.06,
+          "timeoutRate": 0.155,
+          "misunderstandingRate": 0.275,
+          "robotDisabledRate": 0.51,
+          "averageReward": -3.610803,
+          "averageCompletionTime": 508.294539,
+          "subdueAttempts": 740,
+          "averageSubdueAttemptsPerEpisode": 3.7,
+          "averageAttemptsPerEncounter": 1.189711,
+          "subdueSuccesses": 472,
+          "subdueSuccessRate": 0.637838,
+          "firstAttemptSuccessRate": 0.622186,
+          "retrySuccessRate": 0.772727,
+          "failureCounts": {
+            "first": 235,
+            "second": 33,
+            "thirdOrTerminal": 102
+          },
+          "averageRetryBonusUsed": 0.026695,
+          "recoveryThenSuccessfulNeutralizationRate": 0.361702,
+          "defeatThenEpisodeSuccessRate": 0.036496,
+          "cumulativeDamageDisabledCount": 102,
+          "combatDisabledCount": 102,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.65985,
+          "damageDistribution": {
+            "zero": 35,
+            "low": 21,
+            "medium": 22,
+            "high": 20,
+            "disabled": 102
+          },
+          "combatSkill": 0.26268,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 523,
+              "attempts": 384,
+              "firstSuccesses": 158,
+              "firstAttemptSuccessRate": 0.512987,
+              "retrySuccesses": 66,
+              "retrySuccessRate": 0.868421,
+              "finalNeutralizations": 224,
+              "disabledCaused": 37
+            },
+            "F5_GUARD": {
+              "encounters": 456,
+              "attempts": 280,
+              "firstSuccesses": 215,
+              "firstAttemptSuccessRate": 0.823755,
+              "retrySuccesses": 9,
+              "retrySuccessRate": 0.473684,
+              "finalNeutralizations": 224,
+              "disabledCaused": 31
+            },
+            "BOSS": {
+              "encounters": 99,
+              "attempts": 76,
+              "firstSuccesses": 14,
+              "firstAttemptSuccessRate": 0.264151,
+              "retrySuccesses": 10,
+              "retrySuccessRate": 0.666667,
+              "finalNeutralizations": 24,
+              "disabledCaused": 34
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.29,
+          "timeoutRate": 0.015,
+          "misunderstandingRate": 0.265,
+          "robotDisabledRate": 0.43,
+          "averageReward": -2.02827,
+          "averageCompletionTime": 459.716495,
+          "subdueAttempts": 960,
+          "averageSubdueAttemptsPerEpisode": 4.8,
+          "averageAttemptsPerEncounter": 1.198502,
+          "subdueSuccesses": 679,
+          "subdueSuccessRate": 0.707292,
+          "firstAttemptSuccessRate": 0.689139,
+          "retrySuccessRate": 0.907143,
+          "failureCounts": {
+            "first": 249,
+            "second": 32,
+            "thirdOrTerminal": 86
+          },
+          "averageRetryBonusUsed": 0.027987,
+          "recoveryThenSuccessfulNeutralizationRate": 0.51004,
+          "defeatThenEpisodeSuccessRate": 0.301587,
+          "cumulativeDamageDisabledCount": 86,
+          "combatDisabledCount": 86,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.60625,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 34,
+            "medium": 13,
+            "high": 29,
+            "disabled": 86
+          },
+          "combatSkill": 0.42172,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 503,
+              "attempts": 458,
+              "firstSuccesses": 238,
+              "firstAttemptSuccessRate": 0.641509,
+              "retrySuccesses": 77,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 315,
+              "disabledCaused": 15
+            },
+            "F5_GUARD": {
+              "encounters": 398,
+              "attempts": 355,
+              "firstSuccesses": 263,
+              "firstAttemptSuccessRate": 0.819315,
+              "retrySuccesses": 33,
+              "retrySuccessRate": 0.970588,
+              "finalNeutralizations": 296,
+              "disabledCaused": 24
+            },
+            "BOSS": {
+              "encounters": 132,
+              "attempts": 147,
+              "firstSuccesses": 51,
+              "firstAttemptSuccessRate": 0.46789,
+              "retrySuccesses": 17,
+              "retrySuccessRate": 0.586207,
+              "finalNeutralizations": 68,
+              "disabledCaused": 47
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.57,
+          "timeoutRate": 0,
+          "misunderstandingRate": 0.27,
+          "robotDisabledRate": 0.16,
+          "averageReward": -0.268118,
+          "averageCompletionTime": 472.379144,
+          "subdueAttempts": 1074,
+          "averageSubdueAttemptsPerEpisode": 5.37,
+          "averageAttemptsPerEncounter": 1.158576,
+          "subdueSuccesses": 873,
+          "subdueSuccessRate": 0.812849,
+          "firstAttemptSuccessRate": 0.798274,
+          "retrySuccessRate": 0.970803,
+          "failureCounts": {
+            "first": 187,
+            "second": 14,
+            "thirdOrTerminal": 32
+          },
+          "averageRetryBonusUsed": 0.026701,
+          "recoveryThenSuccessfulNeutralizationRate": 0.71123,
+          "defeatThenEpisodeSuccessRate": 0.697248,
+          "cumulativeDamageDisabledCount": 32,
+          "combatDisabledCount": 32,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.46425,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 53,
+            "medium": 30,
+            "high": 47,
+            "disabled": 32
+          },
+          "combatSkill": 0.58034,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 502,
+              "attempts": 492,
+              "firstSuccesses": 302,
+              "firstAttemptSuccessRate": 0.742015,
+              "retrySuccesses": 74,
+              "retrySuccessRate": 0.986667,
+              "finalNeutralizations": 376,
+              "disabledCaused": 8
+            },
+            "F5_GUARD": {
+              "encounters": 424,
+              "attempts": 444,
+              "firstSuccesses": 339,
+              "firstAttemptSuccessRate": 0.8475,
+              "retrySuccesses": 44,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 383,
+              "disabledCaused": 18
+            },
+            "BOSS": {
+              "encounters": 141,
+              "attempts": 138,
+              "firstSuccesses": 99,
+              "firstAttemptSuccessRate": 0.825,
+              "retrySuccesses": 15,
+              "retrySuccessRate": 0.833333,
+              "finalNeutralizations": 114,
+              "disabledCaused": 6
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.63,
+          "timeoutRate": 0,
+          "misunderstandingRate": 0.26,
+          "robotDisabledRate": 0.11,
+          "averageReward": 0.621359,
+          "averageCompletionTime": 409.587761,
+          "subdueAttempts": 1025,
+          "averageSubdueAttemptsPerEpisode": 5.125,
+          "averageAttemptsPerEncounter": 1.112921,
+          "subdueSuccesses": 894,
+          "subdueSuccessRate": 0.872195,
+          "firstAttemptSuccessRate": 0.89468,
+          "retrySuccessRate": 0.795455,
+          "failureCounts": {
+            "first": 97,
+            "second": 24,
+            "thirdOrTerminal": 22
+          },
+          "averageRetryBonusUsed": 0.028846,
+          "recoveryThenSuccessfulNeutralizationRate": 0.721649,
+          "defeatThenEpisodeSuccessRate": 0.701299,
+          "cumulativeDamageDisabledCount": 22,
+          "combatDisabledCount": 22,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.31405,
+          "damageDistribution": {
+            "zero": 37,
+            "low": 86,
+            "medium": 35,
+            "high": 20,
+            "disabled": 22
+          },
+          "combatSkill": 0.74484,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 473,
+              "attempts": 462,
+              "firstSuccesses": 395,
+              "firstAttemptSuccessRate": 0.916473,
+              "retrySuccesses": 23,
+              "retrySuccessRate": 0.741935,
+              "finalNeutralizations": 418,
+              "disabledCaused": 8
+            },
+            "F5_GUARD": {
+              "encounters": 359,
+              "attempts": 362,
+              "firstSuccesses": 338,
+              "firstAttemptSuccessRate": 0.965714,
+              "retrySuccesses": 12,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 350,
+              "disabledCaused": 0
+            },
+            "BOSS": {
+              "encounters": 144,
+              "attempts": 201,
+              "firstSuccesses": 91,
+              "firstAttemptSuccessRate": 0.65,
+              "retrySuccesses": 35,
+              "retrySuccessRate": 0.777778,
+              "finalNeutralizations": 126,
+              "disabledCaused": 14
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stars": {
+        "speed": 3,
+        "judgment": 2,
+        "threat": 1
+      },
+      "key": "3-2-1",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.05,
+          "timeoutRate": 0.34,
+          "misunderstandingRate": 0.25,
+          "robotDisabledRate": 0.36,
+          "averageReward": -4.71797,
+          "averageCompletionTime": 569.172971,
+          "subdueAttempts": 545,
+          "averageSubdueAttemptsPerEpisode": 2.725,
+          "averageAttemptsPerEncounter": 1.147368,
+          "subdueSuccesses": 357,
+          "subdueSuccessRate": 0.655046,
+          "firstAttemptSuccessRate": 0.637895,
+          "retrySuccessRate": 0.771429,
+          "failureCounts": {
+            "first": 172,
+            "second": 16,
+            "thirdOrTerminal": 72
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.313953,
+          "defeatThenEpisodeSuccessRate": 0.016393,
+          "cumulativeDamageDisabledCount": 72,
+          "combatDisabledCount": 72,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6174,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 22,
+            "medium": 28,
+            "high": 40,
+            "disabled": 72
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 534,
+              "attempts": 269,
+              "firstSuccesses": 96,
+              "firstAttemptSuccessRate": 0.438356,
+              "retrySuccesses": 44,
+              "retrySuccessRate": 0.88,
+              "finalNeutralizations": 140,
+              "disabledCaused": 41
+            },
+            "F5_GUARD": {
+              "encounters": 532,
+              "attempts": 232,
+              "firstSuccesses": 197,
+              "firstAttemptSuccessRate": 0.879464,
+              "retrySuccesses": 8,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 205,
+              "disabledCaused": 19
+            },
+            "BOSS": {
+              "encounters": 82,
+              "attempts": 44,
+              "firstSuccesses": 10,
+              "firstAttemptSuccessRate": 0.3125,
+              "retrySuccesses": 2,
+              "retrySuccessRate": 0.166667,
+              "finalNeutralizations": 12,
+              "disabledCaused": 12
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.145,
+          "timeoutRate": 0.22,
+          "misunderstandingRate": 0.235,
+          "robotDisabledRate": 0.4,
+          "averageReward": -4.229761,
+          "averageCompletionTime": 550.770428,
+          "subdueAttempts": 742,
+          "averageSubdueAttemptsPerEpisode": 3.71,
+          "averageAttemptsPerEncounter": 1.163009,
+          "subdueSuccesses": 518,
+          "subdueSuccessRate": 0.698113,
+          "firstAttemptSuccessRate": 0.697492,
+          "retrySuccessRate": 0.776596,
+          "failureCounts": {
+            "first": 193,
+            "second": 28,
+            "thirdOrTerminal": 80
+          },
+          "averageRetryBonusUsed": 0.027404,
+          "recoveryThenSuccessfulNeutralizationRate": 0.378238,
+          "defeatThenEpisodeSuccessRate": 0.110236,
+          "cumulativeDamageDisabledCount": 80,
+          "combatDisabledCount": 80,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.6154,
+          "damageDistribution": {
+            "zero": 35,
+            "low": 30,
+            "medium": 20,
+            "high": 35,
+            "disabled": 80
+          },
+          "combatSkill": 0.2617,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 539,
+              "attempts": 351,
+              "firstSuccesses": 175,
+              "firstAttemptSuccessRate": 0.59322,
+              "retrySuccesses": 50,
+              "retrySuccessRate": 0.943396,
+              "finalNeutralizations": 225,
+              "disabledCaused": 31
+            },
+            "F5_GUARD": {
+              "encounters": 488,
+              "attempts": 285,
+              "firstSuccesses": 238,
+              "firstAttemptSuccessRate": 0.88806,
+              "retrySuccesses": 8,
+              "retrySuccessRate": 0.470588,
+              "finalNeutralizations": 246,
+              "disabledCaused": 22
+            },
+            "BOSS": {
+              "encounters": 151,
+              "attempts": 106,
+              "firstSuccesses": 32,
+              "firstAttemptSuccessRate": 0.426667,
+              "retrySuccesses": 15,
+              "retrySuccessRate": 0.625,
+              "finalNeutralizations": 47,
+              "disabledCaused": 27
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.29,
+          "timeoutRate": 0.06,
+          "misunderstandingRate": 0.255,
+          "robotDisabledRate": 0.395,
+          "averageReward": -3.34842,
+          "averageCompletionTime": 474.467539,
+          "subdueAttempts": 802,
+          "averageSubdueAttemptsPerEpisode": 4.01,
+          "averageAttemptsPerEncounter": 1.15562,
+          "subdueSuccesses": 572,
+          "subdueSuccessRate": 0.713217,
+          "firstAttemptSuccessRate": 0.713256,
+          "retrySuccessRate": 0.810526,
+          "failureCounts": {
+            "first": 199,
+            "second": 31,
+            "thirdOrTerminal": 79
+          },
+          "averageRetryBonusUsed": 0.028009,
+          "recoveryThenSuccessfulNeutralizationRate": 0.386935,
+          "defeatThenEpisodeSuccessRate": 0.260504,
+          "cumulativeDamageDisabledCount": 79,
+          "combatDisabledCount": 79,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.585,
+          "damageDistribution": {
+            "zero": 37,
+            "low": 36,
+            "medium": 24,
+            "high": 24,
+            "disabled": 79
+          },
+          "combatSkill": 0.42158,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 495,
+              "attempts": 376,
+              "firstSuccesses": 191,
+              "firstAttemptSuccessRate": 0.610224,
+              "retrySuccesses": 54,
+              "retrySuccessRate": 0.964286,
+              "finalNeutralizations": 245,
+              "disabledCaused": 24
+            },
+            "F5_GUARD": {
+              "encounters": 391,
+              "attempts": 308,
+              "firstSuccesses": 248,
+              "firstAttemptSuccessRate": 0.864111,
+              "retrySuccesses": 13,
+              "retrySuccessRate": 0.619048,
+              "finalNeutralizations": 261,
+              "disabledCaused": 26
+            },
+            "BOSS": {
+              "encounters": 135,
+              "attempts": 118,
+              "firstSuccesses": 56,
+              "firstAttemptSuccessRate": 0.595745,
+              "retrySuccesses": 10,
+              "retrySuccessRate": 0.555556,
+              "finalNeutralizations": 66,
+              "disabledCaused": 29
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.5,
+          "timeoutRate": 0.065,
+          "misunderstandingRate": 0.255,
+          "robotDisabledRate": 0.18,
+          "averageReward": -2.078714,
+          "averageCompletionTime": 498.953601,
+          "subdueAttempts": 1017,
+          "averageSubdueAttemptsPerEpisode": 5.085,
+          "averageAttemptsPerEncounter": 1.122517,
+          "subdueSuccesses": 826,
+          "subdueSuccessRate": 0.812193,
+          "firstAttemptSuccessRate": 0.801325,
+          "retrySuccessRate": 0.990099,
+          "failureCounts": {
+            "first": 180,
+            "second": 11,
+            "thirdOrTerminal": 36
+          },
+          "averageRetryBonusUsed": 0.027252,
+          "recoveryThenSuccessfulNeutralizationRate": 0.555556,
+          "defeatThenEpisodeSuccessRate": 0.494949,
+          "cumulativeDamageDisabledCount": 36,
+          "combatDisabledCount": 36,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.45325,
+          "damageDistribution": {
+            "zero": 36,
+            "low": 65,
+            "medium": 20,
+            "high": 43,
+            "disabled": 36
+          },
+          "combatSkill": 0.5837,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 510,
+              "attempts": 429,
+              "firstSuccesses": 273,
+              "firstAttemptSuccessRate": 0.741848,
+              "retrySuccesses": 51,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 324,
+              "disabledCaused": 2
+            },
+            "F5_GUARD": {
+              "encounters": 472,
+              "attempts": 454,
+              "firstSuccesses": 358,
+              "firstAttemptSuccessRate": 0.864734,
+              "retrySuccesses": 40,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 398,
+              "disabledCaused": 15
+            },
+            "BOSS": {
+              "encounters": 161,
+              "attempts": 134,
+              "firstSuccesses": 95,
+              "firstAttemptSuccessRate": 0.766129,
+              "retrySuccesses": 9,
+              "retrySuccessRate": 0.9,
+              "finalNeutralizations": 104,
+              "disabledCaused": 19
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.725,
+          "timeoutRate": 0,
+          "misunderstandingRate": 0.23,
+          "robotDisabledRate": 0.045,
+          "averageReward": -0.607644,
+          "averageCompletionTime": 463.017263,
+          "subdueAttempts": 1061,
+          "averageSubdueAttemptsPerEpisode": 5.305,
+          "averageAttemptsPerEncounter": 1.109833,
+          "subdueSuccesses": 941,
+          "subdueSuccessRate": 0.886899,
+          "firstAttemptSuccessRate": 0.884937,
+          "retrySuccessRate": 0.95,
+          "failureCounts": {
+            "first": 110,
+            "second": 5,
+            "thirdOrTerminal": 9
+          },
+          "averageRetryBonusUsed": 0.02619,
+          "recoveryThenSuccessfulNeutralizationRate": 0.863636,
+          "defeatThenEpisodeSuccessRate": 0.883721,
+          "cumulativeDamageDisabledCount": 9,
+          "combatDisabledCount": 9,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.32485,
+          "damageDistribution": {
+            "zero": 31,
+            "low": 83,
+            "medium": 48,
+            "high": 29,
+            "disabled": 9
+          },
+          "combatSkill": 0.7524,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 505,
+              "attempts": 448,
+              "firstSuccesses": 360,
+              "firstAttemptSuccessRate": 0.882353,
+              "retrySuccesses": 40,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 400,
+              "disabledCaused": 3
+            },
+            "F5_GUARD": {
+              "encounters": 417,
+              "attempts": 407,
+              "firstSuccesses": 385,
+              "firstAttemptSuccessRate": 0.972222,
+              "retrySuccesses": 11,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 396,
+              "disabledCaused": 0
+            },
+            "BOSS": {
+              "encounters": 166,
+              "attempts": 206,
+              "firstSuccesses": 101,
+              "firstAttemptSuccessRate": 0.664474,
+              "retrySuccesses": 44,
+              "retrySuccessRate": 0.897959,
+              "finalNeutralizations": 145,
+              "disabledCaused": 6
+            }
+          }
+        }
+      ]
+    },
+    {
+      "stars": {
+        "speed": 3,
+        "judgment": 3,
+        "threat": 0
+      },
+      "key": "3-3-0",
+      "checkpoints": [
+        {
+          "round": 1,
+          "episodes": 200,
+          "goalReachedRate": 0.1,
+          "timeoutRate": 0.3,
+          "misunderstandingRate": 0.24,
+          "robotDisabledRate": 0.36,
+          "averageReward": -5.330186,
+          "averageCompletionTime": 547.70853,
+          "subdueAttempts": 516,
+          "averageSubdueAttemptsPerEpisode": 2.58,
+          "averageAttemptsPerEncounter": 1.095541,
+          "subdueSuccesses": 337,
+          "subdueSuccessRate": 0.653101,
+          "firstAttemptSuccessRate": 0.66879,
+          "retrySuccessRate": 0.488889,
+          "failureCounts": {
+            "first": 156,
+            "second": 23,
+            "thirdOrTerminal": 72
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.141026,
+          "defeatThenEpisodeSuccessRate": 0.106195,
+          "cumulativeDamageDisabledCount": 72,
+          "combatDisabledCount": 72,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.57675,
+          "damageDistribution": {
+            "zero": 38,
+            "low": 29,
+            "medium": 41,
+            "high": 20,
+            "disabled": 72
+          },
+          "combatSkill": 0.13122,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 538,
+              "attempts": 226,
+              "firstSuccesses": 133,
+              "firstAttemptSuccessRate": 0.624413,
+              "retrySuccesses": 10,
+              "retrySuccessRate": 0.769231,
+              "finalNeutralizations": 143,
+              "disabledCaused": 30
+            },
+            "F5_GUARD": {
+              "encounters": 528,
+              "attempts": 218,
+              "firstSuccesses": 164,
+              "firstAttemptSuccessRate": 0.788462,
+              "retrySuccesses": 10,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 174,
+              "disabledCaused": 14
+            },
+            "BOSS": {
+              "encounters": 63,
+              "attempts": 72,
+              "firstSuccesses": 18,
+              "firstAttemptSuccessRate": 0.36,
+              "retrySuccesses": 2,
+              "retrySuccessRate": 0.090909,
+              "finalNeutralizations": 20,
+              "disabledCaused": 28
+            }
+          }
+        },
+        {
+          "round": 5,
+          "episodes": 200,
+          "goalReachedRate": 0.085,
+          "timeoutRate": 0.355,
+          "misunderstandingRate": 0.22,
+          "robotDisabledRate": 0.34,
+          "averageReward": -5.51622,
+          "averageCompletionTime": 604.013611,
+          "subdueAttempts": 543,
+          "averageSubdueAttemptsPerEpisode": 2.715,
+          "averageAttemptsPerEncounter": 1.054369,
+          "subdueSuccesses": 375,
+          "subdueSuccessRate": 0.690608,
+          "firstAttemptSuccessRate": 0.716505,
+          "retrySuccessRate": 0.214286,
+          "failureCounts": {
+            "first": 146,
+            "second": 22,
+            "thirdOrTerminal": 68
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.041096,
+          "defeatThenEpisodeSuccessRate": 0.028302,
+          "cumulativeDamageDisabledCount": 68,
+          "combatDisabledCount": 68,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.5462,
+          "damageDistribution": {
+            "zero": 35,
+            "low": 46,
+            "medium": 31,
+            "high": 20,
+            "disabled": 68
+          },
+          "combatSkill": 0.261,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 542,
+              "attempts": 196,
+              "firstSuccesses": 136,
+              "firstAttemptSuccessRate": 0.712042,
+              "retrySuccesses": 2,
+              "retrySuccessRate": 0.4,
+              "finalNeutralizations": 138,
+              "disabledCaused": 14
+            },
+            "F5_GUARD": {
+              "encounters": 660,
+              "attempts": 272,
+              "firstSuccesses": 219,
+              "firstAttemptSuccessRate": 0.808118,
+              "retrySuccesses": 1,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 220,
+              "disabledCaused": 21
+            },
+            "BOSS": {
+              "encounters": 95,
+              "attempts": 75,
+              "firstSuccesses": 14,
+              "firstAttemptSuccessRate": 0.264151,
+              "retrySuccesses": 3,
+              "retrySuccessRate": 0.136364,
+              "finalNeutralizations": 17,
+              "disabledCaused": 33
+            }
+          }
+        },
+        {
+          "round": 10,
+          "episodes": 200,
+          "goalReachedRate": 0.1,
+          "timeoutRate": 0.415,
+          "misunderstandingRate": 0.18,
+          "robotDisabledRate": 0.305,
+          "averageReward": -5.462437,
+          "averageCompletionTime": 650.717021,
+          "subdueAttempts": 575,
+          "averageSubdueAttemptsPerEpisode": 2.875,
+          "averageAttemptsPerEncounter": 1.051188,
+          "subdueSuccesses": 405,
+          "subdueSuccessRate": 0.704348,
+          "firstAttemptSuccessRate": 0.716636,
+          "retrySuccessRate": 0.481481,
+          "failureCounts": {
+            "first": 155,
+            "second": 14,
+            "thirdOrTerminal": 61
+          },
+          "averageRetryBonusUsed": 0.025893,
+          "recoveryThenSuccessfulNeutralizationRate": 0.083871,
+          "defeatThenEpisodeSuccessRate": 0.093458,
+          "cumulativeDamageDisabledCount": 61,
+          "combatDisabledCount": 61,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.5675,
+          "damageDistribution": {
+            "zero": 29,
+            "low": 47,
+            "medium": 25,
+            "high": 38,
+            "disabled": 61
+          },
+          "combatSkill": 0.42088,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 558,
+              "attempts": 203,
+              "firstSuccesses": 136,
+              "firstAttemptSuccessRate": 0.693878,
+              "retrySuccesses": 4,
+              "retrySuccessRate": 0.571429,
+              "finalNeutralizations": 140,
+              "disabledCaused": 15
+            },
+            "F5_GUARD": {
+              "encounters": 660,
+              "attempts": 280,
+              "firstSuccesses": 242,
+              "firstAttemptSuccessRate": 0.873646,
+              "retrySuccesses": 3,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 245,
+              "disabledCaused": 10
+            },
+            "BOSS": {
+              "encounters": 154,
+              "attempts": 92,
+              "firstSuccesses": 14,
+              "firstAttemptSuccessRate": 0.189189,
+              "retrySuccesses": 6,
+              "retrySuccessRate": 0.352941,
+              "finalNeutralizations": 20,
+              "disabledCaused": 36
+            }
+          }
+        },
+        {
+          "round": 15,
+          "episodes": 200,
+          "goalReachedRate": 0.16,
+          "timeoutRate": 0.41,
+          "misunderstandingRate": 0.155,
+          "robotDisabledRate": 0.275,
+          "averageReward": -5.174133,
+          "averageCompletionTime": 672.679607,
+          "subdueAttempts": 582,
+          "averageSubdueAttemptsPerEpisode": 2.91,
+          "averageAttemptsPerEncounter": 1.058182,
+          "subdueSuccesses": 421,
+          "subdueSuccessRate": 0.723368,
+          "firstAttemptSuccessRate": 0.730909,
+          "retrySuccessRate": 0.59375,
+          "failureCounts": {
+            "first": 148,
+            "second": 13,
+            "thirdOrTerminal": 55
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.128378,
+          "defeatThenEpisodeSuccessRate": 0.15534,
+          "cumulativeDamageDisabledCount": 55,
+          "combatDisabledCount": 55,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.5283,
+          "damageDistribution": {
+            "zero": 26,
+            "low": 55,
+            "medium": 43,
+            "high": 21,
+            "disabled": 55
+          },
+          "combatSkill": 0.57964,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 576,
+              "attempts": 204,
+              "firstSuccesses": 136,
+              "firstAttemptSuccessRate": 0.701031,
+              "retrySuccesses": 6,
+              "retrySuccessRate": 0.6,
+              "finalNeutralizations": 142,
+              "disabledCaused": 14
+            },
+            "F5_GUARD": {
+              "encounters": 667,
+              "attempts": 279,
+              "firstSuccesses": 237,
+              "firstAttemptSuccessRate": 0.877778,
+              "retrySuccesses": 9,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 246,
+              "disabledCaused": 10
+            },
+            "BOSS": {
+              "encounters": 192,
+              "attempts": 99,
+              "firstSuccesses": 29,
+              "firstAttemptSuccessRate": 0.337209,
+              "retrySuccesses": 4,
+              "retrySuccessRate": 0.307692,
+              "finalNeutralizations": 33,
+              "disabledCaused": 31
+            }
+          }
+        },
+        {
+          "round": 20,
+          "episodes": 200,
+          "goalReachedRate": 0.22,
+          "timeoutRate": 0.51,
+          "misunderstandingRate": 0.16,
+          "robotDisabledRate": 0.11,
+          "averageReward": -4.71748,
+          "averageCompletionTime": 721.312318,
+          "subdueAttempts": 629,
+          "averageSubdueAttemptsPerEpisode": 3.145,
+          "averageAttemptsPerEncounter": 1.032841,
+          "subdueSuccesses": 549,
+          "subdueSuccessRate": 0.872814,
+          "firstAttemptSuccessRate": 0.8867,
+          "retrySuccessRate": 0.45,
+          "failureCounts": {
+            "first": 69,
+            "second": 11,
+            "thirdOrTerminal": 22
+          },
+          "averageRetryBonusUsed": 0.025,
+          "recoveryThenSuccessfulNeutralizationRate": 0.130435,
+          "defeatThenEpisodeSuccessRate": 0.122807,
+          "cumulativeDamageDisabledCount": 22,
+          "combatDisabledCount": 22,
+          "averageTerminalDamage": 1,
+          "averageRobotDamage": 0.32625,
+          "damageDistribution": {
+            "zero": 25,
+            "low": 99,
+            "medium": 37,
+            "high": 17,
+            "disabled": 22
+          },
+          "combatSkill": 0.74736,
+          "enemyBreakdown": {
+            "VILLAIN_1": {
+              "encounters": 0,
+              "attempts": 0,
+              "firstSuccesses": 0,
+              "firstAttemptSuccessRate": 0,
+              "retrySuccesses": 0,
+              "retrySuccessRate": 0,
+              "finalNeutralizations": 0,
+              "disabledCaused": 0
+            },
+            "VILLAIN_2": {
+              "encounters": 589,
+              "attempts": 216,
+              "firstSuccesses": 186,
+              "firstAttemptSuccessRate": 0.885714,
+              "retrySuccesses": 6,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 192,
+              "disabledCaused": 3
+            },
+            "F5_GUARD": {
+              "encounters": 758,
+              "attempts": 305,
+              "firstSuccesses": 295,
+              "firstAttemptSuccessRate": 0.973597,
+              "retrySuccesses": 2,
+              "retrySuccessRate": 1,
+              "finalNeutralizations": 297,
+              "disabledCaused": 0
+            },
+            "BOSS": {
+              "encounters": 216,
+              "attempts": 108,
+              "firstSuccesses": 59,
+              "firstAttemptSuccessRate": 0.614583,
+              "retrySuccesses": 1,
+              "retrySuccessRate": 0.083333,
+              "finalNeutralizations": 60,
+              "disabledCaused": 19
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -25,6 +25,7 @@ export type RuntimeStateChange =
   | 'OBSTACLE_BYPASSED'
   | 'OBSTACLE_BLOCKED'
   | 'VILLAIN_NEUTRALIZED'
+  | 'ROBOT_RECOVERY'
   | 'VILLAIN_FORCE_PASSED'
   | 'VILLAIN_DISTRACTED'
   | 'F5_DOOR_OPEN'
@@ -264,6 +265,7 @@ function actionCommands(
     const state = action.state as Exclude<DecisionState, 'ROUTE_CHOICE'>;
     commands.push({ type: 'ACTION', floor, simulationTime, zoneId: zone.id, state, action: action.action });
     commands.push({ type: 'OUTCOME', floor, simulationTime, zoneId: zone.id, state, outcome: action.localOutcome, events: [...action.immediateEvents] });
+    if (action.localOutcome === 'SUBDUE_RECOVERY') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'ROBOT_RECOVERY', location: zone.id, position: base.position });
     if (action.localOutcome === 'OBSTACLE_CLEARED') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'OBSTACLE_CLEARED', location: zone.id, position: base.position });
     if (action.action === 'PUSH' && (action.localOutcome === 'CLEAN_PASS' || action.localOutcome === 'FACILITY_DAMAGE')) commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'OBSTACLE_PUSHED', location: zone.id, position: base.position });
     if (action.localOutcome === 'SAFE_PASS' && zone.kind === 'OBSTACLE') commands.push({ type: 'STATE_CHANGE', floor, simulationTime, change: 'OBSTACLE_BYPASSED', location: zone.id, position: base.position });
@@ -364,6 +366,7 @@ export function createRuntimeCommands(environment: ActualMapEnvironment, episode
             const actionTime = actionEndTimes.get(action) ?? routeTime;
             commands.push({ type: 'ACTION', floor: 5, simulationTime: actionTime, zoneId: bossZone.id, state: 'BOSS_ENCOUNTER', action: action.action });
             commands.push({ type: 'OUTCOME', floor: 5, simulationTime: actionTime, zoneId: bossZone.id, state: 'BOSS_ENCOUNTER', outcome: action.localOutcome, events: [...action.immediateEvents] });
+            if (action.localOutcome === 'SUBDUE_RECOVERY') commands.push({ type: 'STATE_CHANGE', floor: 5, simulationTime: actionTime, change: 'ROBOT_RECOVERY', location: bossZone.id, position: roomPosition });
             if (isTerminal(action.immediateEvents)) break;
             if (action.localOutcome === 'RETREAT_TO_SEARCH') {
               commands.push(...edgeCommand(environment, 5, roomPath.noBossReturnEdgeId, actionTime));

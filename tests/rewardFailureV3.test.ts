@@ -56,14 +56,14 @@ test('combat skill raises SUBDUE probability, Boss stays harder, and failed comb
   assert.equal(resolveVillainEncounter(2, 'SUBDUE', 0.60, { ...common, combatSkill: 0 }).neutralized, false);
   const failed = resolveVillainEncounter(1, 'SUBDUE', 0.99, { ...common, combatSkill: 0 });
   assert.equal(failed.combatExperience, 0.6);
-  assert.equal(failed.robotDamageDelta, 1);
+  assert.equal(failed.robotDamageDelta, 0.4);
   const boss = resolveBossEncounter('SUBDUE', 0.66, false, 0, { baseSubdueSuccess: 0.42, combatSkill: 0.5, combatSkillBonus: 0.45 });
   const villain = resolveVillainEncounter(1, 'SUBDUE', 0.60, { ...common, combatSkill: 0.5 });
   assert.equal(villain.neutralized, true);
   assert.equal(boss.neutralized, false);
 });
 
-test('damage ordering and full defeat follow the v3 contract', () => {
+test('damage ordering follows the recovery contract', () => {
   const parameters = ACTUAL_ENVIRONMENT_PRODUCTION_V3;
   const distractPass = resolveVillainEncounter(1, 'DISTRACT', 0, parameters);
   const distractFail = resolveVillainEncounter(1, 'DISTRACT', 1, parameters);
@@ -72,7 +72,12 @@ test('damage ordering and full defeat follow the v3 contract', () => {
   assert.ok(distractPass.robotDamageDelta! < distractFail.robotDamageDelta!);
   assert.ok(distractFail.robotDamageDelta! < forcePass.robotDamageDelta!);
   assert.ok(forcePass.robotDamageDelta! < forceFail.robotDamageDelta!);
-  assert.equal(resolveVillainEncounter(1, 'SUBDUE', 1, parameters).robotDamageDelta, 1);
+  assert.deepEqual([
+    distractPass.robotDamageDelta, distractFail.robotDamageDelta,
+    forcePass.robotDamageDelta, forceFail.robotDamageDelta,
+    resolveVillainEncounter(1, 'SUBDUE', 0, parameters).robotDamageDelta,
+    resolveVillainEncounter(1, 'SUBDUE', 1, parameters).robotDamageDelta,
+  ], [0.01, 0.05, 0.15, 0.25, 0.01, 0.4]);
 });
 
 test('twenty rounds use five shared policy/combat snapshots and update each exactly once', () => {

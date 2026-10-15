@@ -321,9 +321,9 @@ test('OBSTACLE outcomes match DETOUR, CLEAR, and PUSH contract', () => {
 
 test('VILLAIN x1/x2 probabilities, persistence, and unavailable BYPASS match contract', () => {
   assert.equal(resolveVillainEncounter(1, 'SUBDUE', 0.89).neutralized, true);
-  assert.deepEqual(resolveVillainEncounter(1, 'SUBDUE', 0.90).events, ['ROBOT_DISABLED']);
+  assert.equal(resolveVillainEncounter(1, 'SUBDUE', 0.90).localOutcome, 'SUBDUE_RECOVERY');
   assert.equal(resolveVillainEncounter(2, 'SUBDUE', 0.79).neutralized, true);
-  assert.deepEqual(resolveVillainEncounter(2, 'SUBDUE', 0.80).events, ['ROBOT_DISABLED']);
+  assert.equal(resolveVillainEncounter(2, 'SUBDUE', 0.80).localOutcome, 'SUBDUE_RECOVERY');
 
   assert.equal(resolveVillainEncounter(1, 'FORCE_PASS', 0.69).localOutcome, 'PASS');
   assert.equal(resolveVillainEncounter(1, 'FORCE_PASS', 0.70).localOutcome, 'BLOCKED');
@@ -348,9 +348,9 @@ test('MOBILITY_DAMAGE applies to the next route segment only', () => {
 
 test('BOSS SUBDUE uses combat skill, remains fallible, and only RETREAT is the alternative', () => {
   assert.equal(resolveBossEncounter('SUBDUE', 0.79).neutralized, true);
-  assert.deepEqual(resolveBossEncounter('SUBDUE', 0.80).events, ['ROBOT_DISABLED']);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.80).localOutcome, 'SUBDUE_RECOVERY');
   assert.equal(resolveBossEncounter('SUBDUE', 0.84, false, 0, { baseSubdueSuccess: 0.4, combatSkill: 1, combatSkillBonus: 0.45 }).neutralized, true);
-  assert.deepEqual(resolveBossEncounter('SUBDUE', 0.86, false, 0, { baseSubdueSuccess: 0.4, combatSkill: 1, combatSkillBonus: 0.45 }).events, ['ROBOT_DISABLED']);
+  assert.equal(resolveBossEncounter('SUBDUE', 0.86, false, 0, { baseSubdueSuccess: 0.4, combatSkill: 1, combatSkillBonus: 0.45 }).localOutcome, 'SUBDUE_RECOVERY');
   assert.equal(resolveBossEncounter('SUBDUE', 0.75, false, 0, { baseSubdueSuccess: 0.80 }).neutralized, true);
   assert.equal(resolveBossEncounter('SUBDUE', 0.90, true, 0, { distractedSubdueSuccess: 0.95 }).neutralized, true);
   assert.equal(ACTIONS.BOSS_ENCOUNTER.includes('BYPASS' as never), false);
