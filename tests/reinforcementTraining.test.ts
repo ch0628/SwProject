@@ -128,7 +128,7 @@ test('training Korean labels and failure review use real episode data without ex
   assert.equal(terminalReasonSentence('TIMEOUT'), '시간 안에 임무를 끝내지 못했어.');
   assert.equal(meaningfulEventMessage(3, { type: 'STATE_CHANGE', floor: 5, simulationTime: 1, change: 'NO_BOSS', location: 'x' }), undefined);
   assert.equal(meaningfulEventMessage(2, { type: 'TERMINAL', floor: 3, simulationTime: 1, reason: 'ROBOT_DISABLED' }), '로봇 2가 작동 불능이 되었어요');
-  assert.equal(importantActionMessage({ type: 'ACTION', floor: 3, simulationTime: 1, state: 'VILLAIN_ENCOUNTER', action: 'DISTRACT', zoneId: 'x' }), '주의 돌리기 행동을 하고 있어요!');
+  assert.equal(importantActionMessage({ type: 'ACTION', floor: 3, simulationTime: 1, state: 'VILLAIN_ENCOUNTER', action: 'DISTRACT', zoneId: 'x' }), '악당의 주의를 다른 곳으로 돌리고 있어요!');
   assert.match(rewardAdvice({ speed: 3, judgment: 2, threat: 1 }), /빠르게 해결/);
   assert.match(rewardAdvice({ speed: 1, judgment: 3, threat: 2 }), /정확한 판단/);
   assert.match(rewardAdvice({ speed: 1, judgment: 2, threat: 3 }), /위협 제거/);
@@ -142,14 +142,14 @@ test('training Korean labels and failure review use real episode data without ex
   assert.ok(!review.text.includes(episode.terminalReason));
 });
 
-test('training production entry renders five-round Korean Ari result, review and final result UI without replacing debug entry', () => {
+test('training production entry renders checkpoint Korean Ari result, review and final result UI without replacing debug entry', () => {
   const app = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementTrainingApp.tsx', 'utf8');
   const main = fs.readFileSync('src/main.tsx', 'utf8');
   const labels = fs.readFileSync('src/modules/reinforcement/runtime/trainingLabels.ts', 'utf8');
   const ari = fs.readFileSync('src/modules/ai-basics/AriDialogue.tsx', 'utf8');
   for (const label of ['빠르게 해결하기', '정확하게 판단하기', '위협 제거하기']) assert.match(labels, new RegExp(label));
   assert.doesNotMatch(labels, /goal: '임무 완수'/);
-  assert.match(app, /별 8개를 모두 나눠 주세요/);
+  assert.match(app, /별 6개를 모두 나누어 주세요/);
   assert.match(app, /disabled=\{!validStarBudget\}/);
   assert.match(app, /\[0, 1, 2, 3\]/);
   assert.match(app, /training-runtime-card/);
@@ -159,7 +159,7 @@ test('training production entry renders five-round Korean Ari result, review and
   assert.match(app, /waitForStart: true/);
   assert.match(app, /reinforcement-runtime-start/);
   assert.match(app, /readyRobots\.length === 5/);
-  assert.match(app, /로봇을 준비 중입니다/);
+  assert.match(app, /로봇들이 다음 도전을 준비하고 있어요/);
   assert.match(app, /5대의 로봇이 출발을 준비하고 있어요/);
   assert.match(app, /\{ready\} \/ \{total\} 준비 완료/);
   assert.match(app, /disabled=\{!running\}/);
@@ -173,9 +173,9 @@ test('training production entry renders five-round Korean Ari result, review and
   assert.match(app, /결과로 돌아가기/);
   assert.match(app, /다음 학습 시작/);
   assert.match(app, /최종 결과 보기/);
-  assert.match(app, /5번의 학습 동안/);
+  assert.match(app, /20번의 학습 중 5개 관찰 지점/);
   assert.match(app, /다시 학습하기/);
-  assert.match(app, /실전에서 확인하기/);
+  assert.match(app, /배운 방법으로 실전 도전/);
   assert.match(app, /ACTUAL_PREPARING/);
   assert.match(app, /createEvaluation/);
   assert.match(app, /메인으로 돌아가기/);

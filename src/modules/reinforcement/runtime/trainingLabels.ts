@@ -12,7 +12,7 @@ const LABELS: Record<string, string> = {
   ROUTE_CHOICE: '이동 경로',
   OBSTACLE: '장애물',
   CITIZEN_NEARBY: '시민',
-  AMBIGUOUS_PERSON: '호랑이',
+  AMBIGUOUS_PERSON: '모호한 사람',
   VILLAIN_ENCOUNTER: '악당',
   BOSS_ENCOUNTER: '보스',
   DETOUR: '돌아가기',
@@ -55,6 +55,24 @@ const LABELS: Record<string, string> = {
   SAFE_PASS: '안전하게 돌아갔어요',
   SAFE_BYPASS: '안전하게 피했어요',
   BOSS_DISTRACTED: '보스의 주의를 돌렸어요',
+  NO_BOSS: '여기에는 보스가 없어요',
+  F5_DOOR_OPEN: '검색할 방의 문이 열렸어요',
+};
+
+const ACTION_MESSAGES: Record<string, string> = {
+  SUBDUE: '악당을 제압하려고 해요!',
+  DISTRACT: '악당의 주의를 다른 곳으로 돌리고 있어요!',
+  RETREAT: '잠깐 물러나 다시 생각하고 있어요.',
+  OBSERVE: '이 사람이 누구인지 자세히 살펴보고 있어요.',
+  BYPASS: '사람을 피해 조심해서 지나가고 있어요.',
+  CLEAR: '앞을 막는 물건을 치우고 있어요.',
+  PUSH: '물건을 밀어서 길을 만들고 있어요.',
+  FORCE_PASS: '악당을 뚫고 지나가려고 해요.',
+  WAIT: '안전해질 때까지 기다리고 있어요.',
+  SLOW_PASS: '사람 곁을 천천히 지나가고 있어요.',
+  FAST_PASS: '빠르게 지나가고 있어요.',
+  WIDE_DETOUR: '안전하게 멀리 돌아가고 있어요.',
+  DETOUR: '다른 길로 돌아가고 있어요.',
 };
 
 export const REWARD_LABELS = {
@@ -123,16 +141,29 @@ export const importantActionMessage = (command?: RuntimeCommand): string => {
     if (command.phase === 'END') return '다시 임무를 계속하고 있어요!';
     return command.encounter === 'OBSTACLE' ? '장애물을 발견했어요!'
       : command.encounter === 'CITIZEN_NEARBY' ? '시민을 확인하고 있어요!'
-        : command.encounter === 'AMBIGUOUS_PERSON' ? '호랑이를 자세히 살펴보고 있어요!'
+        : command.encounter === 'AMBIGUOUS_PERSON' ? '누구인지 알 수 없는 사람을 살펴보고 있어요!'
           : command.encounter === 'BOSS_ENCOUNTER' ? '보스를 만나고 있어요!'
             : '악당을 만나고 있어요!';
   }
-  if (command.type === 'ACTION') return `${trainingLabel(command.action)} 행동을 하고 있어요!`;
+  if (command.type === 'ACTION') {
+    if (command.action === 'SUBDUE' && command.state === 'BOSS_ENCOUNTER') return '보스를 제압하려고 해요!';
+    if (command.action === 'RETREAT') {
+      if (command.floor === 5) return '다른 방을 확인하려고 돌아가고 있어요.';
+      if (command.floor === 1 || command.floor === 3) return '다른 길을 찾아보고 있어요.';
+    }
+    return ACTION_MESSAGES[command.action] ?? `${trainingLabel(command.action)} 행동을 하고 있어요!`;
+  }
   if (command.type === 'OUTCOME') return trainingLabel(command.outcome);
   if (command.type === 'STATE_CHANGE') return trainingLabel(command.change);
   if (command.type === 'LOCAL_RETREAT') return '잠시 물러난 뒤 다시 판단하고 있어요!';
   if (command.type === 'LOCAL_BYPASS') return '대상을 피해 안전하게 지나가고 있어요!';
   return command.reason === 'GOAL_REACHED' ? '임무를 성공했어요!' : terminalReasonSentence(command.reason);
+};
+
+export const trainingComparisonMessage = (firstSuccess: number, lastSuccess: number): string => {
+  if (lastSuccess > firstSuccess) return '첫 관찰보다 마지막 관찰에서 임무를 성공한 로봇이 더 많아졌어!';
+  if (lastSuccess === firstSuccess) return '성공한 로봇 수는 같지만, 여러 경험을 비교하며 행동 방식이 달라졌어.';
+  return '모든 도전이 항상 성공하는 건 아니지만, 성공과 실패 경험을 통해 행동 방식이 달라졌어.';
 };
 
 const lastMeaningfulAction = (episode: ActualEpisode): ActionExperience | undefined => {
