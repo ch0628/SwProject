@@ -68,7 +68,7 @@
         }, 
         {
          "id":33,
-         "image":"F2_FLOOR_PART_Corner.png",
+         "image":"F2_FLOOR_PART_CORNER.png",
          "imageheight":32,
          "imagewidth":32,
          "type":"F2_FLOOR_PART_CORNER"
