@@ -64,15 +64,9 @@ export type RuntimePresentationMotion = {
   robotApproach?: RuntimePoint[];
 };
 
-const RUNTIME_TILE_PATH_OVERRIDES: Readonly<Record<string, string>> = {
-  '/assets/environment/reinforcement/floor2_room_shell_manual/F2_FLOOR_PART_Corner.png':
-    '/assets/environment/reinforcement/floor2_room_shell_manual/F2_FLOOR_PART_CORNER.png',
-};
-
 export const resolveRuntimePublicPath = (relativePath: string, basePath: string) => {
   const normalized = relativePath.trim().replaceAll('\\', '/');
-  const resolved = new URL(normalized, new URL(basePath, 'http://runtime.local')).pathname;
-  return RUNTIME_TILE_PATH_OVERRIDES[resolved] ?? resolved;
+  return new URL(normalized, new URL(basePath, 'http://runtime.local')).pathname;
 };
 
 const kindFor = (command: Extract<RuntimeCommand, { type: 'ENCOUNTER' }>): RuntimeEntityKind => {

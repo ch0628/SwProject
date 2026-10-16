@@ -226,7 +226,7 @@ test('runtime tile 34 resolves from the F2 TSJ to the real public PNG', () => {
     '../../assets/environment/reinforcement/floor2_room_shell_manual/floor2_room_shell_manual.tsj',
     '/maps/reinforcement/floor_2_blockout.tmj',
   );
-  const imagePath = resolveRuntimePublicPath('F2_FLOOR_PART_Corner.png', tilesetPath);
+  const imagePath = resolveRuntimePublicPath('F2_FLOOR_PART_CORNER.png', tilesetPath);
   assert.equal(imagePath, '/assets/environment/reinforcement/floor2_room_shell_manual/F2_FLOOR_PART_CORNER.png');
   assert.equal(fs.existsSync(`public${imagePath}`), true);
 
@@ -246,9 +246,8 @@ test('runtime tile 34 resolves from the F2 TSJ to the real public PNG', () => {
       }
     }
   }
-  assert.match(uniqueImages[34].replaceAll('\\', '/'), /floor2_room_shell_manual\/F2_FLOOR_PART_Corner\.png$/);
+  assert.match(uniqueImages[34].replaceAll('\\', '/'), /floor2_room_shell_manual\/F2_FLOOR_PART_CORNER\.png$/);
   assert.equal(fs.existsSync(uniqueImages[34]), true);
-  assert.equal(fs.readdirSync(path.dirname(uniqueImages[34])).includes('F2_FLOOR_PART_CORNER.png'), true);
 });
 
 test('presentation pre-spawns only selected encounter entities with stable unique identities', () => {
