@@ -50,6 +50,8 @@ export type TrainingSession = {
   rounds: RoundHistory[];
 };
 
+export type HiddenRoundSummary = { round: number; robotCount: number };
+
 export const OBSERVATION_ROUNDS = [1, 5, 10, 15, 20] as const;
 
 const createRobots = (environment: ActualMapEnvironment, round: ActualRound, seed: number): RobotRuntime[] =>
@@ -145,6 +147,12 @@ export class TrainingRuntimeController {
   get policyUpdateCount() { return this.committedUpdates; }
   get combatSkillUpdateCount() { return this.committedUpdates; }
   get currentRound() { return this.run.rounds[this.actualRound - 1]; }
+  get hiddenRoundsBeforeNextObservation(): HiddenRoundSummary[] {
+    const nextObservationRound = OBSERVATION_ROUNDS[this.observationOffset + 1];
+    if (!nextObservationRound) return [];
+    return this.run.rounds.slice(this.actualRound, nextObservationRound - 1)
+      .map(round => ({ round: round.round, robotCount: round.episodes.length }));
+  }
 
   selectMain(robotId: number) {
     if (!this.robots.some(robot => robot.robot === robotId)) throw new Error(`Robot ${robotId} is unavailable`);

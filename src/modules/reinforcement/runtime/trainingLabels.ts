@@ -173,21 +173,60 @@ const lastMeaningfulAction = (episode: ActualEpisode): ActionExperience | undefi
   return undefined;
 };
 
+const lastActionMatching = (episode: ActualEpisode, matches: (action: ActionExperience) => boolean): ActionExperience | undefined => {
+  for (let index = episode.actionHistory.length - 1; index >= 0; index--) if (matches(episode.actionHistory[index])) return episode.actionHistory[index];
+  return undefined;
+};
+
 export const failureReview = (episode: ActualEpisode) => {
-  const action = lastMeaningfulAction(episode);
+  const terminalAction = lastActionMatching(episode, action => action.immediateEvents.includes(episode.terminalReason))
+    ?? lastMeaningfulAction(episode);
+  const action = terminalAction;
   const floor = episode.actual.reachedFloors.at(-1) ?? 1;
-  const encounter = action ? trainingLabel(action.state) : undefined;
   const actionLabel = action ? trainingLabel(action.action) : undefined;
-  const encounterText = action?.state === 'OBSTACLE'
-    ? '장애물을 발견하고'
-    : action ? `${objectForm(encounter!)} 만나` : undefined;
-  const lead = action
-    ? `로봇 ${episode.robot}은 ${floor}층에서 ${encounterText}\n${actionLabel} 행동을 골랐어.`
-    : `로봇 ${episode.robot}은 ${floor}층에서 어려움을 겪었어.`;
+  const events = new Set(episode.eventHistory.map(event => event.type));
+  let title = '왜 어려웠을까?';
+  let sentences: string[];
+
+  if (episode.terminalReason === 'GOAL_REACHED') {
+    title = '어떻게 성공했을까?';
+    const progress: string[] = [];
+    if (events.has('BOSS_NEUTRALIZED')) progress.push('보스를 제압했고');
+    if (events.has('SECURITY_LOCK_OPEN')) progress.push('제어실로 가는 길을 열었고');
+    if (events.has('SYSTEM_RESTORED')) progress.push('시스템을 복구했어');
+    sentences = progress.length
+      ? [`로봇 ${episode.robot}은 ${progress.join(', ')}.`, '최종 목표에 도착해 임무를 성공했어.']
+      : [`로봇 ${episode.robot}은 실제 기록에 남은 목표를 모두 완료했어.`, '최종 목표에 도착해 임무를 성공했어.'];
+  } else if (episode.terminalReason === 'TIMEOUT') {
+    const actionCount = episode.actionHistory.filter(item => item.state !== 'ROUTE_CHOICE').length;
+    sentences = [
+      actionCount > 0
+        ? `로봇 ${episode.robot}은 이동과 ${actionCount}번의 행동을 거치며 시간이 계속 쌓였어.`
+        : `로봇 ${episode.robot}이 임무를 진행하는 동안 시간이 계속 쌓였어.`,
+      `${episode.elapsedTime}초에 제한 시간이 끝나 최종 목표까지 도착하지 못했어.`,
+    ];
+  } else if (episode.terminalReason === 'MISUNDERSTANDING') {
+    const mistake = lastActionMatching(episode, item => item.immediateEvents.includes('MISUNDERSTANDING')) ?? action;
+    const subject = mistake?.state === 'CITIZEN_NEARBY' ? '시민을 위험한 사람으로'
+      : mistake?.state === 'AMBIGUOUS_PERSON' ? '누구인지 확실하지 않은 사람을 잘못'
+        : '상황을 잘못';
+    const choice = mistake ? `${trainingLabel(mistake.action)}를 골랐어.` : '하면 안 되는 행동을 골랐어.';
+    sentences = [`로봇 ${episode.robot}은 ${subject} 판단해 ${choice}`, '잘못된 판단 때문에 임무를 계속할 수 없었어.'];
+  } else {
+    const damageAction = lastActionMatching(episode, item => item.immediateEvents.includes('ROBOT_DISABLED') || (item.robotDamageAfter ?? 0) >= 1) ?? action;
+    if (damageAction?.action === 'SUBDUE' && damageAction.localOutcome === 'SUBDUE_RECOVERY') {
+      sentences = [`로봇 ${episode.robot}은 악당을 제압하려고 했지만 공격에 실패하면서 피해를 입었어.`, '피해가 너무 많이 쌓여 결국 작동 불능이 되었어.'];
+    } else if (damageAction?.action === 'FORCE_PASS') {
+      sentences = [`로봇 ${episode.robot}은 강제로 돌파하려고 했지만 그 과정에서 피해를 입었어.`, '누적된 피해 때문에 결국 작동 불능이 되었어.'];
+    } else {
+      sentences = [damageAction ? `로봇 ${episode.robot}은 ${trainingLabel(damageAction.action)}를 시도하는 과정에서 피해를 입었어.` : `로봇 ${episode.robot}은 임무 중 피해가 쌓였어.`, '누적된 피해가 한계에 달해 작동 불능이 되었어.'];
+    }
+  }
   return {
+    title,
     floor,
     action: actionLabel,
     result: trainingLabel(episode.terminalReason),
-    text: `${lead}\n\n하지만 ${terminalReasonSentence(episode.terminalReason)}`,
+    text: sentences.join('\n'),
   };
 };
