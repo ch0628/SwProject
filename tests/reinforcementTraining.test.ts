@@ -54,6 +54,9 @@ test('training controller learns twenty rounds but presents only checkpoints 1/5
   assert.equal(controller.policyUpdateCount, 1);
   assert.equal(controller.history.rounds.length, 1);
   assert.equal(controller.history.rounds[0].robotResults.length, 5);
+  assert.deepEqual(controller.hiddenRoundsBeforeNextObservation, [
+    { round: 2, robotCount: 5 }, { round: 3, robotCount: 5 }, { round: 4, robotCount: 5 },
+  ]);
   controller.observeCommand(5, controller.robots[4].commands.at(-1)!);
   assert.equal(controller.policyUpdateCount, 1, 'duplicate terminal observation must not update twice');
 
@@ -61,6 +64,7 @@ test('training controller learns twenty rounds but presents only checkpoints 1/5
   assert.equal(controller.nextRound(), true);
   assert.equal(controller.roundIndex, 2);
   assert.equal(controller.actualRound, 5);
+  assert.deepEqual(controller.hiddenRoundsBeforeNextObservation.map(round => round.round), [6, 7, 8, 9]);
   assert.equal(controller.mainRobot, 1);
   assert.ok(controller.robots.every((robot, index) => robot !== firstRoundRobots[index] && robot.cursor === 0 && robot.floor === 1 && !robot.terminal));
 
@@ -142,6 +146,46 @@ test('training Korean labels and failure review use real episode data without ex
   assert.ok(!review.text.includes(episode.terminalReason));
 });
 
+test('last-scene review explains only causal facts present in the episode trace', () => {
+  const base = structuredClone(new TrainingRuntimeController(environment, weights, 31).robots[0].episode);
+  base.terminalReason = 'ROBOT_DISABLED';
+  base.goalReached = false;
+  base.robotDamage = 1;
+  base.actionHistory = [{
+    state: 'BOSS_ENCOUNTER', action: 'SUBDUE', location: 'F5_BOSS_L1', elapsedCost: 6,
+    immediateEvents: ['ROBOT_DISABLED'], localOutcome: 'SUBDUE_RECOVERY', localReturn: -1,
+    actionCredit: -1, robotDamageAfter: 1,
+  }];
+  base.eventHistory = [{ type: 'ROBOT_DISABLED', elapsedTime: 10, location: 'F5_BOSS_L1', causedBy: 'SUBDUE' }];
+  const disabled = failureReview(base);
+  assert.match(disabled.text, /제압[\s\S]*공격에 실패[\s\S]*피해[\s\S]*작동 불능/);
+  assert.doesNotMatch(disabled.text, /제어 시스템/);
+
+  const timeout = structuredClone(base);
+  timeout.terminalReason = 'TIMEOUT';
+  timeout.robotDamage = 0;
+  timeout.elapsedTime = 600;
+  timeout.actionHistory[0].immediateEvents = [];
+  timeout.eventHistory = [{ type: 'TIMEOUT', elapsedTime: 600, location: 'F5_SEARCH', causedBy: 'ENVIRONMENT' }];
+  const timedOut = failureReview(timeout);
+  assert.match(timedOut.text, /1번의 행동[\s\S]*600초[\s\S]*제한 시간/);
+  assert.doesNotMatch(timedOut.text, /피해가 너무 많이/);
+
+  const success = structuredClone(base);
+  success.terminalReason = 'GOAL_REACHED';
+  success.goalReached = true;
+  success.robotDamage = 0;
+  success.eventHistory = [
+    { type: 'BOSS_NEUTRALIZED', elapsedTime: 10, location: 'L1', causedBy: 'SUBDUE' },
+    { type: 'SYSTEM_RESTORED', elapsedTime: 20, location: 'F5_CONTROL_ROOM', causedBy: 'ENVIRONMENT' },
+    { type: 'GOAL_REACHED', elapsedTime: 21, location: 'F5_GOAL', causedBy: 'ENVIRONMENT' },
+  ];
+  const completed = failureReview(success);
+  assert.equal(completed.title, '어떻게 성공했을까?');
+  assert.match(completed.text, /보스를 제압[\s\S]*시스템을 복구[\s\S]*임무를 성공/);
+  assert.doesNotMatch(completed.text, /제어실로 가는 길을 열었/);
+});
+
 test('training production entry renders checkpoint Korean Ari result, review and final result UI without replacing debug entry', () => {
   const app = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementTrainingApp.tsx', 'utf8');
   const main = fs.readFileSync('src/main.tsx', 'utf8');
@@ -169,7 +213,7 @@ test('training production entry renders checkpoint Korean Ari result, review and
   assert.match(app, /rewardAdvice\(weights\)/);
   assert.match(app, /지금 하는 행동/);
   assert.match(ari, /ai-dialogue-panel/);
-  assert.match(app, /실패한 로봇을 눌러/);
+  assert.match(app, /마지막 장면 보기/);
   assert.match(app, /결과로 돌아가기/);
   assert.match(app, /다음 학습 시작/);
   assert.match(app, /최종 결과 보기/);

@@ -796,7 +796,9 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
     if (!this.reducedMotion()) {
       this.cameras.main.flash(140 / this.eventPlaybackSpeed, 255, 218, 150, false);
       const sprite = boss ? this.entities.get(boss.id) : undefined;
-      if (sprite) this.tweens.add({ targets: sprite, alpha: { from: 0.25, to: 1 }, scaleX: sprite.scaleX * 1.06, scaleY: sprite.scaleY * 1.06, duration: 360 / this.eventPlaybackSpeed, yoyo: true });
+      if (sprite) {
+        this.tweens.add({ targets: sprite, scaleX: sprite.scaleX * 1.06, scaleY: sprite.scaleY * 1.06, duration: 360 / this.eventPlaybackSpeed, yoyo: true });
+      }
     }
     await this.showWorldCallout('보스를 찾았어!', point, 0xc9685d, this.reducedMotion() ? 220 : 900);
   }
@@ -1023,7 +1025,8 @@ export class ReinforcementRuntimeScene extends Phaser.Scene {
         body.setTint(entity.visualState === 'CLEARED' ? 0xffb067 : 0xffffff);
         body.refreshBody();
       } else if (entity.kind === 'BOSS') {
-        sprite.setTexture(entity.visualState === 'NEUTRALIZED' ? 'runtime-boss-neutralized' : 'runtime-boss-DOWN');
+        if (entity.visualState === 'NEUTRALIZED') sprite.setTexture('runtime-boss-neutralized');
+        else sprite.setTexture('runtime-boss-DOWN').setAlpha(1).clearTint();
         this.scaleSprite(sprite, RUNTIME_VISUAL_CONFIG.bossDisplayHeight);
       } else if (entity.kind === 'VILLAIN' || entity.kind === 'GUARD') {
         const suffix = entity.visualState === 'NEUTRALIZED' ? 'neutralized' : 'DOWN';

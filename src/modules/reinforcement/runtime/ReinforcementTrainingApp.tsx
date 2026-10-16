@@ -13,7 +13,7 @@ import type { ActualEpisode } from '../sim/actualMapSimulation.ts';
 import { ACTUAL_MAP_FILES, buildActualMapEnvironment } from '../sim/actualMapEnvironment.ts';
 import type { TiledMapJson } from '../debug/floor1Tiled.ts';
 import { ReinforcementRuntimeScene } from './ReinforcementRuntimeScene.ts';
-import { OBSERVATION_ROUNDS, TrainingRuntimeController, type RobotRuntime, type RoundHistory } from './runtimeController.ts';
+import { OBSERVATION_ROUNDS, TrainingRuntimeController, type HiddenRoundSummary, type RobotRuntime, type RoundHistory } from './runtimeController.ts';
 import type { RuntimeCommand } from './runtimeCommands.ts';
 import { failureReview, REWARD_LABELS, rewardAdvice, trainingComparisonMessage, trainingLabel, WEIGHT_LEVEL_LABELS } from './trainingLabels.ts';
 
@@ -21,6 +21,8 @@ type Phase = 'TUTORIAL' | 'SETTING' | 'PREPARING' | 'RUNTIME' | 'RESULT' | 'COMP
   | 'HEADLESS_LEARNING' | 'ACTUAL_PREPARING' | 'ACTUAL_RUNTIME' | 'ACTUAL_RESULT';
 type RuntimeStatus = { floor: number; trace: string; simulationTime: number; command?: RuntimeCommand };
 type TutorialTarget = 'start' | 'rewards' | 'runtime' | 'action' | 'results' | 'failure' | 'actual';
+type HiddenStage = 'RUNNING' | 'COLLECTED' | 'UPDATED';
+type HiddenProgress = { current: number; stage: HiddenStage; completed: number[]; rounds: HiddenRoundSummary[]; from: number; next: number; waiting: boolean };
 
 const WEIGHT_FIELDS = (Object.keys(REWARD_LABELS) as Array<keyof RewardStars>).map(key => ({ key, label: REWARD_LABELS[key] }));
 const COMPARED_ACTIONS = ['SUBDUE', 'DISTRACT', 'FORCE_PASS', 'PUSH', 'CLEAR', 'DETOUR'] as const;
@@ -164,36 +166,68 @@ function RuntimeSidebar({ robot, completed, total }: { robot: RobotRuntime; comp
   </aside>;
 }
 
+function HiddenLearningScreen({ progress, onNext }: { progress: HiddenProgress; onNext: () => void }) {
+  const stageText: Record<HiddenStage, string> = {
+    RUNNING: `${progress.current}번째 학습에서 로봇 5대가 도전 중이에요.`,
+    COLLECTED: `${progress.current}번째 학습에서 5대의 경험 수집을 완료했어요.`,
+    UPDATED: `${progress.current}번째 학습의 행동 기준 업데이트를 완료했어요.`,
+  };
+  return <main className="reinforcement-training hidden-learning-screen noto-font"><section className="hidden-learning-card" role="status" aria-live="polite">
+    <div className="learning-illustration" aria-hidden="true"><span>✓</span><span>✕</span><i>→</i><b>🤖</b></div>
+    <p className="training-kicker">보이지 않는 학습 진행 중</p><h1>지금은 {progress.current}번째 학습을 진행하고 있어요.</h1>
+    <p>{stageText[progress.stage]}</p>
+    <ol className="hidden-round-list">
+      <li className="is-complete"><b>{progress.from}번째</b><span>관찰 완료 ✓</span></li>
+      {progress.rounds.map(round => {
+        const completed = progress.completed.includes(round.round) || round.round < progress.current;
+        const current = round.round === progress.current;
+        const status = completed ? '학습 완료 ✓'
+          : current && progress.stage === 'COLLECTED' ? `${round.robotCount}대의 경험 수집 완료`
+            : current && progress.stage === 'UPDATED' ? '행동 기준 업데이트 완료'
+              : current ? `${round.robotCount}대 도전 중` : '대기';
+        return <li className={completed ? 'is-complete' : current ? 'is-current' : ''} key={round.round}><b>{round.round}번째</b><span>{status}</span></li>;
+      })}
+      <li className="is-next"><b>{progress.next}번째</b><span>다음 관찰</span></li>
+    </ol>
+    <AriDialogue inline text="지금 화면에는 보이지 않지만 로봇들은 계속 도전하고 있어! 5대가 한 번씩 도전한 결과를 모아서 다음 행동 기준을 다시 배우는 중이야." expression="happy"
+      onNext={progress.waiting ? onNext : undefined} nextLabel="다음" />
+  </section></main>;
+}
+
 function RoundResult({ controller, reviewRobot, onReview, onBack, onContinue }: {
   controller: TrainingRuntimeController; reviewRobot: number | null; onReview: (robot: number) => void;
   onBack: () => void; onContinue: () => void;
 }) {
   const successes = controller.robots.map(robot => robot.episode).filter(episode => episode.terminalReason === 'GOAL_REACHED');
   const failures = controller.robots.map(robot => robot.episode).filter(episode => episode.terminalReason !== 'GOAL_REACHED');
-  if (reviewRobot) {
+  if (reviewRobot !== null) {
     const episode = controller.robots.find(robot => robot.robot === reviewRobot)!.episode;
     const review = failureReview(episode);
-    return <section className="round-result round-result-review"><AriDialogue text={`왜 어려웠을까?\n${review.text}`} expression="disappointed" onNext={onBack} nextLabel="결과로 돌아가기">
+    const succeeded = episode.terminalReason === 'GOAL_REACHED';
+    return <aside className="round-result round-result-review" aria-label={`로봇 ${reviewRobot} 마지막 장면 설명`}>
+      <AriDialogue inline text={review.text} expression={succeeded ? 'happy' : 'disappointed'} />
+      <h2>{review.title}</h2>
       <div className="failure-review-facts"><span><small>마지막 위치</small><strong>{review.floor}층</strong></span>
         {review.action && <span><small>마지막 행동</small><strong>{review.action}</strong></span>}
         <span><small>결과</small><strong>{review.result}</strong></span></div>
-    </AriDialogue></section>;
+      <button className="review-back" type="button" onClick={onBack}>결과로 돌아가기</button>
+    </aside>;
   }
   const successLine = successes.length ? `임무를 완수한 로봇은 ${robotNames(successes)}야.` : '이번에는 임무를 완수한 로봇이 없었어.';
   const failureLine = failures.length ? `아쉬웠던 로봇은 ${robotNames(failures)}야.` : '실패한 로봇은 없어!';
-  return <section className="round-result round-result-summary"><AriDialogue
-    text={`${controller.observationIndex}번째 관찰이 끝났어! ${controller.actualRound}번째 학습에서 로봇 5대가 도전했어.\n${successLine}\n${failureLine}`}
-    expression={failures.length ? 'neutral' : 'happy'} onNext={onContinue}
-    nextLabel={controller.trainingComplete ? '최종 결과 보기' : '다음 학습 시작'}>
-    <div className="round-robot-results" aria-label="로봇별 학습 결과">{controller.robots.map(robot => {
+  return <section className="round-result round-result-summary"><div className="round-result-layout">
+    <section className="round-result-explanation"><AriDialogue inline
+      text={`${controller.observationIndex}번째 관찰이 끝났어! ${controller.actualRound}번째 학습에서 로봇 5대가 도전했어.\n${successLine}\n${failureLine}`}
+      expression={failures.length ? 'neutral' : 'happy'} />
+      <p className="learning-explanation">성공한 경험과 실패한 경험을 모두 모았어. AI는 이 경험으로 다음 행동 기준을 다시 배워!</p>
+    </section>
+    <aside className="round-result-robots"><h2>로봇별 결과</h2><div className="round-robot-results" aria-label="로봇별 학습 결과">{controller.robots.map(robot => {
       const succeeded = robot.episode.terminalReason === 'GOAL_REACHED';
       const content = <><strong>로봇 {robot.robot}</strong><span>{succeeded ? '✓ 임무 성공' : `✕ ${trainingLabel(robot.episode.terminalReason)}`}</span></>;
-      return succeeded ? <div className="is-success" key={robot.robot}>{content}</div>
-        : <button className="is-failure" type="button" key={robot.robot} onClick={() => onReview(robot.robot)}>{content}<small>마지막 장면 보기</small></button>;
-    })}</div>
-    {failures.length > 0 && <p className="review-hint">실패한 로봇을 눌러 어디에서 어려움을 겪었는지 볼 수 있어.</p>}
-    <p className="learning-explanation">성공한 경험과 실패한 경험을 모두 모았어. AI는 이 경험으로 다음 행동을 다시 배울 거야!</p>
-  </AriDialogue></section>;
+      return <button className={succeeded ? 'is-success' : 'is-failure'} type="button" key={robot.robot} onClick={() => onReview(robot.robot)}>{content}<small>마지막 장면 보기</small></button>;
+    })}</div></aside>
+    <button className="round-result-cta training-start" type="button" onClick={onContinue}>{controller.trainingComplete ? '최종 결과 보기' : '다음 학습 시작'}</button>
+  </div></section>;
 }
 
 function TrainingResult({ controller, onActual, onRestart, onHome }: {
@@ -249,16 +283,38 @@ export function ReinforcementTrainingApp() {
   const [readyRobots, setReadyRobots] = useState<number[]>([]);
   const [actualRobot, setActualRobot] = useState<RobotRuntime | null>(null);
   const [actualReady, setActualReady] = useState(false);
+  const [hiddenProgress, setHiddenProgress] = useState<HiddenProgress | null>(null);
   const controllerRef = useRef<TrainingRuntimeController | null>(null);
+  const hiddenSequenceRef = useRef(0);
+  const hiddenAdvanceRef = useRef<(() => void) | null>(null);
   const initialSeed = Number(new URLSearchParams(window.location.search).get('seed')) || 42;
   const controller = controllerRef.current;
   const usedStars = WEIGHT_FIELDS.reduce((sum, field) => sum + weights[field.key], 0);
   const validStarBudget = usedStars === REWARD_STAR_TOTAL;
 
+  const advanceHiddenLearning = () => {
+    const advance = hiddenAdvanceRef.current;
+    if (!advance) return;
+    hiddenAdvanceRef.current = null;
+    setHiddenProgress(current => current ? { ...current, waiting: false } : current);
+    advance();
+  };
+
   useEffect(() => {
     if (phase === 'PREPARING' && !error && readyRobots.length === 5) setPhase('RUNTIME');
     if (phase === 'ACTUAL_PREPARING' && !error && actualReady) setPhase('ACTUAL_RUNTIME');
   }, [actualReady, error, phase, readyRobots.length]);
+
+  useEffect(() => {
+    if (phase !== 'HEADLESS_LEARNING') return;
+    const onSpace = (event: KeyboardEvent) => {
+      if (event.code !== 'Space' || event.repeat || !hiddenAdvanceRef.current) return;
+      event.preventDefault();
+      advanceHiddenLearning();
+    };
+    window.addEventListener('keydown', onSpace);
+    return () => window.removeEventListener('keydown', onSpace);
+  }, [phase]);
 
   const startTraining = async () => {
     if (phase !== 'SETTING') return;
@@ -291,13 +347,57 @@ export function ReinforcementTrainingApp() {
     if (!active) return;
     if (active.trainingComplete) { setReviewRobot(null); setPhase('COMPLETE'); return; }
     setReviewRobot(null); setReadyRobots([]); setError(''); setPhase('HEADLESS_LEARNING');
-    const startedAt = performance.now();
-    const finishHiddenLearning = (now: number) => {
-      if (controllerRef.current !== active) return;
-      if (now - startedAt < 900) { requestAnimationFrame(finishHiddenLearning); return; }
-      active.nextRound(); setVersion(value => value + 1); setPhase('PREPARING');
+    hiddenAdvanceRef.current = null;
+    const rounds = active.hiddenRoundsBeforeNextObservation;
+    const nextObservation = OBSERVATION_ROUNDS[active.observationIndex];
+    const sequence = ++hiddenSequenceRef.current;
+    if (!rounds.length || !nextObservation) {
+      active.nextRound(); setVersion(value => value + 1); setPhase('PREPARING'); return;
+    }
+    const present = (roundIndex: number, stage: HiddenStage, completed: number[], waiting = false) => {
+      setHiddenProgress({ current: rounds[roundIndex].round, stage, completed, rounds, from: active.actualRound, next: nextObservation, waiting });
     };
-    requestAnimationFrame(() => requestAnimationFrame(finishHiddenLearning));
+    const hold = (done: () => void) => {
+      const startedAt = performance.now();
+      const frame = (now: number) => {
+        if (hiddenSequenceRef.current !== sequence || controllerRef.current !== active) return;
+        if (now - startedAt < 3000) { requestAnimationFrame(frame); return; }
+        done();
+      };
+      requestAnimationFrame(frame);
+    };
+    const finish = () => {
+      active.nextRound(); setHiddenProgress(null); setVersion(value => value + 1); setPhase('PREPARING');
+    };
+    const waitForInput = (roundIndex: number, stage: HiddenStage, completed: number[], next: () => void) => {
+      present(roundIndex, stage, completed, true);
+      hiddenAdvanceRef.current = () => {
+        if (hiddenSequenceRef.current !== sequence || controllerRef.current !== active) return;
+        next();
+      };
+    };
+    const showAutomaticRound = (roundIndex: number, completed: number[]) => {
+      const round = rounds[roundIndex];
+      if (!round) return;
+      present(roundIndex, 'RUNNING', completed);
+      hold(() => {
+        present(roundIndex, 'COLLECTED', completed);
+        hold(() => {
+          if (roundIndex === rounds.length - 1) waitForInput(roundIndex, 'UPDATED', completed, finish);
+          else {
+            present(roundIndex, 'UPDATED', completed);
+            hold(() => showAutomaticRound(roundIndex + 1, [...completed, round.round]));
+          }
+        });
+      });
+    };
+    waitForInput(0, 'RUNNING', [], () => {
+      present(0, 'COLLECTED', []);
+      hold(() => waitForInput(0, 'UPDATED', [], () => {
+        if (rounds.length === 1) finish();
+        else showAutomaticRound(1, [rounds[0].round]);
+      }));
+    });
   };
   const startActualMission = () => {
     const active = controllerRef.current;
@@ -311,8 +411,10 @@ export function ReinforcementTrainingApp() {
     if (actualRobot.terminal) setPhase('ACTUAL_RESULT');
   };
   const restart = () => {
+    hiddenSequenceRef.current++;
+    hiddenAdvanceRef.current = null;
     controllerRef.current = null; setMaps([]); setError(''); setReviewRobot(null); setReadyRobots([]);
-    setActualRobot(null); setActualReady(false); setVersion(value => value + 1); setPhase('SETTING');
+    setActualRobot(null); setActualReady(false); setHiddenProgress(null); setVersion(value => value + 1); setPhase('SETTING');
   };
 
   if (phase === 'TUTORIAL') return <TutorialPreview step={tutorialStep} onNext={() => {
@@ -337,13 +439,7 @@ export function ReinforcementTrainingApp() {
   </div></main>;
 
   if (!controller) return <main className="reinforcement-training noto-font"><PreparationScreen ready={0} error={error} onBack={restart} /></main>;
-  if (phase === 'HEADLESS_LEARNING') return <main className="reinforcement-training hidden-learning-screen noto-font"><section className="hidden-learning-card" role="status" aria-live="polite">
-    <div className="learning-illustration" aria-hidden="true"><span>✓</span><span>✕</span><i>→</i><b>🤖</b></div>
-    <p className="training-kicker">경험 정리 중</p><h1>로봇들이 경험을 정리하고 있어요...</h1>
-    <p>성공과 실패를 함께 비교해 다음 행동을 다시 배워요.</p>
-    <strong>다음 관찰: {OBSERVATION_ROUNDS[controller.observationIndex]}번째 학습</strong>
-    <AriDialogue inline text="실패도 중요한 경험이야. 로봇이 다음에는 어떤 행동을 고를지 새로 정리하고 있어!" expression="happy" />
-  </section></main>;
+  if (phase === 'HEADLESS_LEARNING' && hiddenProgress) return <HiddenLearningScreen progress={hiddenProgress} onNext={advanceHiddenLearning} />;
   if (phase === 'COMPLETE') return <TrainingResult controller={controller} onActual={startActualMission} onRestart={restart} onHome={() => window.location.assign('/')} />;
 
   if (actualRobot && ['ACTUAL_PREPARING', 'ACTUAL_RUNTIME', 'ACTUAL_RESULT'].includes(phase)) return <main className="reinforcement-training actual-mission-screen noto-font" data-version={version}>
@@ -359,7 +455,7 @@ export function ReinforcementTrainingApp() {
 
   const mainRobot = controller.robots.find(robot => robot.robot === controller.mainRobot)!;
   const completed = controller.robots.filter(robot => robot.terminal).length;
-  return <main className="reinforcement-training runtime-screen noto-font" data-version={version}>
+  return <main className={`reinforcement-training runtime-screen noto-font ${phase === 'RESULT' && reviewRobot !== null ? 'is-reviewing' : ''}`} data-version={version}>
     <TrainingProgress observationIndex={controller.observationIndex} actualRound={controller.actualRound} />
     <section className="runtime-workspace"><section className="training-runtime-grid" aria-label="로봇 5대의 학습 화면">{controller.robots.map(robot => <RuntimeView key={robot.robot}
       maps={maps} robot={robot} instanceKey={`round-${controller.actualRound}-robot-${robot.robot}`}

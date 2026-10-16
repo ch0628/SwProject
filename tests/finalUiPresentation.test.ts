@@ -31,8 +31,24 @@ test('C/D/E: checkpoint and observation UI is explicit and hidden learning has n
   assert.match(app, /observationIndex}\ubc88\uc9f8 \uad00\ucc30/);
   assert.match(app, /\uad00\ucc30 \$\{observationIndex\} \/ \$\{OBSERVATION_ROUNDS\.length\}/);
   const hidden = app.slice(app.indexOf("phase === 'HEADLESS_LEARNING'"), app.indexOf("phase === 'COMPLETE'"));
-  assert.match(hidden, /다음 관찰:/);
+  assert.match(app, /hiddenRoundsBeforeNextObservation/);
+  assert.match(app, /5대의 경험 수집을 완료/);
+  assert.match(app, /행동 기준 업데이트를 완료/);
+  assert.match(app, /now - startedAt < 3000/);
+  assert.match(app, /event\.code !== 'Space' \|\| event\.repeat \|\| !hiddenAdvanceRef\.current/);
+  assert.match(app, /onNext=\{progress\.waiting \? onNext : undefined\}/);
+  assert.match(app, /roundIndex === rounds\.length - 1\) waitForInput/);
   assert.doesNotMatch(hidden, /RuntimeView|Phaser/);
+});
+
+test('result and last-scene review keep the completed runtime mounted beside a causal sidebar', () => {
+  const result = app.slice(app.indexOf('function RoundResult'), app.indexOf('function TrainingResult'));
+  assert.match(result, /round-result-layout/);
+  assert.match(result, /round-result-explanation[\s\S]*round-result-robots/);
+  assert.match(result, /마지막 장면 보기/);
+  assert.match(result, /failureReview\(episode\)/);
+  assert.doesNotMatch(result, /<RuntimeView/);
+  assert.match(app, /is-reviewing/);
 });
 
 test('F/I: Boss action contract has no retreat and current action text never exposes raw enums', () => {
@@ -73,4 +89,11 @@ test('presentation polish is visual-only and covers encounter, impact, recovery,
   assert.match(scene, /제어실로 가는 길이 열렸어요/);
   assert.match(scene, /제어 시스템 복구 완료/);
   assert.doesNotMatch(scene, /simulationTime\s*[+\-*/]?=/);
+});
+
+test('living Boss reveal stays fully opaque while only its scale yoyos', () => {
+  const reveal = scene.slice(scene.indexOf('private async animateBossReveal'), scene.indexOf('private async animateSubdueAttempt'));
+  assert.match(reveal, /scaleX:[\s\S]*scaleY:[\s\S]*yoyo: true/);
+  assert.doesNotMatch(reveal, /alpha:|setAlpha/);
+  assert.match(scene, /else sprite\.setTexture\('runtime-boss-DOWN'\)\.setAlpha\(1\)\.clearTint\(\)/);
 });
