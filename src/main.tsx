@@ -27,7 +27,9 @@ import { ReinforcementRuntimeDebugApp } from './modules/reinforcement/runtime/Re
 import { ReinforcementTrainingApp } from './modules/reinforcement/runtime/ReinforcementTrainingApp';
 import { ReinforcementFloor5DebugApp } from './modules/reinforcement/debug/ReinforcementFloor5DebugApp';
 import { ReinforcementBuildingDebugApp } from './modules/reinforcement/debug/ReinforcementBuildingDebugApp';
-import worldBackground from '../assets/background/world_background.png';
+import mainImage from '../assets/main_image.png';
+import mainSecondImage from '../assets/main_second_image.png';
+import mainMachineImage from '../assets/main_machine.png';
 import fairyImg from '../assets/ai/fairy.png';
 import centralAiCoreImg from '../assets/ai/central_ai_core.png';
 const EMPTY_MANUAL_STATE: ManualLabelingState = { cctvs: [], selectedCctv: null, visibleCharacterIds: [], selectedCharacter: null, manualLabeledDistinctCount: 0, verifiedTrainingSampleCount: 0, trainingReady: false };
@@ -712,18 +714,78 @@ function App() {
   </main>;
 }
 
+const DEFAULT_ARI_MESSAGE = '가고 싶은 구역을 선택해 주세요!';
+const LOCKED_AREAS = [
+  ['nlp', '자연어처리', '말과 글의 뜻을 연구하는 구역이에요. 지금은 그곳으로 가는 길이 아직 열리지 않았어요.', 'M870 363 L902 318 L955 278 L1032 246 L1122 242 L1190 277 L1227 325 L1251 369 L1230 421 L1184 450 L1134 461 L1110 488 L1024 492 L969 467 L904 479 L868 445 Z'],
+  ['deep-learning', '딥러닝', '복잡한 학습의 비밀을 연구하는 시설이에요. 지금은 그곳으로 가는 길이 아직 열리지 않았어요.', 'M645 560 L675 518 L721 482 L779 476 L835 493 L888 470 L945 497 L965 548 L1016 578 L1011 631 L970 662 L931 698 L861 713 L795 699 L734 719 L679 692 L646 647 L620 610 Z'],
+  ['computer-vision', '컴퓨터비전', '도시를 보고 이해하는 기술을 연구하는 구역이에요. 지금은 그곳으로 가는 길이 아직 열리지 않았어요.', 'M1178 456 L1204 420 L1260 383 L1334 378 L1406 402 L1451 434 L1484 468 L1511 518 L1542 564 L1524 614 L1471 638 L1419 628 L1371 610 L1309 621 L1245 599 L1195 563 L1174 512 Z'],
+  ['generative-ai', '생성형 AI', '새로운 그림과 이야기를 만들어 내는 구역이에요. 지금은 그곳으로 가는 길이 아직 열리지 않았어요.', 'M1280 690 L1315 643 L1373 605 L1452 598 L1518 621 L1557 651 L1612 663 L1651 707 L1672 721 L1672 845 L1625 852 L1571 839 L1517 860 L1448 852 L1399 824 L1347 825 L1297 786 L1274 739 Z'],
+] as const;
+
+function StageSelect() {
+  const [ariMessage, setAriMessage] = useState(DEFAULT_ARI_MESSAGE);
+  return <main className="map-screen stage-select" aria-label="AI 분야 선택">
+    <img src={mainSecondImage} alt="AI 마을 스테이지 지도" />
+    <svg className="map-hotspots" viewBox="0 0 1672 940" aria-label="AI 분야 선택 구역">
+      <a className="active-svg-hotspot" href="/?mode=ai-basics" aria-label="인공지능 AI 구역">
+        <path d="M0 245 L44 245 L45 206 L90 181 L157 160 L249 159 L303 175 L333 229 L370 276 L419 292 L410 350 L362 385 L307 404 L277 439 L177 443 L141 420 L61 429 L0 400 Z" />
+      </a>
+      <a className="active-svg-hotspot" href="/?mode=ml" aria-label="머신러닝 구역">
+        <path d="M400 338 L428 303 L481 276 L554 262 L631 278 L681 324 L700 383 L688 443 L714 479 L690 522 L638 547 L569 542 L527 516 L470 527 L420 486 L399 431 Z" />
+      </a>
+      {LOCKED_AREAS.map(([area, label, message, path]) => <path
+        key={area}
+        d={path}
+        className="locked-svg-hotspot"
+        role="button"
+        tabIndex={0}
+        aria-label={`${label}, 아직 길이 열리지 않은 구역`}
+        aria-disabled="true"
+        onMouseEnter={() => setAriMessage(message)}
+        onMouseLeave={() => setAriMessage(DEFAULT_ARI_MESSAGE)}
+        onFocus={() => setAriMessage(message)}
+        onBlur={() => setAriMessage(DEFAULT_ARI_MESSAGE)}
+        onClick={() => setAriMessage(message)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            setAriMessage(message);
+          }
+        }}
+      />)}
+    </svg>
+    <p className="stage-ari-message" aria-live="polite">{ariMessage}</p>
+  </main>;
+}
+
+function MachineLearningMap() {
+  return <main className="map-screen machine-map" aria-label="머신러닝 학습 방식 선택">
+    <img src={mainMachineImage} alt="머신러닝 학습 방식 지도" />
+    <svg className="map-hotspots" viewBox="0 0 1672 941" aria-label="머신러닝 학습 방식 구역">
+      <a className="active-svg-hotspot" href="/?mode=supervised" aria-label="지도학습">
+        <path d="M85 253 L132 213 L212 186 L268 125 L344 98 L426 111 L488 92 L571 106 L635 139 L711 168 L770 214 L839 245 L884 294 L884 352 L846 397 L769 419 L685 426 L612 409 L541 432 L449 423 L383 400 L292 421 L211 400 L123 381 L72 339 Z" />
+      </a>
+      <a className="active-svg-hotspot" href="/?mode=unsupervised" aria-label="비지도학습">
+        <path d="M0 507 L71 467 L146 444 L220 451 L284 426 L359 435 L416 464 L474 452 L540 475 L596 519 L667 548 L717 597 L724 663 L697 720 L644 759 L579 773 L510 805 L432 795 L370 768 L296 783 L224 758 L159 772 L91 742 L36 699 L0 646 Z" />
+      </a>
+      <a className="active-svg-hotspot" href="/?mode=reinforcement-training" aria-label="강화학습">
+        <path d="M871 349 L918 305 L996 283 L1055 244 L1135 249 L1202 279 L1267 269 L1335 291 L1403 318 L1470 337 L1524 380 L1592 404 L1648 450 L1672 499 L1672 646 L1636 690 L1575 709 L1502 696 L1438 721 L1362 706 L1295 672 L1233 681 L1164 650 L1101 622 L1043 587 L992 548 L938 515 L902 466 L875 414 Z" />
+      </a>
+    </svg>
+  </main>;
+}
+
 function Hub() {
-  return <main className="hub" aria-label="첫 화면">
-    <img src={worldBackground} alt="" />
-    <button type="button" className="hub-hotspot hub-ai-basics" aria-label="AI가 무엇인지 이해하기" onClick={() => window.location.assign('/?mode=ai-basics')} />
-    <button type="button" className="hub-hotspot hub-supervised" aria-label="지도학습" onClick={() => window.location.assign('/?mode=supervised')} />
-    <button type="button" className="hub-hotspot hub-unsupervised" aria-label="비지도학습" onClick={() => window.location.assign('/?mode=unsupervised')}>비지도학습</button>
-    <button type="button" className="hub-hotspot hub-reinforcement" aria-label="강화학습" onClick={() => window.location.assign('/?mode=reinforcement-training')}>강화학습</button>
+  const [started, setStarted] = useState(false);
+  if (started) return <StageSelect />;
+  return <main className="map-screen entry-map" aria-label="첫 화면">
+    <img src={mainImage} alt="AI 탐험대: 고장 난 마을을 구하라" />
+    <button type="button" className="map-hotspot start-hotspot" aria-label="탐험 시작하기" onClick={() => setStarted(true)} />
   </main>;
 }
 
 const entryParams = new URLSearchParams(window.location.search);
 const mode = entryParams.get('mode');
 createRoot(document.getElementById('root')!).render(
-  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'supervised' ? <App /> : mode === 'unsupervised' ? <UnsupervisedApp /> : mode === 'reinforcement-training' ? <ReinforcementTrainingApp /> : mode === 'reinforcement-runtime-debug' ? <ReinforcementRuntimeDebugApp /> : mode === 'reinforcement-building-debug' ? <ReinforcementBuildingDebugApp /> : mode === 'reinforcement-floor1-debug' ? <ReinforcementFloor1DebugApp /> : mode === 'reinforcement-floor2-debug' ? <ReinforcementFloor2DebugApp /> : mode === 'reinforcement-floor3-debug' ? <ReinforcementFloor3DebugApp /> : mode === 'reinforcement-floor4-debug' ? <ReinforcementFloor4DebugApp /> : mode === 'reinforcement-floor5-debug' ? <ReinforcementFloor5DebugApp /> : <Hub />,
+  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'ml' ? <MachineLearningMap /> : mode === 'supervised' ? <App /> : mode === 'unsupervised' ? <UnsupervisedApp /> : mode === 'reinforcement-training' ? <ReinforcementTrainingApp /> : mode === 'reinforcement-runtime-debug' ? <ReinforcementRuntimeDebugApp /> : mode === 'reinforcement-building-debug' ? <ReinforcementBuildingDebugApp /> : mode === 'reinforcement-floor1-debug' ? <ReinforcementFloor1DebugApp /> : mode === 'reinforcement-floor2-debug' ? <ReinforcementFloor2DebugApp /> : mode === 'reinforcement-floor3-debug' ? <ReinforcementFloor3DebugApp /> : mode === 'reinforcement-floor4-debug' ? <ReinforcementFloor4DebugApp /> : mode === 'reinforcement-floor5-debug' ? <ReinforcementFloor5DebugApp /> : <Hub />,
 );
