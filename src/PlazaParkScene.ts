@@ -14,6 +14,7 @@ import { CHARACTER_POOL, type BehaviorHistoryEntry, type CharacterId, type Chara
 import { createRound1Group, DEFAULT_ROUND1_CONFIG, round1TrainingState, stepRound1Group, verifyRoundTrainingSample, type Round1Group } from './plazaRound1';
 import { applyRound2ToGroup, getPostRetrainingPrediction, MONITORING_TARGET_IDS, prepareMonitoringTargets, ROUND2_COMPARISON_PLAN, round2TargetStatus, round2TrainingState, submitRound2Comparison, verifyMonitoringTarget } from './plazaRound2';
 import { labelAndVerifyRound1Sample } from './supervisedGameFlow';
+import { npcOutlineStyle } from './npcOutline';
 
 export class PlazaParkScene extends Phaser.Scene {
   private mapData!: GrayboxMap;
@@ -232,14 +233,16 @@ export class PlazaParkScene extends Phaser.Scene {
       const animated=characterWalkAnimationKey(id,species,gender,'down')!==null;
       const sprite=(animated?this.add.sprite(0,0,texture):this.add.image(0,0,texture)).setOrigin(.5,1);
       sprite.setScale(visualHeight[species]/sprite.height);
+      if(this.game.renderer.type===Phaser.WEBGL)sprite.enableFilters();
+      const outlineGlow=this.game.renderer.type===Phaser.WEBGL
+        ? sprite.filters!.internal.addGlow(0xffffff,3.5,0,1,false,6,8)
+        : null;
+      if(outlineGlow){outlineGlow.setPaddingOverride(null);outlineGlow.active=false;}
       const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.phase}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
       const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
-      const badgeStyle={fontFamily:'system-ui, sans-serif',fontSize:'20px',fontStyle:'bold',color:'#fff',stroke:'#142027',strokeThickness:3,padding:{x:6,y:4}};
-      const labelMarker=this.add.text(0,-visualHeight[species]-16,'',badgeStyle).setOrigin(.5,1).setVisible(false);
-      const phaseMarker=this.add.text(0,-visualHeight[species]-16,'',{...badgeStyle, fontSize:'22px'}).setOrigin(.5,1).setVisible(false);
-      const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,labelMarker,phaseMarker]);
+      const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing]);
       (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;(container as any).facing='down' as Facing;(container as any).visualHeight=visualHeight[species];(container as any).animated=animated;
-      (container as any).debugText=label;(container as any).selectionRing=selectionRing;(container as any).labelMarker=labelMarker;(container as any).phaseMarker=phaseMarker;
+      (container as any).debugText=label;(container as any).selectionRing=selectionRing;(container as any).outlineGlow=outlineGlow;
       this.supervisedSprites.push(container);
     }
     this.routeDebug.clear();
@@ -383,38 +386,24 @@ export class PlazaParkScene extends Phaser.Scene {
       const container=this.supervisedSprites[index],isVisible=visible.includes(npc);
       container.setVisible(isVisible);
       (container as any).selectionRing?.setVisible(isVisible&&npc.definition.id===this.selectedCharacterId);
-      const marker=(container as any).labelMarker as Phaser.GameObjects.Text|undefined;
-      const phaseMarker=(container as any).phaseMarker as Phaser.GameObjects.Text|undefined;
       const label=npc.character.labels.userLabel;
       const aiLabel=npc.character.labels.aiLabel;
-      
-      // Round 1 uses one compact user badge. Round 2 reserves this slot for AI/target state.
-      marker?.setText(label==='CITIZEN'?'✓':label==='VILLAIN'?'✕':'').setVisible(isVisible&&this.currentRound===1&&label!==null)
-        .setColor('#fff').setStroke('#142027',3).setBackgroundColor(label==='CITIZEN'?'#2e7d32':'#c62828');
-        
-      // Phase Marker (?, !, AI label)
-      if (isVisible) {
-        if (isMonitoring) {
-          const isTarget = MONITORING_TARGET_IDS.includes(npc.definition.id as typeof MONITORING_TARGET_IDS[number]);
-          const aiText = aiLabel==='CITIZEN'?'AI✓':'AI✕';
-          const bgColor = aiLabel==='CITIZEN'?'#00838f':'#c2185b';
-          phaseMarker?.setText(isTarget ? `!` : aiText).setVisible(true).setColor('#fff')
-            .setStroke(isTarget?'#4a148c':'#142027',isTarget?3:3).setBackgroundColor(isTarget ? '#aa00ff' : bgColor);
-        } else if (this.currentRound === 2) {
-          const isCompareTarget = ROUND2_COMPARISON_PLAN.some(e => e.characterId === npc.definition.id);
-          if (isCompareTarget && aiLabel === null) {
-            phaseMarker?.setText('?').setVisible(true).setColor('#000').setStroke('#fff',2).setBackgroundColor('#ffd600');
-          } else if(isCompareTarget&&aiLabel!==null){
-            phaseMarker?.setText(aiLabel==='CITIZEN'?'AI✓':'AI✕').setVisible(true).setColor('#fff').setStroke('#142027',3)
-              .setBackgroundColor(aiLabel==='CITIZEN'?'#00838f':'#c2185b');
-          } else {
-            phaseMarker?.setVisible(false);
-          }
-        } else {
-          phaseMarker?.setVisible(false);
+      const outline=npcOutlineStyle({
+        round:this.currentRound,
+        monitoring:isMonitoring,
+        comparisonTarget:ROUND2_COMPARISON_PLAN.some(e=>e.characterId===npc.definition.id),
+        monitoringTarget:MONITORING_TARGET_IDS.includes(npc.definition.id as typeof MONITORING_TARGET_IDS[number]),
+        userLabel:label,
+        aiLabel,
+        verifiedLabel:'verifiedLabel' in npc?npc.verifiedLabel:null,
+      });
+      const glow=(container as any).outlineGlow as Phaser.Filters.Glow|null|undefined;
+      if(glow){
+        glow.active=isVisible&&outline!==null;
+        if(outline){
+          glow.color=outline.color;
+          glow.outerStrength=outline.pulse?4.5+Math.sin(this.time.now/180)*1.5:3.5;
         }
-      } else {
-        phaseMarker?.setVisible(false);
       }
     }
     const selected=visible.find(npc=>npc.definition.id===this.selectedCharacterId);

@@ -250,6 +250,24 @@ footer {
   font: 700 1.7cqw monospace;
 }
 
+.outline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45cqw .8cqw;
+  margin: .4cqw 0 .8cqw;
+  color: #cfd8dc;
+  font-size: 1cqw;
+}
+
+.outline-legend span { display: inline-flex; align-items: center; gap: .3cqw; }
+.outline-legend i {
+  width: .8cqw;
+  height: .8cqw;
+  border: .18cqw solid;
+  border-radius: 50%;
+  box-shadow: 0 0 .35cqw currentColor;
+}
+
 .label-buttons {
   display: flex;
   gap: .8cqw;

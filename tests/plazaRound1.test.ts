@@ -30,10 +30,23 @@ test('D: approved Round 1 assignment distributions are exact',()=>{
   const assignments=ROUND1_SCENARIO.assignments;
   assert.equal(assignments.length,35);assert.equal(new Set(assignments.map(item=>item.characterId)).size,35);
   assert.deepEqual(Object.fromEntries(['CITIZEN','VILLAIN'].map(label=>[label,assignments.filter(item=>item.actualLabel===label).length])),{CITIZEN:28,VILLAIN:7});
-  assert.deepEqual(assignments.filter(item=>item.actualLabel==='VILLAIN').map(item=>item.characterId),['NPC01','NPC10','NPC12','NPC18','NPC19','NPC25','NPC35']);
+  assert.deepEqual(assignments.filter(item=>item.actualLabel==='VILLAIN').map(item=>item.characterId),['NPC01','NPC08','NPC10','NPC15','NPC22','NPC25','NPC31']);
   assert.deepEqual(Object.fromEntries(cameras.map(camera=>[camera.name,assignments.filter(item=>item.homeObservationZone===camera.name).length])),{PLAZA_CAM_A:7,PLAZA_CAM_B:7,PLAZA_CAM_C:7,PLAZA_CAM_D:7,PLAZA_CAM_E:7});
-  assert.deepEqual(Object.fromEntries(cameras.map(camera=>[camera.name,assignments.filter(item=>item.homeObservationZone===camera.name&&item.actualLabel==='VILLAIN').length])),{PLAZA_CAM_A:1,PLAZA_CAM_B:2,PLAZA_CAM_C:2,PLAZA_CAM_D:1,PLAZA_CAM_E:1});
+  assert.deepEqual(Object.fromEntries(cameras.map(camera=>[camera.name,assignments.filter(item=>item.homeObservationZone===camera.name&&item.actualLabel==='VILLAIN').length])),{PLAZA_CAM_A:1,PLAZA_CAM_B:2,PLAZA_CAM_C:1,PLAZA_CAM_D:2,PLAZA_CAM_E:1});
   assert.deepEqual(Object.fromEntries(['STATIC_HOLD','ENTER_AND_STAY','ENTER_HOLD_EXIT','THROUGH_TRAFFIC'].map(lifecycle=>[lifecycle,assignments.filter(item=>item.lifecycle===lifecycle).length])),{STATIC_HOLD:10,ENTER_AND_STAY:10,ENTER_HOLD_EXIT:10,THROUGH_TRAFFIC:5});
+  assert.deepEqual(Object.fromEntries(['NPC08','NPC12','NPC15','NPC18','NPC19','NPC22','NPC31','NPC35'].map(id=>{
+    const item=assignments.find(candidate=>candidate.characterId===id)!;
+    return [id,{actualLabel:item.actualLabel,mainBehavior:item.mainBehavior,historyBehavior:item.historyBehavior??null}];
+  })),{
+    NPC08:{actualLabel:'VILLAIN',mainBehavior:'SNATCHING',historyBehavior:null},
+    NPC12:{actualLabel:'CITIZEN',mainBehavior:'RESTING',historyBehavior:null},
+    NPC15:{actualLabel:'VILLAIN',mainBehavior:'THREATENING',historyBehavior:null},
+    NPC18:{actualLabel:'CITIZEN',mainBehavior:'IDLING',historyBehavior:null},
+    NPC19:{actualLabel:'CITIZEN',mainBehavior:'RESTING',historyBehavior:null},
+    NPC22:{actualLabel:'VILLAIN',mainBehavior:'STEALING',historyBehavior:null},
+    NPC31:{actualLabel:'VILLAIN',mainBehavior:'ESCAPING',historyBehavior:'STEALING'},
+    NPC35:{actualLabel:'CITIZEN',mainBehavior:'WAITING',historyBehavior:null},
+  });
 });
 
 test('E-K: lifecycles remain physical, persistent and identity-stable',()=>{

@@ -17,6 +17,7 @@ import {
   type GameFlowState, type SupervisedGameState, type TrackingReviewContext,
 } from './supervisedGameFlow';
 import { MONITORING_TARGET_IDS, round2ComparisonFor, type Round2TargetStatus } from './plazaRound2';
+import { NPC_OUTLINE_COLORS } from './npcOutline';
 import { AiBasicsApp } from './modules/ai-basics/AiBasicsApp';
 import { UnsupervisedApp } from './modules/unsupervised/UnsupervisedApp';
 import { ReinforcementFloor1DebugApp } from './modules/reinforcement/debug/ReinforcementFloor1DebugApp';
@@ -117,6 +118,19 @@ const PRIMITIVE_MAPPING: Record<string, string> = {
   'IDLE': '주변에 머물러 있었어요',
   'INTERACT': '주변 사물을 만졌어요',
   'SUSPICIOUS_ACTION': '수상한 행동을 했어요'
+};
+
+const cssColor = (color: number) => `#${color.toString(16).padStart(6, '0')}`;
+
+const OutlineLegend = ({ phase }: { phase: 'ROUND1' | 'COMPARE' | 'MONITOR' }) => {
+  const items = phase === 'ROUND1'
+    ? [['시민', NPC_OUTLINE_COLORS.citizen], ['악당', NPC_OUTLINE_COLORS.villain]] as const
+    : phase === 'COMPARE'
+      ? [['판단 전', NPC_OUTLINE_COLORS.pending], ['시민', NPC_OUTLINE_COLORS.citizen], ['악당', NPC_OUTLINE_COLORS.villain], ['의견 다름', NPC_OUTLINE_COLORS.disagreement]] as const
+      : [['AI 시민', NPC_OUTLINE_COLORS.citizen], ['AI 악당', NPC_OUTLINE_COLORS.villain], ['확인 필요', NPC_OUTLINE_COLORS.review]] as const;
+  return <div className="outline-legend" aria-label="캐릭터 테두리 색상 안내">
+    {items.map(([label, color]) => <span key={label}><i style={{ borderColor: cssColor(color), color: cssColor(color) }} />{label}</span>)}
+  </div>;
 };
 
 function formatBehavior(entry: BehaviorHistoryEntry): string {
@@ -331,7 +345,7 @@ function App() {
     {plaza && guideStep === 'ROUND2_INTRO' && (
       <AriGuideOverlay title="AI와 비교해보기" lines={[
         "AI가 첫 공부를 끝냈어!\n이제 처음 보는 친구도\nAI가 스스로 판단해볼 거야.",
-        "노란 물음표가 있는 8명을\n너도 먼저 판단해봐!\n\n네 생각과 AI의 생각이 다르면\n추적 기록을 보고 정답을 확인해줘."
+        "노란 테두리가 있는 8명을\n너도 먼저 판단해봐!\n\n네 생각과 AI의 생각이 다르면\n추적 기록을 보고 정답을 확인해줘."
       ]} cta="알겠어!" onNext={() => setGuideStep(null)} />
     )}
     {plaza && guideStep === 'RETRAINING_INTRO' && (
@@ -342,7 +356,7 @@ function App() {
     {plaza && guideStep === 'AI_ASSISTED_INTRO' && (
       <AriGuideOverlay title="AI 보조 모니터링" lines={[
         "이번에는 AI가 먼저\nCCTV 속 친구들을 살펴봤어!\n이제 네가 모든 친구를\n한 명씩 판단하지 않아도 돼.",
-        "느낌표가 있는 세 친구만\n다시 확인해줘!\n\nAI 표시가 붙어 있으면\nAI가 먼저 판단했다는 뜻이야."
+        "보라색 테두리가 있는 세 친구만\n다시 확인해줘!\n\n테두리 색은\nAI의 판단 상태를 보여줘."
       ]} cta="확인하러 가기" onNext={() => setGuideStep(null)} />
     )}
     {plaza && guideStep === 'FINAL_SCAN_INTRO' && (
@@ -560,6 +574,7 @@ function App() {
     )}
     {isPlazaManual ? <aside className="manual-panel noto-font" style={{ display: 'flex', flexDirection: 'column' }} data-testid="manual-labeling">
       <h1>{manual.selectedCctv?.replace('PLAZA_CAM_', '') ?? 'CCTV'} 구역 CCTV</h1>
+      <OutlineLegend phase="ROUND1" />
       
       {!manual.selectedCharacter ? (
         <>
@@ -606,8 +621,9 @@ function App() {
     </aside> : isPlazaCompare ? <aside className="manual-panel compare-panel noto-font" style={{ display: 'flex', flexDirection: 'column', padding: 0 }} data-testid="human-ai-compare">
       <div className="compare-scroll-area" style={{ padding: '9cqw 1.6cqw 1cqw', flex: 1, overflowY: 'auto' }}>
         <h1>AI와 같이 판단해보자!</h1>
+        <OutlineLegend phase="COMPARE" />
         <p className="phase-guidance" style={{ whiteSpace: 'pre-wrap' }}>{(r2State?.comparedCount ?? 0) === 0
-          ? '물음표 친구들을 눌러\n너와 AI의 생각을 비교해봐!'
+          ? '노란 테두리 친구들을 눌러\n너와 AI의 생각을 비교해봐!'
           : (r2State?.comparedCount ?? 0) < 8
             ? `비교한 친구 ${r2State?.comparedCount ?? 0} / 8`
             : (r2State?.verifiedCount ?? 0) < 8
@@ -662,7 +678,8 @@ function App() {
       </div>
     </aside> : isPlazaMonitor ? <aside className="manual-panel monitor-panel noto-font" data-testid="ai-assisted-monitoring">
       <h1>이번엔 AI가 먼저 찾아봤어!</h1>
-      <p className="phase-guidance">AI가 다시 확인해야 한다고 표시한<br/>세 친구만 살펴보자.<br/><br/><strong style={{ color: '#ffb74d' }}>느낌표 친구 3명만 확인하면 돼!</strong></p>
+      <OutlineLegend phase="MONITOR" />
+      <p className="phase-guidance">AI가 다시 확인해야 한다고 표시한<br/>세 친구만 살펴보자.<br/><br/><strong style={{ color: '#ce93d8' }}>보라색 테두리 친구 3명만 확인하면 돼!</strong></p>
       <div className="target-list monitor-target-list">
         {MONITORING_TARGET_IDS.map(id => {
           const done = flow.aiMonitorVerifiedIds.includes(id);
