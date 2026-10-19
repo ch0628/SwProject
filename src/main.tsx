@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, type CSSProperties } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as Phaser from 'phaser';
 import { ScaleValidationScene, type Controls, type Stats } from './ScaleValidationScene';
@@ -8,7 +8,7 @@ import { CorridorCapacityScene } from './CorridorCapacityScene';
 import { CORRIDOR_CASES, type CorridorCase } from './corridorCapacity';
 import { PlazaParkScene } from './PlazaParkScene';
 import type { CharacterId, CharacterLabel, BehaviorHistoryEntry } from './characterPool';
-import type { ManualLabelingState } from './cctvManualLabeling';
+import { remainingCameraNames, type ManualLabelingState } from './cctvManualLabeling';
 import {
   createGameFlow, startFirstTraining, completeFirstTraining,
   openTrackingReview, closeTrackingReview, canStartRetraining, startRetraining,
@@ -18,7 +18,9 @@ import {
 } from './supervisedGameFlow';
 import { MONITORING_TARGET_IDS, round2ComparisonFor, type Round2TargetStatus } from './plazaRound2';
 import { NPC_OUTLINE_COLORS } from './npcOutline';
+import { characterVisualAsset } from './characterManifest';
 import { AiBasicsApp } from './modules/ai-basics/AiBasicsApp';
+import { AriDialogue } from './modules/ai-basics/AriDialogue';
 import { UnsupervisedApp } from './modules/unsupervised/UnsupervisedApp';
 import { ReinforcementFloor1DebugApp } from './modules/reinforcement/debug/ReinforcementFloor1DebugApp';
 import { ReinforcementFloor2DebugApp } from './modules/reinforcement/debug/ReinforcementFloor2DebugApp';
@@ -31,7 +33,6 @@ import { ReinforcementBuildingDebugApp } from './modules/reinforcement/debug/Rei
 import mainImage from '../assets/main_image.png';
 import mainSecondImage from '../assets/main_second_image.png';
 import mainMachineImage from '../assets/main_machine.png';
-import fairyImg from '../assets/ai/fairy.png';
 import centralAiCoreImg from '../assets/ai/central_ai_core.png';
 const EMPTY_MANUAL_STATE: ManualLabelingState = { cctvs: [], selectedCctv: null, visibleCharacterIds: [], selectedCharacter: null, manualLabeledDistinctCount: 0, verifiedTrainingSampleCount: 0, trainingReady: false };
 const TARGET_STATUS_LABEL: Record<Round2TargetStatus, string> = {
@@ -55,23 +56,29 @@ type AriGuideStep =
 const AriGuideOverlay = ({ title, lines, cta, onNext }: { title?: string, lines: string[], cta: string, onNext: () => void }) => {
   const [page, setPage] = useState(0);
   const isLast = page >= lines.length - 1;
-  return (
-    <div className="overlay ari-guide-overlay" role="dialog">
-      <div className="ari-container">
-        <img src={fairyImg} className="ari-img" alt="Ari 가이드" />
-      </div>
-      <div className="ari-speech-panel">
-        {title && <h1 className="noto-font" style={{ fontSize: '2.5cqw', margin: '0 0 1.5cqw', color: '#e0f7fa' }}>{title}</h1>}
-        <p className="ari-speech-text ari-font">
-          {lines[page].split('\n').map((line, i) => <span key={i}>{line}<br /></span>)}
-        </p>
-        <button className="btn-ari-next noto-font" onClick={() => isLast ? onNext() : setPage(p => p + 1)}>
-          {isLast ? cta : '다음'}
-        </button>
-      </div>
-    </div>
-  );
+  return <div className="supervised-ari-guide noto-font"><AriDialogue
+    text={`${title ? `${title}\n\n` : ''}${lines[page]}`}
+    expression={title === '지도학습' ? 'happy' : 'neutral'}
+    nextLabel={isLast ? cta : '다음'}
+    onNext={() => isLast ? onNext() : setPage(current => current + 1)}
+  /></div>;
 };
+
+const SupervisedPreparation = ({ error }: { error: string }) => <div className={`supervised-preparation noto-font ${error ? 'is-error' : ''}`} role="status" aria-live="polite">
+  <div className="supervised-preparation-card">
+    <h1>{error ? '마을 CCTV를 준비하지 못했어요' : '마을 CCTV를 준비하고 있어요'}</h1>
+    <svg className="supervised-cctv-icon" viewBox="0 0 180 150" aria-hidden="true">
+      <path className="supervised-cctv-stand" d="M83 83h14v34h25v12H58v-12h25z" />
+      <g className="supervised-cctv-head">
+        <path d="M41 39h84a12 12 0 0 1 12 12v33H41a12 12 0 0 1-12-12V51a12 12 0 0 1 12-12z" />
+        <path d="m137 52 23 9v17l-23 6z" />
+        <circle cx="50" cy="61" r="10" />
+        <circle className="supervised-cctv-lens" cx="50" cy="61" r="5" />
+      </g>
+    </svg>
+    {!error ? <span className="supervised-loading-spinner" aria-hidden="true" /> : <p>{error}</p>}
+  </div>
+</div>;
 
 const ZONE_MAPPING: Record<string, string> = {
   'PLAZA': '광장',
@@ -121,15 +128,18 @@ const PRIMITIVE_MAPPING: Record<string, string> = {
 };
 
 const cssColor = (color: number) => `#${color.toString(16).padStart(6, '0')}`;
+const OUTLINE_LEGEND_CHARACTER = characterVisualAsset('NPC23', 'cat', 'male').base.paths.down;
 
 const OutlineLegend = ({ phase }: { phase: 'ROUND1' | 'COMPARE' | 'MONITOR' }) => {
   const items = phase === 'ROUND1'
     ? [['시민', NPC_OUTLINE_COLORS.citizen], ['악당', NPC_OUTLINE_COLORS.villain]] as const
     : phase === 'COMPARE'
-      ? [['판단 전', NPC_OUTLINE_COLORS.pending], ['시민', NPC_OUTLINE_COLORS.citizen], ['악당', NPC_OUTLINE_COLORS.villain], ['의견 다름', NPC_OUTLINE_COLORS.disagreement]] as const
-      : [['AI 시민', NPC_OUTLINE_COLORS.citizen], ['AI 악당', NPC_OUTLINE_COLORS.villain], ['확인 필요', NPC_OUTLINE_COLORS.review]] as const;
+      ? [['대기', NPC_OUTLINE_COLORS.pending], ['시민', NPC_OUTLINE_COLORS.citizen], ['악당', NPC_OUTLINE_COLORS.villain], ['불일치', NPC_OUTLINE_COLORS.disagreement]] as const
+      : [['시민', NPC_OUTLINE_COLORS.citizen], ['악당', NPC_OUTLINE_COLORS.villain], ['재확인', NPC_OUTLINE_COLORS.review]] as const;
   return <div className="outline-legend" aria-label="캐릭터 테두리 색상 안내">
-    {items.map(([label, color]) => <span key={label}><i style={{ borderColor: cssColor(color), color: cssColor(color) }} />{label}</span>)}
+    {items.map(([label, color]) => <span className="outline-legend-item" key={label} style={{ '--outline-color': cssColor(color) } as CSSProperties}>
+      <span className="outline-swatch"><img src={OUTLINE_LEGEND_CHARACTER} alt="" /></span><b>{label}</b>
+    </span>)}
   </div>;
 };
 
@@ -158,6 +168,7 @@ function App() {
   const [testCase, setTestCase] = useState<CorridorCase>('A');
   const [capacityStats, setCapacityStats] = useState('');
   const [ready, setReady] = useState(false);
+  const [supervisedReady, setSupervisedReady] = useState(false);
   const [error, setError] = useState('');
   const [controls, setControls] = useState<Controls>({ zoom: 1, height: 80, density: 12, gameplay: false, debug: debugMode, moving: true });
   const [stats, setStats] = useState<Stats>({ fps: 0, x: 640, y: 480, direction: 'down', selected: null, height: 80 });
@@ -189,12 +200,15 @@ function App() {
         manager.start('PlazaParkScene', { mapVersion: 'v2' });
       }
     };
+    const plazaLoaded = () => setSupervisedReady(true);
     const failed = (event: ErrorEvent) => setError(event.message);
     game.events.once('validation-ready', loaded);
+    game.events.once('supervised-plaza-ready', plazaLoaded);
     window.addEventListener('error', failed);
     return () => {
       window.removeEventListener('error', failed);
       game.events.off('validation-ready', loaded);
+      game.events.off('supervised-plaza-ready', plazaLoaded);
       game.destroy(true);
       scene.current = null;
       gameRef.current = null;
@@ -305,6 +319,7 @@ function App() {
   const isPlazaManual = plaza && flow.phase === 'MANUAL_LABELING';
   const isPlazaCompare = plaza && flow.phase === 'HUMAN_AI_COMPARE';
   const isPlazaMonitor = plaza && flow.phase === 'AI_ASSISTED_MONITORING';
+  const outlineLegendPhase = isPlazaManual ? 'ROUND1' : isPlazaCompare ? 'COMPARE' : isPlazaMonitor ? 'MONITOR' : null;
   const r2State = plaza && flow.round === 2 ? plazaRef.current?.getRound2TrainingState() : null;
   const r2Targets = plazaRef.current?.getRound2TargetStatuses() ?? [];
   const trackingId = flow.trackingNpcId;
@@ -317,8 +332,10 @@ function App() {
   return <main className="stage">
     <div ref={mount} className="game" aria-label="ScaleValidationScene" />
 
+    {plaza && !supervisedReady && <SupervisedPreparation error={error} />}
+
     {/* ── START screen ── */}
-    {plaza && guideStep === 'START' && (
+    {plaza && supervisedReady && guideStep === 'START' && (
       <AriGuideOverlay
         title="AI CCTV를 도와줘!"
         lines={[
@@ -330,42 +347,42 @@ function App() {
     )}
 
     {/* ── Ari Guides ── */}
-    {plaza && guideStep === 'ROUND1_INTRO' && (
+    {plaza && supervisedReady && guideStep === 'ROUND1_INTRO' && (
       <AriGuideOverlay title="마을 CCTV" lines={[
         "먼저 네가 직접 몇 명을 확인해줘!\n화면 속 친구를 눌러서\n시민인지 악당인지 골라보자.",
         "초록 체크는 시민,\n빨간 X는 악당으로 고른 표시야!\n\n확인한 정답이 8개 모이면\nAI가 그걸 보고 공부할 수 있어."
       ]} cta="알겠어!" onNext={() => setGuideStep(null)} />
     )}
-    {plaza && guideStep === 'FIRST_TRAINING_INTRO' && (
+    {plaza && supervisedReady && guideStep === 'FIRST_TRAINING_INTRO' && (
       <AriGuideOverlay title="AI 첫 학습" lines={[
         "좋아! 정답이 충분히 모였어!\n이제 네가 확인한 정답을\n중앙 AI에게 알려주자.",
         "AI가 시민과 악당을\n구분하는 방법을 공부할 거야!"
       ]} cta="AI 공부시키기" onNext={() => { setGuideStep(null); doStartFirstTraining(); }} />
     )}
-    {plaza && guideStep === 'ROUND2_INTRO' && (
+    {plaza && supervisedReady && guideStep === 'ROUND2_INTRO' && (
       <AriGuideOverlay title="AI와 비교해보기" lines={[
         "AI가 첫 공부를 끝냈어!\n이제 처음 보는 친구도\nAI가 스스로 판단해볼 거야.",
         "노란 테두리가 있는 8명을\n너도 먼저 판단해봐!\n\n네 생각과 AI의 생각이 다르면\n추적 기록을 보고 정답을 확인해줘."
       ]} cta="알겠어!" onNext={() => setGuideStep(null)} />
     )}
-    {plaza && guideStep === 'RETRAINING_INTRO' && (
+    {plaza && supervisedReady && guideStep === 'RETRAINING_INTRO' && (
       <AriGuideOverlay title="AI 다시 가르치기" lines={[
         "AI가 틀렸던 부분도 모두 찾았어!\n이 정답을 다시 알려주면\nAI가 같은 실수를 줄일 수 있을 거야."
       ]} cta="다시 알려주기" onNext={() => { setGuideStep(null); doStartRetraining(); }} />
     )}
-    {plaza && guideStep === 'AI_ASSISTED_INTRO' && (
+    {plaza && supervisedReady && guideStep === 'AI_ASSISTED_INTRO' && (
       <AriGuideOverlay title="AI 보조 모니터링" lines={[
         "이번에는 AI가 먼저\nCCTV 속 친구들을 살펴봤어!\n이제 네가 모든 친구를\n한 명씩 판단하지 않아도 돼.",
         "보라색 테두리가 있는 세 친구만\n다시 확인해줘!\n\n테두리 색은\nAI의 판단 상태를 보여줘."
       ]} cta="확인하러 가기" onNext={() => setGuideStep(null)} />
     )}
-    {plaza && guideStep === 'FINAL_SCAN_INTRO' && (
+    {plaza && supervisedReady && guideStep === 'FINAL_SCAN_INTRO' && (
       <AriGuideOverlay title="최종 스캔" lines={[
         "이제 마지막이야!\nAI가 도시 전체 CCTV를\n한꺼번에 확인해볼 거야.",
         "많은 친구를 동시에\n판단하는 모습을 지켜보자!"
       ]} cta="도시 전체 확인하기" onNext={() => { setGuideStep(null); doStartFinalScan(); }} />
     )}
-    {plaza && guideStep === 'FINAL_ARI' && (
+    {plaza && supervisedReady && guideStep === 'FINAL_ARI' && (
       <AriGuideOverlay title="지도학습" lines={[
         "처음에는 네가 직접\n시민과 악당의 정답을 알려줬지?",
         "AI는 네가 알려준 정답을 보고 배우고,\n처음 보는 친구도 스스로 판단하기 시작했어.\n그리고 이제는 도시 전체 CCTV도\n한꺼번에 살펴볼 수 있게 됐어!",
@@ -538,16 +555,22 @@ function App() {
       </div>
     )}
 
-    {/* ── Player Toolbar ── */}
-    {plaza && guideStep !== 'START' && flow.phase !== 'FINAL_SCAN' && flow.phase !== 'COMPLETE' && (
-      <header className="toolbar noto-font">
-        <strong style={{ color: '#80cbc4' }}>마을 CCTV</strong>
-        {manual.cctvs.map((name, index) => (
-          <button key={name} aria-pressed={manual.selectedCctv === name} onClick={() => mapAction(() => plazaRef.current?.selectCctv(name))}>
-            CCTV {index + 1}
-          </button>
-        ))}
-      </header>
+    {/* ── CCTV camera selector ── */}
+    {plaza && manual.selectedCctv && guideStep !== 'START' && flow.phase !== 'FINAL_SCAN' && flow.phase !== 'COMPLETE' && (
+      <>
+        <div className="cctv-map-overlay noto-font">
+          <div className="cctv-main-label">현재 · CCTV {manual.cctvs.indexOf(manual.selectedCctv) + 1}</div>
+          {outlineLegendPhase && <OutlineLegend phase={outlineLegendPhase} />}
+        </div>
+        <nav className="cctv-preview-strip noto-font" aria-label="다른 CCTV 화면">
+          {remainingCameraNames(manual.cctvs, manual.selectedCctv).map(name => {
+            const number = manual.cctvs.indexOf(name) + 1;
+            return <button key={name} aria-label={`CCTV ${number} 크게 보기`} onClick={() => mapAction(() => plazaRef.current?.selectCctv(name))}>
+              <span>CCTV {number}</span>
+            </button>;
+          })}
+        </nav>
+      </>
     )}
 
     {/* ── Developer Toolbar ── */}
@@ -574,7 +597,6 @@ function App() {
     )}
     {isPlazaManual ? <aside className="manual-panel noto-font" style={{ display: 'flex', flexDirection: 'column' }} data-testid="manual-labeling">
       <h1>{manual.selectedCctv?.replace('PLAZA_CAM_', '') ?? 'CCTV'} 구역 CCTV</h1>
-      <OutlineLegend phase="ROUND1" />
       
       {!manual.selectedCharacter ? (
         <>
@@ -619,9 +641,8 @@ function App() {
         </button>
       )}
     </aside> : isPlazaCompare ? <aside className="manual-panel compare-panel noto-font" style={{ display: 'flex', flexDirection: 'column', padding: 0 }} data-testid="human-ai-compare">
-      <div className="compare-scroll-area" style={{ padding: '9cqw 1.6cqw 1cqw', flex: 1, overflowY: 'auto' }}>
+      <div className="compare-scroll-area" style={{ padding: '1.4cqw 1.6cqw 1cqw', flex: 1, overflowY: 'auto' }}>
         <h1>AI와 같이 판단해보자!</h1>
-        <OutlineLegend phase="COMPARE" />
         <p className="phase-guidance" style={{ whiteSpace: 'pre-wrap' }}>{(r2State?.comparedCount ?? 0) === 0
           ? '노란 테두리 친구들을 눌러\n너와 AI의 생각을 비교해봐!'
           : (r2State?.comparedCount ?? 0) < 8
@@ -678,7 +699,6 @@ function App() {
       </div>
     </aside> : isPlazaMonitor ? <aside className="manual-panel monitor-panel noto-font" data-testid="ai-assisted-monitoring">
       <h1>이번엔 AI가 먼저 찾아봤어!</h1>
-      <OutlineLegend phase="MONITOR" />
       <p className="phase-guidance">AI가 다시 확인해야 한다고 표시한<br/>세 친구만 살펴보자.<br/><br/><strong style={{ color: '#ce93d8' }}>보라색 테두리 친구 3명만 확인하면 돼!</strong></p>
       <div className="target-list monitor-target-list">
         {MONITORING_TARGET_IDS.map(id => {

@@ -7,7 +7,7 @@ import { createPlazaFullFlow35, stepFullFlow, fullFlowSummary, type FullFlowStat
 import { characterVisualAsset, characterWalkAnimationKey, characterWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_DISPLAY_HEIGHT, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
 import { createSupervisedPlazaDemo, createSupervisedPlazaGroup, stepPlazaNpcGroup } from './plazaNpcRuntime';
 import {
-  loadCameraZones, manualCharacterView, setUserLabel, visibleCharactersForZone,
+  loadCameraZones, manualCharacterView, remainingCameraNames, setUserLabel, visibleCharactersForZone,
   type CameraZone, type ManualLabelingState,
 } from './cctvManualLabeling';
 import { CHARACTER_POOL, type BehaviorHistoryEntry, type CharacterId, type CharacterLabel } from './characterPool';
@@ -15,6 +15,14 @@ import { createRound1Group, DEFAULT_ROUND1_CONFIG, round1TrainingState, stepRoun
 import { applyRound2ToGroup, getPostRetrainingPrediction, MONITORING_TARGET_IDS, prepareMonitoringTargets, ROUND2_COMPARISON_PLAN, round2TargetStatus, round2TrainingState, submitRound2Comparison, verifyMonitoringTarget } from './plazaRound2';
 import { labelAndVerifyRound1Sample } from './supervisedGameFlow';
 import { npcOutlineStyle } from './npcOutline';
+
+const CCTV_VIEW_WIDTH = LOGICAL.width * .75;
+const CCTV_PREVIEW_GAP = 6;
+const CCTV_PREVIEW_HEIGHT = 118;
+const CCTV_MAIN_HEIGHT = LOGICAL.height - CCTV_PREVIEW_HEIGHT - CCTV_PREVIEW_GAP;
+const CCTV_PREVIEW_WIDTH = (CCTV_VIEW_WIDTH - CCTV_PREVIEW_GAP * 3) / 4;
+const CCTV_CAMERA_SCALE = .88;
+const CCTV_VERTICAL_HEADROOM = 70;
 
 export class PlazaParkScene extends Phaser.Scene {
   private mapData!: GrayboxMap;
@@ -48,6 +56,7 @@ export class PlazaParkScene extends Phaser.Scene {
   private exits = 0;
   private readonly mapVersion = 'v2';
   private cameraZones: readonly CameraZone[] = [];
+  private cctvPreviewCameras: Phaser.Cameras.Scene2D.Camera[] = [];
   private selectedCctv: CameraZone | null = null;
   private selectedCharacterId: CharacterId | null = null;
   private manualStateSignature = '';
@@ -220,6 +229,7 @@ export class PlazaParkScene extends Phaser.Scene {
       this.probe.setVisible(false);this.tiger.setVisible(false);
     }
     this.publish();
+    this.game.events.emit('supervised-plaza-ready');
   }
 
   private startRound1(){
@@ -235,7 +245,7 @@ export class PlazaParkScene extends Phaser.Scene {
       sprite.setScale(visualHeight[species]/sprite.height);
       if(this.game.renderer.type===Phaser.WEBGL)sprite.enableFilters();
       const outlineGlow=this.game.renderer.type===Phaser.WEBGL
-        ? sprite.filters!.internal.addGlow(0xffffff,3.5,0,1,false,6,8)
+        ? sprite.filters!.internal.addGlow(0xffffff,4.55,0,1,false,6,8)
         : null;
       if(outlineGlow){outlineGlow.setPaddingOverride(null);outlineGlow.active=false;}
       const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.phase}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
@@ -258,10 +268,21 @@ export class PlazaParkScene extends Phaser.Scene {
     if(!zone)return;
     this.selectedCctv=zone;
     this.selectedCharacterId=null;
-    const camera=this.cameras.main,viewportWidth=LOGICAL.width*.75,toolbarAndSpriteSafeHeight=LOGICAL.height-160;
-    camera.stopFollow().setViewport(0,0,viewportWidth,LOGICAL.height)
-      .setZoom(Math.min(viewportWidth/zone.width,toolbarAndSpriteSafeHeight/zone.height) * 0.98)
-      .centerOn(zone.x+zone.width/2,zone.y+zone.height/2);
+    const world=mapWorld(this.mapData),camera=this.cameras.main;
+    camera.stopFollow().setBounds(0,0,world.width,world.height).setViewport(0,0,CCTV_VIEW_WIDTH,CCTV_MAIN_HEIGHT)
+      .setZoom(Math.min(CCTV_VIEW_WIDTH/zone.width,CCTV_MAIN_HEIGHT/zone.height)*CCTV_CAMERA_SCALE)
+      .centerOn(zone.x+zone.width/2,zone.y+zone.height/2-CCTV_VERTICAL_HEADROOM);
+    while(this.cctvPreviewCameras.length<4){
+      this.cctvPreviewCameras.push(this.cameras.add(0,0,1,1,false,`CCTV_PREVIEW_${this.cctvPreviewCameras.length+1}`));
+    }
+    const previewNames=remainingCameraNames(this.cameraZones.map(candidate=>candidate.name),name);
+    this.cctvPreviewCameras.forEach((preview,index)=>{
+      const previewZone=this.cameraZones.find(candidate=>candidate.name===previewNames[index])!;
+      preview.setBounds(0,0,world.width,world.height)
+        .setViewport(index*(CCTV_PREVIEW_WIDTH+CCTV_PREVIEW_GAP),CCTV_MAIN_HEIGHT+CCTV_PREVIEW_GAP,CCTV_PREVIEW_WIDTH,CCTV_PREVIEW_HEIGHT)
+        .setZoom(Math.min(CCTV_PREVIEW_WIDTH/previewZone.width,CCTV_PREVIEW_HEIGHT/previewZone.height)*CCTV_CAMERA_SCALE)
+        .centerOn(previewZone.x+previewZone.width/2,previewZone.y+previewZone.height/2-CCTV_VERTICAL_HEADROOM);
+    });
     this.publishManualState(true);
   }
 
@@ -384,7 +405,7 @@ export class PlazaParkScene extends Phaser.Scene {
     
     for(const [index,npc] of npcs.entries()){
       const container=this.supervisedSprites[index],isVisible=visible.includes(npc);
-      container.setVisible(isVisible);
+      container.setVisible(npc.active&&npc.visible);
       (container as any).selectionRing?.setVisible(isVisible&&npc.definition.id===this.selectedCharacterId);
       const label=npc.character.labels.userLabel;
       const aiLabel=npc.character.labels.aiLabel;
@@ -399,10 +420,10 @@ export class PlazaParkScene extends Phaser.Scene {
       });
       const glow=(container as any).outlineGlow as Phaser.Filters.Glow|null|undefined;
       if(glow){
-        glow.active=isVisible&&outline!==null;
+        glow.active=npc.active&&npc.visible&&outline!==null;
         if(outline){
           glow.color=outline.color;
-          glow.outerStrength=outline.pulse?4.5+Math.sin(this.time.now/180)*1.5:3.5;
+          glow.outerStrength=outline.pulse?5.85+Math.sin(this.time.now/180)*1.95:4.55;
         }
       }
     }

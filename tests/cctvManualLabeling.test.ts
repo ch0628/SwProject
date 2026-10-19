@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { characterDefinition, createCharacterRuntimeState } from '../src/characterPool.ts';
 import {
-  isInsideCameraZone, loadCameraZones, manualCharacterView, setUserLabel, visibleCharactersForZone,
+  isInsideCameraZone, loadCameraZones, manualCharacterView, remainingCameraNames, setUserLabel, visibleCharactersForZone,
 } from '../src/cctvManualLabeling.ts';
 import type { GrayboxMap } from '../src/plazaPark.ts';
 import { createPlazaNpcRuntime } from '../src/plazaNpcRuntime.ts';
@@ -22,6 +22,12 @@ test('Camera_Zone loads the five authored Coverage rectangles',()=>{
     {name:'PLAZA_CAM_E',x:1200,y:170,width:800,height:600},
   ]);
   assert.ok(zones.every(zone=>zone.width>0&&zone.height>0));
+});
+
+test('the selected CCTV is promoted while the other four keep authored order',()=>{
+  assert.deepEqual(remainingCameraNames(zones.map(zone=>zone.name),'PLAZA_CAM_C'),[
+    'PLAZA_CAM_A','PLAZA_CAM_B','PLAZA_CAM_D','PLAZA_CAM_E',
+  ]);
 });
 
 test('feet-position visibility enters and exits a selected Camera_Zone',()=>{

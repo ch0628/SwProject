@@ -48,6 +48,9 @@ export const isInsideCameraZone = (position: Readonly<{ x: number; y: number }>,
 export const visibleCharactersForZone = (npcs: readonly ObservablePlazaNpc[], zone: CameraZone) =>
   npcs.filter(npc => npc.active && npc.visible && isInsideCameraZone(npc.position, zone));
 
+export const remainingCameraNames = (cameras: readonly string[], selected: string | null) =>
+  cameras.filter(camera => camera !== selected);
+
 export function setUserLabel(runtime: CharacterRuntimeState, label: CharacterLabel) {
   runtime.labels.userLabel = label;
 }
