@@ -797,49 +797,26 @@ button:disabled {
 
 @keyframes final-scan-line { to { transform: translateX(185%); } }
 
-/* Complete screen */
-.complete-card {
-  background: linear-gradient(160deg, #1a2a1a, #0d2040);
-  border: 2px solid #69f0ae;
-  border-radius: 1.5cqw;
-  padding: 3.5cqw 4.5cqw;
-  text-align: center;
-  max-width: 55%;
-  box-shadow: 0 0 5cqw #69f0ae30;
+.return-home-button {
+  position: absolute;
+  z-index: 30;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 19cqw;
+  padding: 1cqw 2cqw;
+  border: .16cqw solid #9de9d3;
+  border-radius: .75cqw;
+  background: #17352fed;
+  box-shadow: 0 .5cqw 1.8cqw #0009, 0 0 1.2cqw #69f0ae55;
+  color: #e8fff7;
+  font-size: 1.35cqw;
+  font-weight: 800;
+  cursor: pointer;
 }
 
-.complete-card h2 {
-  font-size: 3cqw;
-  margin: 0 0 1cqw;
-  color: #ccff90;
-}
-
-.complete-card p {
-  font-size: 1.4cqw;
-  color: #c8e6c9;
-  margin: .7cqw 0;
-}
-
-.complete-summary {
-  list-style: none;
-  padding: 0;
-  margin: 1.5cqw 0;
-  text-align: left;
-  font-size: 1.3cqw;
-  color: #a5d6a7;
-}
-
-.complete-summary li {
-  padding: .4cqw 0;
-  border-bottom: 1px solid #2e5a2e;
-}
-
-.complete-message {
-  font-size: 1.8cqw !important;
-  font-weight: 700;
-  color: #b9f6ca !important;
-  margin-top: 1.5cqw !important;
-}
+.return-home-button:hover,
+.return-home-button:focus-visible { background: #245246; outline: .18cqw solid #fff; outline-offset: .2cqw; }
 
 @font-face {
   font-family: 'SWDongle';

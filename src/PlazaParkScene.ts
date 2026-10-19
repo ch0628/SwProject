@@ -7,7 +7,8 @@ import { createPlazaFullFlow35, stepFullFlow, fullFlowSummary, type FullFlowStat
 import { characterVisualAsset, characterWalkAnimationKey, characterWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_DISPLAY_HEIGHT, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
 import { createSupervisedPlazaDemo, createSupervisedPlazaGroup, stepPlazaNpcGroup } from './plazaNpcRuntime';
 import {
-  loadCameraZones, manualCharacterView, remainingCameraNames, setUserLabel, unrevealedCharacterIds, visibleCharactersForZone,
+  FINAL_SCAN_REVEAL_INTERVAL_MS, FINAL_SCAN_START_DELAY_MS, finalScanCameraDuration,
+  loadCameraZones, manualCharacterView, remainingCameraNames, setUserLabel, visibleCharactersForZone,
   type CameraZone, type ManualLabelingState,
 } from './cctvManualLabeling';
 import { CHARACTER_POOL, type BehaviorHistoryEntry, type CharacterId, type CharacterLabel } from './characterPool';
@@ -299,25 +300,26 @@ export class PlazaParkScene extends Phaser.Scene {
     this.publishManualState(true);
   }
 
-  scanFinalCctv(name:string){
+  scanFinalCctv(name:string):number{
     const zone=this.cameraZones.find(candidate=>candidate.name===name);
-    if(!zone||!this.finalScanActive)return;
+    if(!zone||!this.finalScanActive)return 0;
     this.finalScanTimers.forEach(timer=>timer.remove(false));
     this.finalScanTimers=[];
+    this.finalScanRevealedIds.clear();
     this.selectedCctv=zone;
     const world=mapWorld(this.mapData),camera=this.cameras.main;
     camera.stopFollow().setBounds(0,0,world.width,world.height).setViewport(0,0,LOGICAL.width,LOGICAL.height)
       .setZoom(Math.min(LOGICAL.width/zone.width,LOGICAL.height/zone.height)*CCTV_CAMERA_SCALE)
       .centerOn(zone.x+zone.width/2,zone.y+zone.height/2-CCTV_VERTICAL_HEADROOM).fadeIn(180,0,0,0);
-    const visible=visibleCharactersForZone(this.manualNpcs(),zone);
-    const newIds=unrevealedCharacterIds(visible.map(npc=>npc.definition.id),this.finalScanRevealedIds);
-    newIds.forEach((id,index)=>{
-      this.finalScanTimers.push(this.time.delayedCall(index*120,()=>{
+    const visibleIds=visibleCharactersForZone(this.manualNpcs(),zone).map(npc=>npc.definition.id);
+    this.publishManualState(true);
+    visibleIds.forEach((id,index)=>{
+      this.finalScanTimers.push(this.time.delayedCall(FINAL_SCAN_START_DELAY_MS+index*FINAL_SCAN_REVEAL_INTERVAL_MS,()=>{
         this.finalScanRevealedIds.add(id);
         this.publishManualState(true);
       }));
     });
-    this.publishManualState(true);
+    return finalScanCameraDuration(visibleIds.length);
   }
 
   finishFinalScan(){

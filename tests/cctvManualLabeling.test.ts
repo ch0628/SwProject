@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { characterDefinition, createCharacterRuntimeState } from '../src/characterPool.ts';
 import {
-  isInsideCameraZone, loadCameraZones, manualCharacterView, remainingCameraNames, setUserLabel, unrevealedCharacterIds, visibleCharactersForZone,
+  finalScanCameraDuration, isInsideCameraZone, loadCameraZones, manualCharacterView, remainingCameraNames, setUserLabel, visibleCharactersForZone,
 } from '../src/cctvManualLabeling.ts';
 import type { GrayboxMap } from '../src/plazaPark.ts';
 import { createPlazaNpcRuntime } from '../src/plazaNpcRuntime.ts';
@@ -30,10 +30,10 @@ test('the selected CCTV is promoted while the other four keep authored order',()
   ]);
 });
 
-test('final scan reveals each overlapping NPC only once',()=>{
-  const alreadyRevealed=new Set(['NPC08'] as const);
-  assert.deepEqual(unrevealedCharacterIds(['NPC08','NPC09','NPC09','NPC10'],alreadyRevealed),['NPC09','NPC10']);
-  assert.deepEqual([...alreadyRevealed],['NPC08']);
+test('final scan reveals every 0.8 seconds and holds the completed result for 2.5 seconds',()=>{
+  assert.equal(finalScanCameraDuration(0),3000);
+  assert.equal(finalScanCameraDuration(1),3000);
+  assert.equal(finalScanCameraDuration(4),5400);
 });
 
 test('feet-position visibility enters and exits a selected Camera_Zone',()=>{

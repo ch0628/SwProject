@@ -49,7 +49,6 @@ type AriGuideStep =
   | 'FINAL_SCAN_INTRO'
   | 'FINAL_ARI'
   | 'COMPLETE'
-  | 'COMPLETE_CLOSED'
   | null;
 
 const AriGuideOverlay = ({ title, lines, cta, onNext }: { title?: string, lines: string[], cta: string, onNext: () => void }) => {
@@ -320,17 +319,18 @@ function App() {
     finalScanTimers.current.forEach(window.clearTimeout);
     finalScanTimers.current = [];
     scene.beginFinalScan();
-    manual.cctvs.forEach((name, index) => {
-      finalScanTimers.current.push(window.setTimeout(() => {
-        setFinalScanCameraIndex(index);
-        scene.scanFinalCctv(name);
-      }, index * 1800));
-    });
-    finalScanTimers.current.push(window.setTimeout(() => {
-      scene.finishFinalScan();
-      setFlow(f => { completeFinalScan(f); return { ...f }; });
-      setGuideStep('FINAL_ARI');
-    }, manual.cctvs.length * 1800));
+    const scanCamera = (index: number) => {
+      if (index >= manual.cctvs.length) {
+        scene.finishFinalScan();
+        setFlow(f => { completeFinalScan(f); return { ...f }; });
+        setGuideStep('FINAL_ARI');
+        return;
+      }
+      setFinalScanCameraIndex(index);
+      const duration = scene.scanFinalCctv(manual.cctvs[index]);
+      finalScanTimers.current = [window.setTimeout(() => scanCamera(index + 1), duration)];
+    };
+    scanCamera(0);
   }, [manual.cctvs]);
 
   const doCompare = useCallback((userGuess: CharacterLabel) => {
@@ -497,35 +497,9 @@ function App() {
       </div>
     )}
 
-    {/* ── COMPLETE screen ── */}
+    {/* ── Return to title ── */}
     {plaza && flow.phase === 'COMPLETE' && guideStep === 'COMPLETE' && (
-      <div className="overlay complete-overlay dongle-font" style={{ zIndex: 30 }} role="dialog" aria-label="학습 완료">
-        <div className="complete-card dongle-font" style={{ position: 'relative' }}>
-          <button 
-            onClick={() => setGuideStep('COMPLETE_CLOSED')}
-            style={{ position: 'absolute', top: '1cqw', right: '1.5cqw', background: 'transparent', border: 'none', color: '#b0bec5', fontSize: '2.5cqw', cursor: 'pointer', padding: 0 }}
-            aria-label="닫기"
-          >
-            ✕
-          </button>
-          <h2>🎉 지도학습 완료!</h2>
-          <p>AI는 두 번의 학습을 통해 더 정확해졌습니다.</p>
-          <ul className="complete-summary">
-            <li>Round 1 학습 데이터: <strong>{flow.aiTraining.totalVerifiedData}건</strong></li>
-            <li>Round 2 오류 수정: <strong>{flow.aiTraining.correctionData}건</strong></li>
-            {(() => {
-              const npcs = (plazaRef.current as any)?.round1?.npcs ?? [];
-              if (npcs.length > 0) {
-                const aiCit = npcs.filter((n: any) => n.character.labels.aiLabel === 'CITIZEN').length;
-                const aiVil = npcs.filter((n: any) => n.character.labels.aiLabel === 'VILLAIN').length;
-                return <li>최종 분류 결과: <strong>AI 시민 {aiCit}명 / AI 악당 {aiVil}명</strong></li>;
-              }
-              return null;
-            })()}
-          </ul>
-          <p className="complete-message">여러분의 판단이 AI를 가르쳤습니다!</p>
-        </div>
-      </div>
+      <button className="return-home-button noto-font" type="button" onClick={() => window.location.assign('/')}>메인 화면으로 돌아가기</button>
     )}
 
     {/* ── CCTV camera selector ── */}

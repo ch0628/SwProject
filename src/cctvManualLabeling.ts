@@ -51,14 +51,11 @@ export const visibleCharactersForZone = (npcs: readonly ObservablePlazaNpc[], zo
 export const remainingCameraNames = (cameras: readonly string[], selected: string | null) =>
   cameras.filter(camera => camera !== selected);
 
-export function unrevealedCharacterIds(visible: readonly CharacterId[], revealed: ReadonlySet<CharacterId>) {
-  const seen = new Set(revealed);
-  return visible.filter(id => {
-    if (seen.has(id)) return false;
-    seen.add(id);
-    return true;
-  });
-}
+export const FINAL_SCAN_START_DELAY_MS = 500;
+export const FINAL_SCAN_REVEAL_INTERVAL_MS = 800;
+export const FINAL_SCAN_RESULT_HOLD_MS = 2500;
+export const finalScanCameraDuration = (visibleCount: number) =>
+  FINAL_SCAN_START_DELAY_MS + Math.max(0, visibleCount - 1) * FINAL_SCAN_REVEAL_INTERVAL_MS + FINAL_SCAN_RESULT_HOLD_MS;
 
 export function setUserLabel(runtime: CharacterRuntimeState, label: CharacterLabel) {
   runtime.labels.userLabel = label;
