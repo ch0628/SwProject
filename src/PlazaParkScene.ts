@@ -7,7 +7,7 @@ import { createPlazaFullFlow35, stepFullFlow, fullFlowSummary, type FullFlowStat
 import { characterVisualAsset, characterWalkAnimationKey, characterWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_DISPLAY_HEIGHT, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
 import { createSupervisedPlazaDemo, createSupervisedPlazaGroup, stepPlazaNpcGroup } from './plazaNpcRuntime';
 import {
-  loadCameraZones, manualCharacterView, remainingCameraNames, setUserLabel, visibleCharactersForZone,
+  loadCameraZones, manualCharacterView, remainingCameraNames, setUserLabel, unrevealedCharacterIds, visibleCharactersForZone,
   type CameraZone, type ManualLabelingState,
 } from './cctvManualLabeling';
 import { CHARACTER_POOL, type BehaviorHistoryEntry, type CharacterId, type CharacterLabel } from './characterPool';
@@ -62,6 +62,9 @@ export class PlazaParkScene extends Phaser.Scene {
   private manualStateSignature = '';
   private cctvManualMode = false;
   private currentRound: 1 | 2 = 1;
+  private finalScanActive = false;
+  private finalScanRevealedIds = new Set<CharacterId>();
+  private finalScanTimers: Phaser.Time.TimerEvent[] = [];
   constructor(
     private report: (value: string) => void,
     private reportSmoke: (value:string)=>void = ()=>{},
@@ -278,11 +281,49 @@ export class PlazaParkScene extends Phaser.Scene {
     const previewNames=remainingCameraNames(this.cameraZones.map(candidate=>candidate.name),name);
     this.cctvPreviewCameras.forEach((preview,index)=>{
       const previewZone=this.cameraZones.find(candidate=>candidate.name===previewNames[index])!;
-      preview.setBounds(0,0,world.width,world.height)
+      preview.setVisible(true).setBounds(0,0,world.width,world.height)
         .setViewport(index*(CCTV_PREVIEW_WIDTH+CCTV_PREVIEW_GAP),CCTV_MAIN_HEIGHT+CCTV_PREVIEW_GAP,CCTV_PREVIEW_WIDTH,CCTV_PREVIEW_HEIGHT)
         .setZoom(Math.min(CCTV_PREVIEW_WIDTH/previewZone.width,CCTV_PREVIEW_HEIGHT/previewZone.height)*CCTV_CAMERA_SCALE)
         .centerOn(previewZone.x+previewZone.width/2,previewZone.y+previewZone.height/2-CCTV_VERTICAL_HEADROOM);
     });
+    this.publishManualState(true);
+  }
+
+  beginFinalScan(){
+    this.finalScanTimers.forEach(timer=>timer.remove(false));
+    this.finalScanTimers=[];
+    this.finalScanActive=true;
+    this.finalScanRevealedIds.clear();
+    this.selectedCharacterId=null;
+    this.cctvPreviewCameras.forEach(camera=>camera.setVisible(false));
+    this.publishManualState(true);
+  }
+
+  scanFinalCctv(name:string){
+    const zone=this.cameraZones.find(candidate=>candidate.name===name);
+    if(!zone||!this.finalScanActive)return;
+    this.finalScanTimers.forEach(timer=>timer.remove(false));
+    this.finalScanTimers=[];
+    this.selectedCctv=zone;
+    const world=mapWorld(this.mapData),camera=this.cameras.main;
+    camera.stopFollow().setBounds(0,0,world.width,world.height).setViewport(0,0,LOGICAL.width,LOGICAL.height)
+      .setZoom(Math.min(LOGICAL.width/zone.width,LOGICAL.height/zone.height)*CCTV_CAMERA_SCALE)
+      .centerOn(zone.x+zone.width/2,zone.y+zone.height/2-CCTV_VERTICAL_HEADROOM).fadeIn(180,0,0,0);
+    const visible=visibleCharactersForZone(this.manualNpcs(),zone);
+    const newIds=unrevealedCharacterIds(visible.map(npc=>npc.definition.id),this.finalScanRevealedIds);
+    newIds.forEach((id,index)=>{
+      this.finalScanTimers.push(this.time.delayedCall(index*120,()=>{
+        this.finalScanRevealedIds.add(id);
+        this.publishManualState(true);
+      }));
+    });
+    this.publishManualState(true);
+  }
+
+  finishFinalScan(){
+    this.finalScanTimers.forEach(timer=>timer.remove(false));
+    this.finalScanTimers=[];
+    this.finalScanActive=false;
     this.publishManualState(true);
   }
 
@@ -409,7 +450,7 @@ export class PlazaParkScene extends Phaser.Scene {
       (container as any).selectionRing?.setVisible(isVisible&&npc.definition.id===this.selectedCharacterId);
       const label=npc.character.labels.userLabel;
       const aiLabel=npc.character.labels.aiLabel;
-      const outline=npcOutlineStyle({
+      const outline=this.finalScanActive&&!this.finalScanRevealedIds.has(npc.definition.id)?null:npcOutlineStyle({
         round:this.currentRound,
         monitoring:isMonitoring,
         comparisonTarget:ROUND2_COMPARISON_PLAN.some(e=>e.characterId===npc.definition.id),
@@ -423,7 +464,7 @@ export class PlazaParkScene extends Phaser.Scene {
         glow.active=npc.active&&npc.visible&&outline!==null;
         if(outline){
           glow.color=outline.color;
-          glow.outerStrength=outline.pulse?5.85+Math.sin(this.time.now/180)*1.95:4.55;
+          glow.outerStrength=this.finalScanActive?5.85:outline.pulse?5.85+Math.sin(this.time.now/180)*1.95:4.55;
         }
       }
     }

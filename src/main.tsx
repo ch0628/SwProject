@@ -47,7 +47,6 @@ type AriGuideStep =
   | 'RETRAINING_INTRO'
   | 'AI_ASSISTED_INTRO'
   | 'FINAL_SCAN_INTRO'
-  | 'CITY_WIDE_RESULT'
   | 'FINAL_ARI'
   | 'COMPLETE'
   | 'COMPLETE_CLOSED'
@@ -56,11 +55,22 @@ type AriGuideStep =
 const AriGuideOverlay = ({ title, lines, cta, onNext }: { title?: string, lines: string[], cta: string, onNext: () => void }) => {
   const [page, setPage] = useState(0);
   const isLast = page >= lines.length - 1;
+  const advance = useCallback(() => isLast ? onNext() : setPage(current => current + 1), [isLast, onNext]);
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== 'Space' || event.repeat || event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement) return;
+      event.preventDefault();
+      advance();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [advance]);
   return <div className="supervised-ari-guide noto-font"><AriDialogue
     text={`${title ? `${title}\n\n` : ''}${lines[page]}`}
     expression={title === '지도학습' ? 'happy' : 'neutral'}
     nextLabel={isLast ? cta : '다음'}
-    onNext={() => isLast ? onNext() : setPage(current => current + 1)}
+    showSpaceHint
+    onNext={advance}
   /></div>;
 };
 
@@ -158,6 +168,7 @@ function App() {
   const capacityRef = useRef<CorridorCapacityScene | null>(null);
   const [corridor, setCorridor] = useState(false);
   const plazaRef = useRef<PlazaParkScene | null>(null);
+  const finalScanTimers = useRef<number[]>([]);
 
   const debugMode = false;
 
@@ -169,6 +180,7 @@ function App() {
   const [capacityStats, setCapacityStats] = useState('');
   const [ready, setReady] = useState(false);
   const [supervisedReady, setSupervisedReady] = useState(false);
+  const [finalScanCameraIndex, setFinalScanCameraIndex] = useState(0);
   const [error, setError] = useState('');
   const [controls, setControls] = useState<Controls>({ zoom: 1, height: 80, density: 12, gameplay: false, debug: debugMode, moving: true });
   const [stats, setStats] = useState<Stats>({ fps: 0, x: 640, y: 480, direction: 'down', selected: null, height: 80 });
@@ -206,6 +218,7 @@ function App() {
     game.events.once('supervised-plaza-ready', plazaLoaded);
     window.addEventListener('error', failed);
     return () => {
+      finalScanTimers.current.forEach(window.clearTimeout);
       window.removeEventListener('error', failed);
       game.events.off('validation-ready', loaded);
       game.events.off('supervised-plaza-ready', plazaLoaded);
@@ -301,12 +314,24 @@ function App() {
   }, []);
 
   const doStartFinalScan = useCallback(() => {
+    const scene = plazaRef.current;
+    if (!scene || manual.cctvs.length === 0) return;
     setFlow(f => { startFinalScan(f); return { ...f }; });
-    setTimeout(() => {
+    finalScanTimers.current.forEach(window.clearTimeout);
+    finalScanTimers.current = [];
+    scene.beginFinalScan();
+    manual.cctvs.forEach((name, index) => {
+      finalScanTimers.current.push(window.setTimeout(() => {
+        setFinalScanCameraIndex(index);
+        scene.scanFinalCctv(name);
+      }, index * 1800));
+    });
+    finalScanTimers.current.push(window.setTimeout(() => {
+      scene.finishFinalScan();
       setFlow(f => { completeFinalScan(f); return { ...f }; });
-      setGuideStep('CITY_WIDE_RESULT');
-    }, 4000);
-  }, []);
+      setGuideStep('FINAL_ARI');
+    }, manual.cctvs.length * 1800));
+  }, [manual.cctvs]);
 
   const doCompare = useCallback((userGuess: CharacterLabel) => {
     const scene = plazaRef.current;
@@ -390,41 +415,6 @@ function App() {
       ]} cta="완료!" onNext={() => setGuideStep('COMPLETE')} />
     )}
 
-    {/* ── CITY_WIDE_RESULT ── */}
-    {plaza && (guideStep === 'CITY_WIDE_RESULT' || guideStep === 'FINAL_ARI' || guideStep === 'COMPLETE' || guideStep === 'COMPLETE_CLOSED') && (() => {
-      const npcs = (plazaRef.current as any)?.round1?.npcs ?? [];
-      const aiCit = npcs.filter((n: any) => n.character.labels.aiLabel === 'CITIZEN').length;
-      const aiVil = npcs.filter((n: any) => n.character.labels.aiLabel === 'VILLAIN').length;
-      return (
-        <div className="overlay result-overlay dongle-font" role="dialog" aria-label="도시 전체 판별 결과">
-          <div className="city-result-card">
-            <h2>도시 전체 판별 완료!</h2>
-            <div className="city-result-grid">
-              {manual.cctvs.map((name, i) => (
-                <div key={name} className="city-cctv-card">
-                  <h3>CCTV {i + 1}</h3>
-                  <div className="cctv-result-marks">
-                    <span className="cctv-mark mark-cit">✓</span>
-                    <span className="cctv-mark mark-vil">✕</span>
-                    <span className="cctv-mark mark-cit">✓</span>
-                    <span className="cctv-mark mark-cit">✓</span>
-                    <span className="cctv-mark mark-vil">✕</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="city-result-summary">
-              <span>AI가 시민으로 판단한 친구 <strong>{aiCit}</strong>명</span>
-              <span>AI가 악당으로 판단한 친구 <strong>{aiVil}</strong>명</span>
-            </div>
-            {guideStep === 'CITY_WIDE_RESULT' && (
-              <button className="btn-ari-next noto-font" onClick={() => setGuideStep('FINAL_ARI')} style={{ float: 'none', padding: '0.8cqw 3cqw', fontSize: '1.5cqw', borderRadius: '1cqw', background: '#37474f', border: 'none', color: '#fff' }}>다음</button>
-            )}
-          </div>
-        </div>
-      );
-    })()}
-
     {/* ── FIRST_TRAINING overlay ── */}
     {plaza && flow.phase === 'FIRST_TRAINING' && (
       <div className="overlay training-overlay dongle-font" role="dialog" aria-label="AI 첫 번째 학습">
@@ -498,29 +488,12 @@ function App() {
       </div>
     )}
 
-    {/* ── FINAL_SCAN overlay ── */}
+    {/* ── FINAL_SCAN live CCTV sequence ── */}
     {plaza && flow.phase === 'FINAL_SCAN' && (
-      <div className="overlay scan-overlay dongle-font" role="dialog" aria-label="최종 스캔">
-        <div className="scan-card dongle-font">
-          <h2>🔍 최종 스캔</h2>
-          <div className="scan-grid">
-            {manual.cctvs.map((name, i) => (
-              <div key={name} className="scan-cell">
-                <span className="scan-label">CCTV {i + 1}</span>
-                <div className="scan-line" />
-              </div>
-            ))}
-          </div>
-          <div className="scan-stats" style={{ textAlign: 'center', marginTop: '1rem', fontWeight: 'bold' }}>
-            {(() => {
-              const npcs = (plazaRef.current as any)?.round1?.npcs ?? [];
-              const aiCit = npcs.filter((n: any) => n.character.labels.aiLabel === 'CITIZEN').length;
-              const aiVil = npcs.filter((n: any) => n.character.labels.aiLabel === 'VILLAIN').length;
-              return <p>AI 시민 {aiCit}명 / AI 악당 {aiVil}명 탐지 완료</p>;
-            })()}
-          </div>
-          <p className="scan-status">스캔 중...</p>
-        </div>
+      <div className="final-scan-status noto-font" role="status" aria-live="polite">
+        <strong>최종 스캔</strong>
+        <span>CCTV {finalScanCameraIndex + 1} / {manual.cctvs.length}</span>
+        <i aria-hidden="true" />
       </div>
     )}
 
@@ -723,7 +696,7 @@ function App() {
       {canStartFinalScan(flow) && (
         <button className="btn-train" onClick={() => setGuideStep('FINAL_SCAN_INTRO')} id="start-final-scan">🔍 최종 스캔</button>
       )}
-    </aside> : plaza ? <aside className="manual-panel noto-font" data-testid="manual-labeling">
+    </aside> : plaza && flow.phase !== 'FINAL_SCAN' && flow.phase !== 'COMPLETE' ? <aside className="manual-panel noto-font" data-testid="manual-labeling">
       <h1>{manual.selectedCctv ?? 'CCTV'}</h1>
       <p>화면 안 NPC {manual.visibleCharacterIds.length}명</p>
       <p>수동 라벨 {manual.manualLabeledDistinctCount}/8<br />검증 표본 {manual.verifiedTrainingSampleCount}/8<br />학습 준비 {manual.trainingReady ? 'READY' : '대기'}</p>

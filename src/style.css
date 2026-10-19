@@ -760,77 +760,42 @@ button:disabled {
   color: #b9f6ca;
 }
 
-/* Final scan overlay */
-.scan-card {
-  background: #0d1f2d;
-  border: 2px solid #00e5ff;
-  border-radius: 1.2cqw;
-  padding: 2.5cqw 3cqw;
-  width: 65%;
-  text-align: center;
-  box-shadow: 0 0 4cqw #00e5ff30;
-}
-
-.scan-card h2 {
-  font-size: 2.2cqw;
-  color: #e0f7fa;
-  margin: 0 0 1.5cqw;
-}
-
-.scan-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: .8cqw;
-  margin-bottom: 1.5cqw;
-}
-
-.scan-cell {
-  background: #0a1a25;
-  border: 1px solid #00acc1;
-  border-radius: .5cqw;
-  padding: .8cqw .4cqw;
-  position: relative;
-  overflow: hidden;
-}
-
-.scan-label {
-  font-size: 1.1cqw;
-  color: #80deea;
-  display: block;
-  margin-bottom: .4cqw;
-}
-
-.scan-line {
+/* Final scan keeps the live CCTV visible; this badge is status only. */
+.final-scan-status {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: .3cqw;
-  background: #00e5ff;
-  animation: scanDown 1.2s linear infinite;
+  z-index: 8;
+  top: .8cqw;
+  left: .8cqw;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: .15cqw .65cqw;
+  min-width: 12cqw;
+  padding: .55cqw .75cqw;
+  border: 1px solid #41d8ff;
+  border-radius: .5cqw;
+  background: #102133e8;
+  box-shadow: 0 0 .8cqw #41d8ff45;
+  pointer-events: none;
 }
 
-@keyframes scanDown {
-  from {
-    top: 0
-  }
-
-  to {
-    top: 100%
-  }
+.final-scan-status strong { color: #b8f4ff; font-size: .9cqw; }
+.final-scan-status span { color: #fff; font-size: .82cqw; }
+.final-scan-status i {
+  grid-column: 1 / -1;
+  height: .18cqw;
+  overflow: hidden;
+  background: #395567;
+}
+.final-scan-status i::after {
+  content: '';
+  display: block;
+  width: 35%;
+  height: 100%;
+  background: #41d8ff;
+  animation: final-scan-line 1s ease-in-out infinite alternate;
 }
 
-.scan-status {
-  font-size: 1.5cqw;
-  color: #80deea;
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0
-  }
-}
+@keyframes final-scan-line { to { transform: translateX(185%); } }
 
 /* Complete screen */
 .complete-card {
@@ -1013,6 +978,7 @@ button:disabled {
 
 .supervised-ari-guide .ai-dialogue-overlay {
   z-index: 45;
+  flex-direction: column;
   align-items: flex-end;
   justify-content: flex-end;
   background: #07111c30;
@@ -1020,15 +986,15 @@ button:disabled {
 }
 
 .supervised-ari-guide .ai-dialogue-panel {
-  grid-template-columns: 9cqw 1fr;
-  min-height: 15.5cqw;
-  padding: .8cqw 2cqw;
+  grid-template-columns: 10cqw 1fr;
+  min-height: 17cqw;
+  padding: 1cqw 2.2cqw;
   background: #102133f7;
 }
 
-.supervised-ari-guide .ai-dialogue-portrait { width: 9cqw; height: 10cqw; }
-.supervised-ari-guide .ai-dialogue-copy > p { margin: .2cqw 0 .4cqw; font-size: 1.05cqw; line-height: 1.35; }
-.supervised-ari-guide .ai-dialogue-copy > button { min-width: 10cqw; padding: .45cqw 1cqw; font-size: 1cqw; }
+.supervised-ari-guide .ai-dialogue-portrait { width: 10cqw; height: 11cqw; }
+.supervised-ari-guide .ai-dialogue-copy > p { margin: .25cqw 0 .5cqw; font-size: 1.35cqw; line-height: 1.4; }
+.supervised-ari-guide .ai-dialogue-copy > button { min-width: 10cqw; padding: .5cqw 1.1cqw; font-size: 1.15cqw; }
 
 .supervised-preparation {
   position: absolute;
@@ -1410,10 +1376,10 @@ button:disabled {
 @keyframes rlRobotBob { 50% { transform: translateY(-.25cqw); } }
 @media (prefers-reduced-motion: reduce) {
   .reinforcement-training *, .reinforcement-training *::before, .reinforcement-training *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
-  .supervised-cctv-head, .supervised-loading-spinner { animation-duration: .01ms; animation-iteration-count: 1; }
+  .supervised-cctv-head, .supervised-loading-spinner, .final-scan-status i::after { animation-duration: .01ms; animation-iteration-count: 1; }
 }
 
-/* AI Cutscenes & City-Wide Result */
+/* AI Cutscenes */
 .cutscene-container {
   position: relative;
   width: 30cqw;
@@ -1466,74 +1432,4 @@ button:disabled {
   20% { transform: translate(-2cqw, 0) scale(1); opacity: 1; }
   80% { transform: translate(-8cqw, 0) scale(1); opacity: 1; }
   100% { transform: translate(-12cqw, 0) scale(0.5); opacity: 0; }
-}
-
-.city-result-card {
-  background: #0f1821;
-  border: 3px solid #64ffda;
-  border-radius: 1.5cqw;
-  padding: 3cqw;
-  width: 60%;
-  text-align: center;
-  box-shadow: 0 0 5cqw #64ffda40;
-}
-
-.city-result-card h2 {
-  font-size: 2.8cqw;
-  color: #a7ffeb;
-  margin: 0 0 2cqw;
-}
-
-.city-result-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 1cqw;
-  margin-bottom: 2cqw;
-}
-
-.city-cctv-card {
-  background: #1c2a36;
-  border: 1.5px solid #4db6ac;
-  border-radius: 0.8cqw;
-  padding: 1cqw;
-}
-
-.city-cctv-card h3 {
-  font-size: 1.3cqw;
-  color: #80cbc4;
-  margin: 0 0 0.8cqw;
-}
-
-.cctv-result-marks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4cqw;
-  justify-content: center;
-}
-
-.cctv-mark {
-  width: 1.5cqw;
-  height: 1.5cqw;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1cqw;
-  font-weight: bold;
-}
-
-.mark-cit { background: #00838f; color: #fff; }
-.mark-vil { background: #c2185b; color: #fff; }
-
-.city-result-summary {
-  display: flex;
-  justify-content: center;
-  gap: 4cqw;
-  margin-bottom: 2cqw;
-  font-size: 1.8cqw;
-  color: #e0f2f1;
-}
-
-.city-result-summary strong {
-  font-size: 2.5cqw;
 }

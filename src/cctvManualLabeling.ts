@@ -51,6 +51,15 @@ export const visibleCharactersForZone = (npcs: readonly ObservablePlazaNpc[], zo
 export const remainingCameraNames = (cameras: readonly string[], selected: string | null) =>
   cameras.filter(camera => camera !== selected);
 
+export function unrevealedCharacterIds(visible: readonly CharacterId[], revealed: ReadonlySet<CharacterId>) {
+  const seen = new Set(revealed);
+  return visible.filter(id => {
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+}
+
 export function setUserLabel(runtime: CharacterRuntimeState, label: CharacterLabel) {
   runtime.labels.userLabel = label;
 }
