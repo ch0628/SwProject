@@ -10,16 +10,12 @@ ALPHA_THRESHOLD = 10
 
 
 def round1_target_height(repo: Path, species: str) -> int:
-    scene = (repo / "src/PlazaParkScene.ts").read_text(encoding="utf-8")
-    round1 = scene.split("private startRound1()", 1)[1].split("selectCctv(", 1)[0]
-    scale = float(re.search(r"CCTV_CHARACTER_VISUAL_SCALE\s*=\s*([\d.]+)", round1).group(1))
-    heights = re.search(r"visualHeight\s*=\s*\{([^}]+)\}", round1).group(1)
-    base = float(re.search(rf"{species}\s*:\s*([\d.]+)\s*\*", heights).group(1))
-    target = base * scale
-    rounded = round(target)
-    if abs(target - rounded) > 1e-9:
-        raise RuntimeError(f"{species.title()} target height must be an integer: {target}")
-    return rounded
+    manifest = (repo / "src" / "characterManifest.ts").read_text(encoding="utf-8")
+    block = re.search(r"SPECIES_DISPLAY_HEIGHT[^=]*=\s*Object\.freeze\(\{(.*?)\}\);", manifest, re.DOTALL)
+    match = block and re.search(rf"\b{re.escape(species)}:\s*(\d+)", block.group(1))
+    if not match:
+        raise RuntimeError(f"Unknown character species: {species}")
+    return int(match.group(1))
 
 
 def bbox(alpha: Image.Image) -> tuple[int, int, int, int]:

@@ -2,149 +2,94 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import {
-  CAT_FEMALE_V01,
-  CAT_FEMALE_WALK,
-  RABBIT_FEMALE_V01,
-  RABBIT_FEMALE_V02,
-  RABBIT_FEMALE_V03,
-  RABBIT_FEMALE_WALK,
-  catFemaleWalkAnimationKey,
-  catFemaleWalkDirection,
+  CHARACTER_FRAME_COUNT,
+  FACING_LIST,
+  SPECIES_DISPLAY_HEIGHT,
+  characterAppearance,
   characterAssetPath,
-  characterWalkAnimationKey,
-  characterWalkDirection,
+  characterRuntimeFrameSize,
+  characterVisualAsset,
   characterVisualTexture,
   characterVisualVariant,
-  FACING_LIST,
-  rabbitFemaleWalkAnimationKey,
+  characterWalkAnimationKey,
+  characterWalkDirection,
 } from '../src/characterManifest.ts';
-import { characterDefinition } from '../src/characterPool.ts';
+import { CHARACTER_POOL, characterDefinition } from '../src/characterPool.ts';
 
-test('Character assets use canonical production paths', () => {
+function publicFile(path: string) {
+  return new URL(`../public${path}`, import.meta.url);
+}
+
+function pngSize(path: string) {
+  const data = readFileSync(publicFile(path));
+  assert.equal(data.subarray(1, 4).toString(), 'PNG');
+  return { width: data.readUInt32BE(16), height: data.readUInt32BE(20) };
+}
+
+test('NPC number ranges select all 35 appearances exactly once', () => {
+  assert.equal(CHARACTER_POOL.length, 35);
+  assert.equal(characterAppearance('NPC01'), 'base');
+  assert.equal(characterAppearance('NPC10'), 'base');
+  assert.equal(characterAppearance('NPC11'), 'v01');
+  assert.equal(characterAppearance('NPC20'), 'v01');
+  assert.equal(characterAppearance('NPC21'), 'v02');
+  assert.equal(characterAppearance('NPC30'), 'v02');
+  assert.equal(characterAppearance('NPC31'), 'v03');
+  assert.equal(characterAppearance('NPC35'), 'v03');
+  assert.equal(characterVisualVariant('NPC01'), null);
+  assert.equal(characterVisualVariant('NPC27'), 'v02');
+  assert.throws(() => characterAppearance('NPC00'), /Unknown supervised character id/);
+
+  const appearances = CHARACTER_POOL.map(definition =>
+    `${definition.species}/${definition.gender}/${characterAppearance(definition.id)}`);
+  assert.equal(new Set(appearances).size, 35);
+});
+
+test('NPC27 is Cat Female v02 for both idle and walk', () => {
+  const definition = characterDefinition('NPC27')!;
+  assert.deepEqual(
+    (({ id, species, gender }) => ({ id, species, gender }))(definition),
+    { id: 'NPC27', species: 'cat', gender: 'female' },
+  );
+  const visual = characterVisualAsset(definition.id, definition.species, definition.gender);
+  assert.equal(visual.appearance, 'v02');
+  assert.equal(visual.base.paths.down, '/assets/characters/world/cat/female/v02/base/cat_female_v02_down.png');
+  assert.equal(visual.walk.paths.up, '/assets/characters/world/cat/female/v02/walk/cat_female_v02_walk_up.png');
+  assert.equal(characterVisualTexture('NPC27', 'cat', 'female', 'left'), visual.base.keys.left);
+  assert.equal(characterWalkAnimationKey('NPC27', 'cat', 'female', 'right'), visual.walk.keys.right);
+});
+
+test('all 35 idle and walking runtime assets exist with canonical dimensions', () => {
+  for (const definition of CHARACTER_POOL) {
+    const visual = characterVisualAsset(definition.id, definition.species, definition.gender);
+    const expected = characterRuntimeFrameSize(definition.species);
+    assert.equal(visual.frameCount, CHARACTER_FRAME_COUNT);
+    for (const direction of FACING_LIST) {
+      const idlePath = visual.base.paths[direction];
+      const walkPath = visual.walk.paths[direction];
+      assert.ok(existsSync(publicFile(idlePath)), `${definition.id} missing ${idlePath}`);
+      assert.ok(existsSync(publicFile(walkPath)), `${definition.id} missing ${walkPath}`);
+      assert.deepEqual(pngSize(idlePath), { width: expected.frameWidth, height: expected.frameHeight });
+      assert.deepEqual(pngSize(walkPath), { width: expected.frameWidth * CHARACTER_FRAME_COUNT, height: expected.frameHeight });
+    }
+  }
+});
+
+test('walk direction applies to every species and gender', () => {
+  for (const definition of CHARACTER_POOL) {
+    assert.equal(characterWalkDirection(definition.species, definition.gender, -1, 0), 'left');
+    assert.equal(characterWalkDirection(definition.species, definition.gender, 1, 0), 'right');
+    assert.equal(characterWalkDirection(definition.species, definition.gender, 0, -1), 'up');
+    assert.equal(characterWalkDirection(definition.species, definition.gender, 0, 1), 'down');
+    assert.equal(characterWalkDirection(definition.species, definition.gender, 0, 0), null);
+  }
+});
+
+test('species heights and shared non-supervised base paths stay stable', () => {
+  assert.deepEqual(SPECIES_DISPLAY_HEIGHT, { rabbit: 105, cat: 126, fox: 126, dog: 147, tiger: 168 });
   assert.equal(characterAssetPath('fox', 'female', 'down'), '/assets/characters/fox/base/female/fox_female_down.png');
   assert.equal(characterAssetPath('cat', 'female', 'right'), '/assets/characters/cat/base/female/cat_female_right.png');
   assert.equal(characterAssetPath('tiger', 'male', 'up'), '/assets/characters/tiger/base/male/tiger_male_up.png');
-
-  for (const direction of FACING_LIST) {
-    assert.ok(existsSync(new URL(`../public${characterAssetPath('cat', 'female', direction)}`, import.meta.url)));
-  }
-});
-
-test('Rabbit Female base walk is four-directional and isolated by species/gender', () => {
-  assert.equal(characterWalkDirection('rabbit', 'female', -1, 0), 'left');
-  assert.equal(characterWalkDirection('rabbit', 'female', 1, 0), 'right');
-  assert.equal(characterWalkDirection('rabbit', 'female', 0, -1), 'up');
-  assert.equal(characterWalkDirection('rabbit', 'female', 0, 1), 'down');
-  assert.equal(characterWalkDirection('rabbit', 'male', 1, 0), null);
-  assert.equal(characterWalkDirection('fox', 'female', 1, 0), null);
-  assert.equal(characterWalkAnimationKey('NPC02', 'rabbit', 'female', 'left'), RABBIT_FEMALE_WALK.keys.left);
-  assert.equal(characterWalkAnimationKey('NPC02', 'rabbit', 'male', 'left'), null);
-  assert.deepEqual(
-    (({ id, species, gender, verifiedLabel }) => ({ id, species, gender, verifiedLabel }))(characterDefinition('NPC21')!),
-    { id: 'NPC21', species: 'rabbit', gender: 'female', verifiedLabel: 'CITIZEN' },
-  );
-  for (const direction of FACING_LIST) {
-    const path = RABBIT_FEMALE_WALK.paths[direction];
-    assert.equal(path, `/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_${direction}.png`);
-    assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
-  }
-});
-
-test('Cat Female walk is default, four-directional, and isolated by species/gender', () => {
-  assert.equal(catFemaleWalkDirection('cat', 'female', -1, 0), 'left');
-  assert.equal(catFemaleWalkDirection('cat', 'female', 1, 0), 'right');
-  assert.equal(catFemaleWalkDirection('cat', 'female', 0, -1), 'up');
-  assert.equal(catFemaleWalkDirection('cat', 'female', 0, 1), 'down');
-  assert.equal(catFemaleWalkDirection('cat', 'female', 1, -2), 'up');
-  assert.equal(catFemaleWalkDirection('cat', 'female', -2, 1), 'left');
-  assert.equal(catFemaleWalkDirection('cat', 'female', 0, 0), null);
-  assert.equal(catFemaleWalkDirection('cat', 'male', 1, 0), null);
-  assert.equal(catFemaleWalkDirection('fox', 'female', 1, 0), null);
-  assert.equal(new Set(Object.values(CAT_FEMALE_WALK.keys)).size, 4);
-  for (const direction of FACING_LIST) {
-    const path = CAT_FEMALE_WALK.paths[direction];
-    assert.equal(path, `/assets/characters/cat/animations/female/runtime/world/cat_female_walk_${direction}.png`);
-    assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
-  }
-});
-
-test('NPC27 alone uses Cat Female v01 static and walk visuals', () => {
-  assert.equal(characterVisualVariant('NPC07'), null);
-  assert.equal(characterVisualVariant('NPC17'), null);
-  assert.equal(characterVisualVariant('NPC27'), 'v01');
-  assert.equal(characterVisualTexture('NPC07', 'cat', 'female', 'down'), 'cat_female_down');
-  assert.equal(characterVisualTexture('NPC17', 'cat', 'female', 'up'), 'cat_female_up');
-  assert.equal(characterVisualTexture('NPC27', 'cat', 'female', 'down'), CAT_FEMALE_V01.base.keys.down);
-  assert.equal(catFemaleWalkAnimationKey('NPC07', 'left'), CAT_FEMALE_WALK.keys.left);
-  assert.equal(catFemaleWalkAnimationKey('NPC17', 'right'), CAT_FEMALE_WALK.keys.right);
-  assert.equal(catFemaleWalkAnimationKey('NPC27', 'up'), CAT_FEMALE_V01.walk.keys.up);
-  assert.deepEqual(
-    (({ id, species, gender, verifiedLabel }) => ({ id, species, gender, verifiedLabel }))(characterDefinition('NPC27')!),
-    { id: 'NPC27', species: 'cat', gender: 'female', verifiedLabel: 'CITIZEN' },
-  );
-  assert.equal(new Set([...Object.values(CAT_FEMALE_V01.base.keys), ...Object.values(CAT_FEMALE_V01.walk.keys)]).size, 8);
-  for (const path of [...Object.values(CAT_FEMALE_V01.base.paths), ...Object.values(CAT_FEMALE_V01.walk.paths)]) {
-    assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
-  }
-});
-
-test('NPC11 alone uses Rabbit Female v01 static and walk visuals', () => {
-  assert.equal(characterVisualVariant('NPC02'), null);
-  assert.equal(characterVisualVariant('NPC21'), 'v02');
-  assert.equal(characterVisualVariant('NPC11'), 'v01');
-  assert.equal(characterVisualTexture('NPC02', 'rabbit', 'female', 'down'), 'rabbit_female_down');
-  assert.equal(characterVisualTexture('NPC11', 'rabbit', 'female', 'down'), RABBIT_FEMALE_V01.base.keys.down);
-  assert.equal(rabbitFemaleWalkAnimationKey('NPC02', 'left'), RABBIT_FEMALE_WALK.keys.left);
-  assert.equal(rabbitFemaleWalkAnimationKey('NPC11', 'up'), RABBIT_FEMALE_V01.walk.keys.up);
-  assert.deepEqual(
-    (({ id, species, gender, verifiedLabel }) => ({ id, species, gender, verifiedLabel }))(characterDefinition('NPC11')!),
-    { id: 'NPC11', species: 'rabbit', gender: 'female', verifiedLabel: 'VILLAIN' },
-  );
-  assert.equal(new Set([...Object.values(RABBIT_FEMALE_V01.base.keys), ...Object.values(RABBIT_FEMALE_V01.walk.keys)]).size, 8);
-  for (const path of [...Object.values(RABBIT_FEMALE_V01.base.paths), ...Object.values(RABBIT_FEMALE_V01.walk.paths)]) {
-    assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
-  }
-});
-
-test('NPC21 alone uses Rabbit Female v02 static and walk visuals', () => {
-  assert.equal(characterVisualVariant('NPC02'), null);
-  assert.equal(characterVisualVariant('NPC11'), 'v01');
-  assert.equal(characterVisualVariant('NPC21'), 'v02');
-  assert.equal(characterVisualTexture('NPC02', 'rabbit', 'female', 'down'), 'rabbit_female_down');
-  assert.equal(characterVisualTexture('NPC11', 'rabbit', 'female', 'up'), RABBIT_FEMALE_V01.base.keys.up);
-  assert.equal(characterVisualTexture('NPC21', 'rabbit', 'female', 'down'), RABBIT_FEMALE_V02.base.keys.down);
-  assert.equal(rabbitFemaleWalkAnimationKey('NPC02', 'left'), RABBIT_FEMALE_WALK.keys.left);
-  assert.equal(rabbitFemaleWalkAnimationKey('NPC11', 'right'), RABBIT_FEMALE_V01.walk.keys.right);
-  assert.equal(rabbitFemaleWalkAnimationKey('NPC21', 'up'), RABBIT_FEMALE_V02.walk.keys.up);
-  assert.deepEqual(
-    (({ id, species, gender, verifiedLabel }) => ({ id, species, gender, verifiedLabel }))(characterDefinition('NPC21')!),
-    { id: 'NPC21', species: 'rabbit', gender: 'female', verifiedLabel: 'CITIZEN' },
-  );
-  assert.equal(new Set([...Object.values(RABBIT_FEMALE_V02.base.keys), ...Object.values(RABBIT_FEMALE_V02.walk.keys)]).size, 8);
-  for (const path of [...Object.values(RABBIT_FEMALE_V02.base.paths), ...Object.values(RABBIT_FEMALE_V02.walk.paths)]) {
-    assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
-  }
-});
-
-test('NPC31 alone uses Rabbit Female v03 static and walk visuals', () => {
-  assert.equal(characterVisualVariant('NPC02'), null);
-  assert.equal(characterVisualVariant('NPC11'), 'v01');
-  assert.equal(characterVisualVariant('NPC21'), 'v02');
-  assert.equal(characterVisualVariant('NPC31'), 'v03');
-  assert.equal(characterVisualTexture('NPC02', 'rabbit', 'female', 'down'), 'rabbit_female_down');
-  assert.equal(characterVisualTexture('NPC21', 'rabbit', 'female', 'up'), RABBIT_FEMALE_V02.base.keys.up);
-  assert.equal(characterVisualTexture('NPC31', 'rabbit', 'female', 'down'), RABBIT_FEMALE_V03.base.keys.down);
-  assert.equal(rabbitFemaleWalkAnimationKey('NPC02', 'left'), RABBIT_FEMALE_WALK.keys.left);
-  assert.equal(rabbitFemaleWalkAnimationKey('NPC21', 'right'), RABBIT_FEMALE_V02.walk.keys.right);
-  assert.equal(rabbitFemaleWalkAnimationKey('NPC31', 'up'), RABBIT_FEMALE_V03.walk.keys.up);
-  assert.deepEqual(
-    (({ id, species, gender, verifiedLabel }) => ({ id, species, gender, verifiedLabel }))(characterDefinition('NPC31')!),
-    { id: 'NPC31', species: 'rabbit', gender: 'female', verifiedLabel: 'VILLAIN' },
-  );
-  assert.equal(new Set([...Object.values(RABBIT_FEMALE_V03.base.keys), ...Object.values(RABBIT_FEMALE_V03.walk.keys)]).size, 8);
-  for (const path of [...Object.values(RABBIT_FEMALE_V03.base.paths), ...Object.values(RABBIT_FEMALE_V03.walk.paths)]) {
-    assert.ok(existsSync(new URL(`../public${path}`, import.meta.url)));
-  }
 });
 
 test('Only production mode routing remains in application query handling', () => {

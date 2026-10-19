@@ -1,237 +1,97 @@
 export type Species = 'rabbit' | 'cat' | 'fox' | 'dog' | 'tiger';
 export type Gender = 'male' | 'female';
 export type Facing = 'down' | 'left' | 'right' | 'up';
+export type CharacterAppearance = 'base' | 'v01' | 'v02' | 'v03';
 
-export const RABBIT_FEMALE_WALK = Object.freeze({
-  frameWidth: 420,
-  frameHeight: 420,
-  frameCount: 6,
-  frameRate: 9,
-  keys: Object.freeze({
-    down: 'world-rabbit-female-walk-down-4lp',
-    left: 'world-rabbit-female-walk-left-4lp',
-    right: 'world-rabbit-female-walk-right-4lp',
-    up: 'world-rabbit-female-walk-up-4lp',
-  }),
-  paths: Object.freeze({
-    down: '/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_down.png',
-    left: '/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_left.png',
-    right: '/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_right.png',
-    up: '/assets/characters/rabbit/animations/female/runtime/world/rabbit_female_walk_up.png',
-  }),
+export const CHARACTER_FRAME_COUNT = 6;
+export const CHARACTER_FRAME_RATE = 9;
+export const CHARACTER_RUNTIME_PIXEL_DENSITY = 2;
+
+/** Final in-game heights used by every supervised-learning character. */
+export const SPECIES_DISPLAY_HEIGHT: Readonly<Record<Species, number>> = Object.freeze({
+  rabbit: 105,
+  cat: 126,
+  fox: 126,
+  dog: 147,
+  tiger: 168,
 });
 
-export const CAT_FEMALE_WALK = Object.freeze({
-  frameWidth: 378,
-  frameHeight: 504,
-  frameCount: 6,
-  frameRate: 9,
-  keys: Object.freeze({
-    down: 'world-cat-female-walk-down-4lp',
-    left: 'world-cat-female-walk-left-4lp',
-    right: 'world-cat-female-walk-right-4lp',
-    up: 'world-cat-female-walk-up-4lp',
-  }),
-  paths: Object.freeze({
-    down: '/assets/characters/cat/animations/female/runtime/world/cat_female_walk_down.png',
-    left: '/assets/characters/cat/animations/female/runtime/world/cat_female_walk_left.png',
-    right: '/assets/characters/cat/animations/female/runtime/world/cat_female_walk_right.png',
-    up: '/assets/characters/cat/animations/female/runtime/world/cat_female_walk_up.png',
-  }),
-});
+const SOURCE_FRAME_WIDTH = 512;
+const SOURCE_FRAME_HEIGHT = 682;
 
-export const CAT_FEMALE_V01 = Object.freeze({
-  id: 'v01',
-  base: Object.freeze({
-    keys: Object.freeze({
-      down: 'world-cat-female-v01-down-4lp',
-      left: 'world-cat-female-v01-left-4lp',
-      right: 'world-cat-female-v01-right-4lp',
-      up: 'world-cat-female-v01-up-4lp',
-    }),
-    paths: Object.freeze({
-      down: '/assets/characters/world/cat/female/v01/base/cat_female_v01_down.png',
-      left: '/assets/characters/world/cat/female/v01/base/cat_female_v01_left.png',
-      right: '/assets/characters/world/cat/female/v01/base/cat_female_v01_right.png',
-      up: '/assets/characters/world/cat/female/v01/base/cat_female_v01_up.png',
-    }),
-  }),
-  walk: Object.freeze({
-    keys: Object.freeze({
-      down: 'world-cat-female-v01-walk-down-4lp',
-      left: 'world-cat-female-v01-walk-left-4lp',
-      right: 'world-cat-female-v01-walk-right-4lp',
-      up: 'world-cat-female-v01-walk-up-4lp',
-    }),
-    paths: Object.freeze({
-      down: '/assets/characters/world/cat/female/v01/walk/cat_female_v01_walk_down.png',
-      left: '/assets/characters/world/cat/female/v01/walk/cat_female_v01_walk_left.png',
-      right: '/assets/characters/world/cat/female/v01/walk/cat_female_v01_walk_right.png',
-      up: '/assets/characters/world/cat/female/v01/walk/cat_female_v01_walk_up.png',
-    }),
-  }),
-});
-
-export const RABBIT_FEMALE_V01 = Object.freeze({
-  id: 'v01',
-  base: Object.freeze({
-    keys: Object.freeze({
-      down: 'world-rabbit-female-v01-down-4lp',
-      left: 'world-rabbit-female-v01-left-4lp',
-      right: 'world-rabbit-female-v01-right-4lp',
-      up: 'world-rabbit-female-v01-up-4lp',
-    }),
-    paths: Object.freeze({
-      down: '/assets/characters/world/rabbit/female/v01/base/rabbit_female_v01_down.png',
-      left: '/assets/characters/world/rabbit/female/v01/base/rabbit_female_v01_left.png',
-      right: '/assets/characters/world/rabbit/female/v01/base/rabbit_female_v01_right.png',
-      up: '/assets/characters/world/rabbit/female/v01/base/rabbit_female_v01_up.png',
-    }),
-  }),
-  walk: Object.freeze({
-    keys: Object.freeze({
-      down: 'world-rabbit-female-v01-walk-down-4lp',
-      left: 'world-rabbit-female-v01-walk-left-4lp',
-      right: 'world-rabbit-female-v01-walk-right-4lp',
-      up: 'world-rabbit-female-v01-walk-up-4lp',
-    }),
-    paths: Object.freeze({
-      down: '/assets/characters/world/rabbit/female/v01/walk/rabbit_female_v01_walk_down.png',
-      left: '/assets/characters/world/rabbit/female/v01/walk/rabbit_female_v01_walk_left.png',
-      right: '/assets/characters/world/rabbit/female/v01/walk/rabbit_female_v01_walk_right.png',
-      up: '/assets/characters/world/rabbit/female/v01/walk/rabbit_female_v01_walk_up.png',
-    }),
-  }),
-});
-
-export const RABBIT_FEMALE_V02 = Object.freeze({
-  id: 'v02',
-  base: Object.freeze({
-    keys: Object.freeze({
-      down: 'world-rabbit-female-v02-down-4lp',
-      left: 'world-rabbit-female-v02-left-4lp',
-      right: 'world-rabbit-female-v02-right-4lp',
-      up: 'world-rabbit-female-v02-up-4lp',
-    }),
-    paths: Object.freeze({
-      down: '/assets/characters/world/rabbit/female/v02/base/rabbit_female_v02_down.png',
-      left: '/assets/characters/world/rabbit/female/v02/base/rabbit_female_v02_left.png',
-      right: '/assets/characters/world/rabbit/female/v02/base/rabbit_female_v02_right.png',
-      up: '/assets/characters/world/rabbit/female/v02/base/rabbit_female_v02_up.png',
-    }),
-  }),
-  walk: Object.freeze({
-    keys: Object.freeze({
-      down: 'world-rabbit-female-v02-walk-down-4lp',
-      left: 'world-rabbit-female-v02-walk-left-4lp',
-      right: 'world-rabbit-female-v02-walk-right-4lp',
-      up: 'world-rabbit-female-v02-walk-up-4lp',
-    }),
-    paths: Object.freeze({
-      down: '/assets/characters/world/rabbit/female/v02/walk/rabbit_female_v02_walk_down.png',
-      left: '/assets/characters/world/rabbit/female/v02/walk/rabbit_female_v02_walk_left.png',
-      right: '/assets/characters/world/rabbit/female/v02/walk/rabbit_female_v02_walk_right.png',
-      up: '/assets/characters/world/rabbit/female/v02/walk/rabbit_female_v02_walk_up.png',
-    }),
-  }),
-});
-
-export const RABBIT_FEMALE_V03 = Object.freeze({
-  id: 'v03',
-  base: Object.freeze({
-    keys: Object.freeze({
-      down: 'world-rabbit-female-v03-down-4lp',
-      left: 'world-rabbit-female-v03-left-4lp',
-      right: 'world-rabbit-female-v03-right-4lp',
-      up: 'world-rabbit-female-v03-up-4lp',
-    }),
-    paths: Object.freeze({
-      down: '/assets/characters/world/rabbit/female/v03/base/rabbit_female_v03_down.png',
-      left: '/assets/characters/world/rabbit/female/v03/base/rabbit_female_v03_left.png',
-      right: '/assets/characters/world/rabbit/female/v03/base/rabbit_female_v03_right.png',
-      up: '/assets/characters/world/rabbit/female/v03/base/rabbit_female_v03_up.png',
-    }),
-  }),
-  walk: Object.freeze({
-    keys: Object.freeze({
-      down: 'world-rabbit-female-v03-walk-down-4lp',
-      left: 'world-rabbit-female-v03-walk-left-4lp',
-      right: 'world-rabbit-female-v03-walk-right-4lp',
-      up: 'world-rabbit-female-v03-walk-up-4lp',
-    }),
-    paths: Object.freeze({
-      down: '/assets/characters/world/rabbit/female/v03/walk/rabbit_female_v03_walk_down.png',
-      left: '/assets/characters/world/rabbit/female/v03/walk/rabbit_female_v03_walk_left.png',
-      right: '/assets/characters/world/rabbit/female/v03/walk/rabbit_female_v03_walk_right.png',
-      up: '/assets/characters/world/rabbit/female/v03/walk/rabbit_female_v03_walk_up.png',
-    }),
-  }),
-});
-
-type VisualVariant = 'v01' | 'v02' | 'v03';
-
-const CHARACTER_VISUAL_VARIANTS: Record<string, { species: Species, gender: Gender, id: VisualVariant }> = {
-  NPC11: { species: 'rabbit', gender: 'female', id: 'v01' },
-  NPC21: { species: 'rabbit', gender: 'female', id: 'v02' },
-  NPC27: { species: 'cat', gender: 'female', id: 'v01' },
-  NPC31: { species: 'rabbit', gender: 'female', id: 'v03' },
-};
-
-export function characterVisualVariant(characterId: string): VisualVariant | null {
-  return CHARACTER_VISUAL_VARIANTS[characterId]?.id ?? null;
+export function characterAppearance(characterId: string): CharacterAppearance {
+  const match = /^NPC(\d{2})$/.exec(characterId);
+  const number = match ? Number(match[1]) : 0;
+  if (number >= 1 && number <= 10) return 'base';
+  if (number >= 11 && number <= 20) return 'v01';
+  if (number >= 21 && number <= 30) return 'v02';
+  if (number >= 31 && number <= 35) return 'v03';
+  throw new RangeError(`Unknown supervised character id: ${characterId}`);
 }
 
-function assignedVisualVariant(characterId: string, species: Species, gender: Gender): VisualVariant | null {
-  const assignment = CHARACTER_VISUAL_VARIANTS[characterId];
-  return assignment?.species === species && assignment.gender === gender ? assignment.id : null;
+export function characterVisualVariant(characterId: string): Exclude<CharacterAppearance, 'base'> | null {
+  const appearance = characterAppearance(characterId);
+  return appearance === 'base' ? null : appearance;
+}
+
+export function characterRuntimeFrameSize(species: Species) {
+  const frameHeight = SPECIES_DISPLAY_HEIGHT[species] * CHARACTER_RUNTIME_PIXEL_DENSITY;
+  return Object.freeze({
+    frameWidth: Math.round(SOURCE_FRAME_WIDTH * frameHeight / SOURCE_FRAME_HEIGHT),
+    frameHeight,
+  });
+}
+
+function directional<T>(factory: (facing: Facing) => T): Readonly<Record<Facing, T>> {
+  return Object.freeze({
+    down: factory('down'),
+    left: factory('left'),
+    right: factory('right'),
+    up: factory('up'),
+  });
+}
+
+export function characterVisualAsset(characterId: string, species: Species, gender: Gender) {
+  const appearance = characterAppearance(characterId);
+  const prefix = `${species}_${gender}${appearance === 'base' ? '' : `_${appearance}`}`;
+  const root = `/assets/characters/world/${species}/${gender}/${appearance}`;
+  const textureRoot = `world-${species}-${gender}-${appearance}`;
+  return Object.freeze({
+    appearance,
+    ...characterRuntimeFrameSize(species),
+    frameCount: CHARACTER_FRAME_COUNT,
+    frameRate: CHARACTER_FRAME_RATE,
+    base: Object.freeze({
+      keys: directional(facing => `${textureRoot}-${facing}`),
+      paths: directional(facing => `${root}/base/${prefix}_${facing}.png`),
+    }),
+    walk: Object.freeze({
+      keys: directional(facing => `${textureRoot}-walk-${facing}`),
+      paths: directional(facing => `${root}/walk/${prefix}_walk_${facing}.png`),
+    }),
+  });
 }
 
 export function characterVisualTexture(
   characterId: string, species: Species, gender: Gender, facing: Facing,
 ): string {
-  const variant = assignedVisualVariant(characterId, species, gender);
-  if (species === 'cat' && gender === 'female' && variant === 'v01') return CAT_FEMALE_V01.base.keys[facing];
-  if (species === 'rabbit' && gender === 'female' && variant === 'v01') return RABBIT_FEMALE_V01.base.keys[facing];
-  if (species === 'rabbit' && gender === 'female' && variant === 'v02') return RABBIT_FEMALE_V02.base.keys[facing];
-  if (species === 'rabbit' && gender === 'female' && variant === 'v03') return RABBIT_FEMALE_V03.base.keys[facing];
-  return characterTexture(species, gender, facing);
-}
-
-export function catFemaleWalkAnimationKey(characterId: string, direction: Facing): string {
-  return assignedVisualVariant(characterId, 'cat', 'female') === 'v01'
-    ? CAT_FEMALE_V01.walk.keys[direction]
-    : CAT_FEMALE_WALK.keys[direction];
-}
-
-export function rabbitFemaleWalkAnimationKey(characterId: string, direction: Facing): string {
-  const variant = assignedVisualVariant(characterId, 'rabbit', 'female');
-  if (variant === 'v01') return RABBIT_FEMALE_V01.walk.keys[direction];
-  if (variant === 'v02') return RABBIT_FEMALE_V02.walk.keys[direction];
-  if (variant === 'v03') return RABBIT_FEMALE_V03.walk.keys[direction];
-  return RABBIT_FEMALE_WALK.keys[direction];
-}
-
-export function catFemaleWalkDirection(
-  species: Species, gender: Gender, dx: number, dy: number,
-): Facing | null {
-  if (species !== 'cat' || gender !== 'female' || Math.abs(dx) <= .001 && Math.abs(dy) <= .001) return null;
-  return Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+  return characterVisualAsset(characterId, species, gender).base.keys[facing];
 }
 
 export function characterWalkDirection(
-  species: Species, gender: Gender, dx: number, dy: number,
+  _species: Species, _gender: Gender, dx: number, dy: number,
 ): Facing | null {
-  if (gender !== 'female' || species !== 'cat' && species !== 'rabbit') return null;
-  return catFemaleWalkDirection('cat', 'female', dx, dy);
+  if (Math.abs(dx) <= .001 && Math.abs(dy) <= .001) return null;
+  return Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
 }
 
 export function characterWalkAnimationKey(
   characterId: string, species: Species, gender: Gender, direction: Facing,
-): string | null {
-  if (species === 'cat' && gender === 'female') return catFemaleWalkAnimationKey(characterId, direction);
-  return species === 'rabbit' && gender === 'female' ? rabbitFemaleWalkAnimationKey(characterId, direction) : null;
+): string {
+  return characterVisualAsset(characterId, species, gender).walk.keys[direction];
 }
 
+/** Shared base textures retained for smoke/debug actors outside the supervised game. */
 export function characterTexture(species: Species, gender: Gender, facing: Facing): string {
   return `${species}_${gender}_${facing}`;
 }
@@ -245,14 +105,14 @@ export const GENDER_LIST: Gender[] = ['male', 'female'];
 export const FACING_LIST: Facing[] = ['down', 'left', 'right', 'up'];
 
 export const NPC_VISUAL_ASSIGNMENT: { species: Species, gender: Gender }[] = [
-  { species: 'rabbit', gender: 'male' },   // NPC 1 (index 0)
-  { species: 'rabbit', gender: 'female' }, // NPC 2
-  { species: 'cat', gender: 'male' },      // NPC 3
-  { species: 'cat', gender: 'female' },    // NPC 4
-  { species: 'fox', gender: 'male' },      // NPC 5
-  { species: 'fox', gender: 'female' },    // NPC 6
-  { species: 'dog', gender: 'male' },      // NPC 7
-  { species: 'dog', gender: 'female' },    // NPC 8
-  { species: 'tiger', gender: 'male' },    // NPC 9
-  { species: 'tiger', gender: 'female' }   // NPC 10
+  { species: 'rabbit', gender: 'male' },
+  { species: 'rabbit', gender: 'female' },
+  { species: 'cat', gender: 'male' },
+  { species: 'cat', gender: 'female' },
+  { species: 'fox', gender: 'male' },
+  { species: 'fox', gender: 'female' },
+  { species: 'dog', gender: 'male' },
+  { species: 'dog', gender: 'female' },
+  { species: 'tiger', gender: 'male' },
+  { species: 'tiger', gender: 'female' },
 ];

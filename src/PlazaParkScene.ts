@@ -4,13 +4,13 @@ import { overlaps, footprint, navigationBounds, canNavigate } from './collision'
 import { canStand, mapObjects, mapWorld, moveProbe, plazaArchitecture, enterDoor, doorLane, type GrayboxMap, type MapObject } from './plazaPark';
 import { createSmoke, stepSmoke, smokeMetrics, SMOKE_ROUTES, TRAFFIC_ROUTE_PATHS, SMOKE_SIZES, type RouteId, type AllRouteId, type SmokeRun } from './plazaTraffic';
 import { createPlazaFullFlow35, stepFullFlow, fullFlowSummary, type FullFlowState } from './plazaFullFlow';
-import { CAT_FEMALE_V01, CAT_FEMALE_WALK, RABBIT_FEMALE_V01, RABBIT_FEMALE_V02, RABBIT_FEMALE_V03, RABBIT_FEMALE_WALK, characterWalkAnimationKey, characterWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
+import { characterVisualAsset, characterWalkAnimationKey, characterWalkDirection, characterVisualTexture, characterTexture, characterAssetPath, SPECIES_DISPLAY_HEIGHT, SPECIES_LIST, GENDER_LIST, FACING_LIST, NPC_VISUAL_ASSIGNMENT, type Facing } from './characterManifest';
 import { createSupervisedPlazaDemo, createSupervisedPlazaGroup, stepPlazaNpcGroup } from './plazaNpcRuntime';
 import {
   loadCameraZones, manualCharacterView, setUserLabel, visibleCharactersForZone,
   type CameraZone, type ManualLabelingState,
 } from './cctvManualLabeling';
-import type { BehaviorHistoryEntry, CharacterId, CharacterLabel } from './characterPool';
+import { CHARACTER_POOL, type BehaviorHistoryEntry, type CharacterId, type CharacterLabel } from './characterPool';
 import { createRound1Group, DEFAULT_ROUND1_CONFIG, round1TrainingState, stepRound1Group, verifyRoundTrainingSample, type Round1Group } from './plazaRound1';
 import { applyRound2ToGroup, getPostRetrainingPrediction, MONITORING_TARGET_IDS, prepareMonitoringTargets, ROUND2_COMPARISON_PLAN, round2TargetStatus, round2TrainingState, submitRound2Comparison, verifyMonitoringTarget } from './plazaRound2';
 import { labelAndVerifyRound1Sample } from './supervisedGameFlow';
@@ -98,27 +98,25 @@ export class PlazaParkScene extends Phaser.Scene {
         }
       }
     }
-    for(const walk of [CAT_FEMALE_WALK,RABBIT_FEMALE_WALK])for(const direction of FACING_LIST)this.load.spritesheet(
-      walk.keys[direction],walk.paths[direction],
-      {frameWidth:walk.frameWidth,frameHeight:walk.frameHeight,endFrame:walk.frameCount-1},
-    );
-    for(const [variant,walk] of [[CAT_FEMALE_V01,CAT_FEMALE_WALK],[RABBIT_FEMALE_V01,RABBIT_FEMALE_WALK],[RABBIT_FEMALE_V02,RABBIT_FEMALE_WALK],[RABBIT_FEMALE_V03,RABBIT_FEMALE_WALK]] as const)for(const direction of FACING_LIST){
-      this.load.image(variant.base.keys[direction],variant.base.paths[direction]);
-      this.load.spritesheet(variant.walk.keys[direction],variant.walk.paths[direction],
-        {frameWidth:walk.frameWidth,frameHeight:walk.frameHeight,endFrame:walk.frameCount-1});
+    for(const definition of CHARACTER_POOL){
+      const visual=characterVisualAsset(definition.id,definition.species,definition.gender);
+      for(const direction of FACING_LIST){
+        this.load.image(visual.base.keys[direction],visual.base.paths[direction]);
+        this.load.spritesheet(visual.walk.keys[direction],visual.walk.paths[direction],
+          {frameWidth:visual.frameWidth,frameHeight:visual.frameHeight,endFrame:visual.frameCount-1});
+      }
     }
   }
   create() {
     this.mapData = this.cache.tilemap.get('plaza-park').data as GrayboxMap;
     this.cameraZones = this.mapVersion === 'v2' ? loadCameraZones(this.mapData) : [];
     const map = this.make.tilemap({ key: 'plaza-park' });
-    for(const walk of [CAT_FEMALE_WALK,RABBIT_FEMALE_WALK])for(const direction of FACING_LIST){
-      const key=walk.keys[direction];
-      if(!this.anims.exists(key))this.anims.create({key,frames:this.anims.generateFrameNumbers(key,{start:0,end:walk.frameCount-1}),frameRate:walk.frameRate,repeat:-1});
-    }
-    for(const [variant,walk] of [[CAT_FEMALE_V01,CAT_FEMALE_WALK],[RABBIT_FEMALE_V01,RABBIT_FEMALE_WALK],[RABBIT_FEMALE_V02,RABBIT_FEMALE_WALK],[RABBIT_FEMALE_V03,RABBIT_FEMALE_WALK]] as const)for(const direction of FACING_LIST){
-      const variantKey=variant.walk.keys[direction];
-      if(!this.anims.exists(variantKey))this.anims.create({key:variantKey,frames:this.anims.generateFrameNumbers(variantKey,{start:0,end:walk.frameCount-1}),frameRate:walk.frameRate,repeat:-1});
+    for(const definition of CHARACTER_POOL){
+      const visual=characterVisualAsset(definition.id,definition.species,definition.gender);
+      for(const direction of FACING_LIST){
+        const key=visual.walk.keys[direction];
+        if(!this.anims.exists(key))this.anims.create({key,frames:this.anims.generateFrameNumbers(key,{start:0,end:visual.frameCount-1}),frameRate:visual.frameRate,repeat:-1});
+      }
     }
     const tiles = map.addTilesetImage('graybox', 'graybox')!;
     map.createLayer('Ground', tiles)!.setVisible(false);
@@ -227,8 +225,7 @@ export class PlazaParkScene extends Phaser.Scene {
     this.smoke={npcs:[],elapsed:0,paused:false};this.fullFlow=null;this.supervised=null;this.round1=null;
     this.supervisedSprites.forEach(sprite=>sprite.destroy());this.supervisedSprites=[];
     this.round1=createRound1Group(this.mapData,this.cameraZones,DEFAULT_ROUND1_CONFIG);
-    const CCTV_CHARACTER_VISUAL_SCALE = 1.40;
-    const visualHeight={rabbit:75 * CCTV_CHARACTER_VISUAL_SCALE,cat:90 * CCTV_CHARACTER_VISUAL_SCALE,fox:90 * CCTV_CHARACTER_VISUAL_SCALE,dog:105 * CCTV_CHARACTER_VISUAL_SCALE,tiger:120 * CCTV_CHARACTER_VISUAL_SCALE};
+    const visualHeight=SPECIES_DISPLAY_HEIGHT;
     for(const npc of this.round1.npcs){
       const {species,gender,id}=npc.definition;
       const texture=characterVisualTexture(id,species,gender,'down');
@@ -462,8 +459,7 @@ export class PlazaParkScene extends Phaser.Scene {
         const count=mode==='supervised'?5:Number(mode.slice('supervised'.length));
         this.goTo('W21'); // Keep the inspection actor outside the measured entry flows.
         this.supervised=count===5?createSupervisedPlazaDemo(this.mapData):createSupervisedPlazaGroup(this.mapData,count);
-        const CCTV_CHARACTER_VISUAL_SCALE = 1.20;
-        const visualHeight={rabbit:75 * CCTV_CHARACTER_VISUAL_SCALE,cat:90 * CCTV_CHARACTER_VISUAL_SCALE,fox:90 * CCTV_CHARACTER_VISUAL_SCALE,dog:105 * CCTV_CHARACTER_VISUAL_SCALE,tiger:120 * CCTV_CHARACTER_VISUAL_SCALE};
+        const visualHeight=SPECIES_DISPLAY_HEIGHT;
         for(const npc of this.supervised.npcs){
           const {species,gender,id}=npc.definition;
           const texture=characterVisualTexture(id,species,gender,'down');
