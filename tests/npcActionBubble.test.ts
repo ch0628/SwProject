@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { actionBubblePlacement, actionBubbleTextureKey } from '../src/npcActionBubble.ts';
+import { actionBubblePlacement, actionBubbleTextureKey, isInsideMainCctv } from '../src/npcActionBubble.ts';
 
 test('only active suspicious main behaviors receive an action bubble', () => {
   assert.equal(actionBubbleTextureKey('HOLDING', 'STEALING'), 'action-icon-stealing');
@@ -34,4 +34,10 @@ test('bubble clears its nearby group and moves beside it at the top edge', () =>
     y: 14,
     rotation: 0,
   });
+});
+
+test('only the main CCTV viewport accepts bubble clicks', () => {
+  assert.equal(isInsideMainCctv(300, 200, 720, 420), true);
+  assert.equal(isInsideMainCctv(300, 420, 720, 420), false, 'preview strip starts at the main viewport bottom');
+  assert.equal(isInsideMainCctv(720, 200, 720, 420), false, 'right panel is outside the CCTV viewport');
 });

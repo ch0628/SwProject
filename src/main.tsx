@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, useCallback, type CSSProperties, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import * as Phaser from 'phaser';
 import { ScaleValidationScene, type Controls, type Stats } from './ScaleValidationScene';
@@ -23,6 +23,7 @@ import {
   resolveSupervisedCutscene, SUPERVISED_CUTSCENE_REQUEST,
   type SupervisedCutscene, type SupervisedCutsceneRequest,
 } from './supervisedCutscene';
+import { isSuspiciousTrackingBehavior, trackingEntryKind, trackingPeriod, type TrackingEntryKind } from './trackingPresentation';
 import { AiBasicsApp } from './modules/ai-basics/AiBasicsApp';
 import { AriDialogue } from './modules/ai-basics/AriDialogue';
 import { UnsupervisedApp } from './modules/unsupervised/UnsupervisedApp';
@@ -55,7 +56,7 @@ type AriGuideStep =
   | 'COMPLETE'
   | null;
 
-const AriGuideOverlay = ({ title, lines, cta, onNext }: { title?: string, lines: string[], cta: string, onNext: () => void }) => {
+const AriGuideOverlay = ({ title, lines, visuals, cta, onNext }: { title?: string, lines: string[], visuals?: readonly ReactNode[], cta: string, onNext: () => void }) => {
   const [page, setPage] = useState(0);
   const isLast = page >= lines.length - 1;
   const advance = useCallback(() => isLast ? onNext() : setPage(current => current + 1), [isLast, onNext]);
@@ -68,13 +69,16 @@ const AriGuideOverlay = ({ title, lines, cta, onNext }: { title?: string, lines:
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [advance]);
-  return <div className="supervised-ari-guide noto-font"><AriDialogue
-    text={`${title ? `${title}\n\n` : ''}${lines[page]}`}
-    expression={title === '지도학습' ? 'happy' : 'neutral'}
-    nextLabel={isLast ? cta : '다음'}
-    showSpaceHint
-    onNext={advance}
-  /></div>;
+  return <div className="supervised-ari-guide noto-font">
+    <AriDialogue
+      text={`${title ? `${title}\n\n` : ''}${lines[page]}`}
+      expression={title === '지도학습' ? 'happy' : 'neutral'}
+      nextLabel={isLast ? cta : '다음'}
+      showSpaceHint
+      onNext={advance}
+    />
+    {visuals?.[page]}
+  </div>;
 };
 
 const SupervisedPreparation = ({ error }: { error: string }) => <div className={`supervised-preparation noto-font ${error ? 'is-error' : ''}`} role="status" aria-live="polite">
@@ -155,6 +159,28 @@ const OutlineLegend = ({ phase }: { phase: 'ROUND1' | 'COMPARE' | 'MONITOR' }) =
     </span>)}
   </div>;
 };
+
+const Round1OutlineTutorial = () => <section className="outline-tutorial-example" aria-label="시민과 악당 테두리 예시">
+  <h2>테두리로 내가 고른 답을 확인해요</h2>
+  <div>
+    {([['시민', NPC_OUTLINE_COLORS.citizen], ['악당', NPC_OUTLINE_COLORS.villain]] as const).map(([label, color]) =>
+      <figure key={label} style={{ '--outline-color': cssColor(color) } as CSSProperties}>
+        <span><img src={OUTLINE_LEGEND_CHARACTER} alt="" /></span>
+        <figcaption>{label}</figcaption>
+      </figure>
+    )}
+  </div>
+</section>;
+
+const TRACKING_KIND_LABEL: Record<TrackingEntryKind, string> = {
+  PAST_INCIDENT: '과거 사건',
+  PAST_RECORD: '과거 기록',
+  SUSPICIOUS: '수상 행동',
+  ROUTINE: '일상 행동',
+};
+
+const characterLabel = (label: CharacterLabel | null) =>
+  label === 'VILLAIN' ? '악당' : label === 'CITIZEN' ? '시민' : '미확인';
 
 function formatBehavior(entry: BehaviorHistoryEntry): string {
   if (entry.behavior.semantic && SEMANTIC_MAPPING[entry.behavior.semantic]) {
@@ -369,6 +395,19 @@ function App() {
   const r2Targets = plazaRef.current?.getRound2TargetStatuses() ?? [];
   const trackingId = flow.trackingNpcId;
   const trackingVerified = trackingId ? plazaRef.current?.getVerifiedLabel(trackingId) : null;
+  const trackingUserLabel = trackingId && manual.selectedCharacter?.id === trackingId ? manual.selectedCharacter.userLabel : null;
+  const trackingAiLabel = trackingId ? plazaRef.current?.getAiLabel(trackingId) ?? null : null;
+  const suspiciousTrackingEntry = trackingHistory.find(entry => isSuspiciousTrackingBehavior(entry.behavior.semantic));
+  const routineTrackingEntry = [...trackingHistory].reverse().find(entry => !isSuspiciousTrackingBehavior(entry.behavior.semantic));
+  const trackingVerdictExplanation = trackingVerified === 'VILLAIN'
+    ? suspiciousTrackingEntry
+      ? `${trackingPeriod(suspiciousTrackingEntry) === 'PAST' ? '과거 기록' : '이번 CCTV 관찰'}에서 “${formatBehavior(suspiciousTrackingEntry)}”라는 수상 사건이 확인됐어요.`
+      : '기록을 종합해 수상한 행동이 확인되어 실제 악당으로 판별됐어요.'
+    : trackingVerified === 'CITIZEN'
+      ? routineTrackingEntry
+        ? `“${formatBehavior(routineTrackingEntry)}”는 수상 사건으로 분류되지 않아요. 일상 행동만 확인되어 실제 시민이에요.`
+        : '악당으로 볼 만한 수상 사건이 발견되지 않아 실제 시민이에요.'
+      : null;
 
   const focusCharacter = (id: string) => mapAction(() => {
     plazaRef.current?.focusCharacter(id as CharacterId);
@@ -395,8 +434,8 @@ function App() {
     {plaza && supervisedReady && guideStep === 'ROUND1_INTRO' && (
       <AriGuideOverlay title="마을 CCTV" lines={[
         "먼저 네가 직접 몇 명을 확인해줘!\n화면 속 친구를 눌러서\n시민인지 악당인지 골라보자.",
-        "초록 체크는 시민,\n빨간 X는 악당으로 고른 표시야!\n\n확인한 정답이 8개 모이면\nAI가 그걸 보고 공부할 수 있어."
-      ]} cta="알겠어!" onNext={() => setGuideStep(null)} />
+        "청록색 테두리는 시민,\n빨간색 테두리는 악당으로 고른 표시야!\n\n확인한 정답이 8개 모이면\nAI가 그걸 보고 공부할 수 있어."
+      ]} visuals={[null, <Round1OutlineTutorial key="round1-outline-example" />]} cta="알겠어!" onNext={() => setGuideStep(null)} />
     )}
     {plaza && supervisedReady && guideStep === 'FIRST_TRAINING_INTRO' && (
       <AriGuideOverlay title="AI 첫 학습" lines={[
@@ -468,40 +507,62 @@ function App() {
     {plaza && flow.phase === 'TRACKING_REVIEW' && (
       <div className="overlay tracking-overlay dongle-font" role="dialog" aria-label="추적 기록">
         <div className="tracking-card dongle-font">
-          <h2>📋 추적 기록 — {manual.selectedCharacter?.id ?? flow.trackingNpcId}</h2>
+          <h2>📋 이 친구의 추적 기록</h2>
           
           {flow.trackingContext === 'COMPARE' && !trackingVerified && (
-            <div className="tracking-explanation" style={{ background: '#3a1a1a', border: '1px solid #ef5350', padding: '1cqw', borderRadius: '0.8cqw', marginBottom: '1cqw' }}>
-              <p style={{ margin: '0 0 0.5cqw', color: '#ffcdd2', fontSize: '1.4cqw', fontWeight: 'bold' }}>너와 AI의 생각이 달라!</p>
-              <p style={{ margin: '0 0 0.5cqw', color: '#eceff1', fontSize: '1.2cqw' }}>추적 기록을 보고 실제로 어떤 행동을 했는지 확인해보자.</p>
-              <p style={{ margin: 0, color: '#b0bec5', fontSize: '1.1cqw' }}>기록을 살펴봤다면 <strong>[정답 확인]</strong>을 눌러 이 친구의 정답을 확정해줘.</p>
+            <div className="tracking-explanation is-compare">
+              <h3>너와 AI의 생각이 달라!</h3>
+              <div className="tracking-label-comparison">
+                <span>내 판단 <strong>{characterLabel(trackingUserLabel)}</strong></span>
+                <span>AI 판단 <strong>{characterLabel(trackingAiLabel)}</strong></span>
+              </div>
+              <p>과거 사건이나 이번 CCTV의 수상 행동이 있는지 확인해보자.</p>
+              <small>기록을 살펴본 뒤 <strong>정답 확인</strong>을 눌러 실제 정답과 이유를 확인해줘.</small>
+            </div>
+          )}
+          {flow.trackingContext === 'MONITORING' && !trackingVerified && (
+            <div className="tracking-explanation is-monitoring">
+              <h3>AI의 판단을 다시 확인해보자</h3>
+              <div className="tracking-label-comparison"><span>AI 판단 <strong>{characterLabel(trackingAiLabel)}</strong></span></div>
+              <p>과거 기록과 이번 CCTV 관찰을 살펴본 뒤 정답을 확인해줘.</p>
             </div>
           )}
 
-          <ul className="history-list">
-            {trackingHistory.length === 0 && <li className="history-empty">기록 없음</li>}
-            {trackingHistory.map((entry, i) => {
-              const eventCutscene = flow.trackingNpcId ? resolveSupervisedCutscene({
-                npcId: flow.trackingNpcId,
-                behavior: entry.behavior.semantic,
-                moment: entry.simulationTime < 0 || entry.location === 'OFFSCREEN' ? 'HISTORY' : 'CURRENT',
-              }) : null;
-              const content = <>
-                <span className="history-time">{entry.simulationTime.toFixed(1)}초</span>
-                <span className="history-zone">{ZONE_MAPPING[entry.zone] ?? entry.zone}</span>
-                <span className="history-behavior">{formatBehavior(entry)}</span>
-                {eventCutscene && <span className="history-cutscene-cta">장면 보기</span>}
-              </>;
-              return <li key={i} className={`history-entry prim-${entry.behavior.primitive.toLowerCase()}`}>
-                {eventCutscene
-                  ? <button type="button" className="history-entry-content" onClick={() => setCutscene(eventCutscene)} aria-label={`${formatBehavior(entry)} 컷신 보기`}>{content}</button>
-                  : <div className="history-entry-content">{content}</div>}
-              </li>;
+          <div className="history-list">
+            {trackingHistory.length === 0 && <p className="history-empty">기록 없음</p>}
+            {(['PAST', 'ROUND'] as const).map(period => {
+              const entries = trackingHistory.filter(entry => trackingPeriod(entry) === period);
+              if (!entries.length) return null;
+              return <section className={`history-period period-${period.toLowerCase()}`} key={period}>
+                <h3>{period === 'PAST' ? '과거 기록' : '이번 CCTV 관찰'}</h3>
+                <ul>
+                  {entries.map((entry, i) => {
+                    const kind = trackingEntryKind(entry);
+                    const eventCutscene = flow.trackingNpcId ? resolveSupervisedCutscene({
+                      npcId: flow.trackingNpcId,
+                      behavior: entry.behavior.semantic,
+                      moment: period === 'PAST' ? 'HISTORY' : 'CURRENT',
+                    }) : null;
+                    const content = <>
+                      <span className={`history-kind kind-${kind.toLowerCase().replace('_', '-')}`}>{TRACKING_KIND_LABEL[kind]}</span>
+                      <span className="history-zone">{ZONE_MAPPING[entry.zone] ?? entry.zone}</span>
+                      <span className="history-behavior">{formatBehavior(entry)}</span>
+                      {eventCutscene && <span className="history-cutscene-cta">장면 보기</span>}
+                    </>;
+                    return <li key={`${entry.simulationTime}-${i}`} className={`history-entry kind-${kind.toLowerCase().replace('_', '-')}`}>
+                      {eventCutscene
+                        ? <button type="button" className="history-entry-content" onClick={() => setCutscene(eventCutscene)} aria-label={`${formatBehavior(entry)} 컷신 보기`}>{content}</button>
+                        : <div className="history-entry-content">{content}</div>}
+                    </li>;
+                  })}
+                </ul>
+              </section>;
             })}
-          </ul>
+          </div>
           {trackingVerified && (
-            <div className="verified-reveal">
-              검증 완료 · 실제 <strong>{trackingVerified === 'VILLAIN' ? '악당' : '시민'}</strong>
+            <div className={`verified-reveal is-${trackingVerified.toLowerCase()}`}>
+              <strong>정답 · 실제 {characterLabel(trackingVerified)}</strong>
+              {trackingVerdictExplanation && <p>{trackingVerdictExplanation}</p>}
             </div>
           )}
           <div className="tracking-actions">

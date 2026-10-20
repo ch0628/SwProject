@@ -16,6 +16,9 @@ export function actionBubbleTextureKey(phase: RoundNpcPhase, mainBehavior: Seman
   return phase === 'HOLDING' ? ACTION_BUBBLE_TEXTURES[mainBehavior as keyof typeof ACTION_BUBBLE_TEXTURES] ?? null : null;
 }
 
+export const isInsideMainCctv = (x: number, y: number, width: number, height: number) =>
+  x >= 0 && x < width && y >= 0 && y < height;
+
 export function actionBubblePlacement(
   actor: ActionBubbleCharacterBounds,
   characters: readonly ActionBubbleCharacterBounds[],

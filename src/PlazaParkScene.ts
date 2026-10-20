@@ -16,7 +16,7 @@ import { createRound1Group, DEFAULT_ROUND1_CONFIG, round1TrainingState, stepRoun
 import { applyRound2ToGroup, getPostRetrainingPrediction, MONITORING_TARGET_IDS, prepareMonitoringTargets, ROUND2_COMPARISON_PLAN, round2TargetStatus, round2TrainingState, submitRound2Comparison, verifyMonitoringTarget } from './plazaRound2';
 import { labelAndVerifyRound1Sample } from './supervisedGameFlow';
 import { npcOutlineStyle } from './npcOutline';
-import { actionBubblePlacement, actionBubbleTextureKey, type ActionBubbleCharacterBounds } from './npcActionBubble';
+import { actionBubblePlacement, actionBubbleTextureKey, isInsideMainCctv, type ActionBubbleCharacterBounds } from './npcActionBubble';
 import { SUPERVISED_CUTSCENE_REQUEST, type SupervisedCutsceneRequest } from './supervisedCutscene';
 import suspiciousSpeechBalloonUrl from '../assets/suspicious_action_bubble.svg';
 import stealingIconUrl from '../assets/action_stealing.svg';
@@ -281,10 +281,12 @@ export class PlazaParkScene extends Phaser.Scene {
       const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.phase}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
       const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
       const actionBubble=this.createActionBubble().setSize(ACTION_BUBBLE_SIZE,ACTION_BUBBLE_SIZE).setInteractive({useHandCursor:true});
-      actionBubble.on('pointerdown',(_pointer:Phaser.Input.Pointer,_localX:number,_localY:number,event:Phaser.Types.Input.EventData)=>{
+      actionBubble.on('pointerdown',(pointer:Phaser.Input.Pointer,_localX:number,_localY:number,event:Phaser.Types.Input.EventData)=>{
         event.stopPropagation();
         const behavior=npc.assignment.mainBehavior;
-        if(actionBubbleTextureKey(npc.phase,behavior))this.game.events.emit(SUPERVISED_CUTSCENE_REQUEST,{npcId:npc.definition.id,behavior,moment:'CURRENT'} satisfies SupervisedCutsceneRequest);
+        const inSelectedCctv=this.selectedCctv&&visibleCharactersForZone([npc],this.selectedCctv).length>0;
+        if(inSelectedCctv&&isInsideMainCctv(pointer.x,pointer.y,CCTV_VIEW_WIDTH,CCTV_MAIN_HEIGHT)&&actionBubbleTextureKey(npc.phase,behavior))
+          this.game.events.emit(SUPERVISED_CUTSCENE_REQUEST,{npcId:npc.definition.id,behavior,moment:'CURRENT'} satisfies SupervisedCutsceneRequest);
       });
       const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,actionBubble]);
       (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;(container as any).facing='down' as Facing;(container as any).visualHeight=visualHeight[species];(container as any).animated=animated;
