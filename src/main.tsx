@@ -19,6 +19,10 @@ import {
 import { MONITORING_TARGET_IDS, round2ComparisonFor, type Round2TargetStatus } from './plazaRound2';
 import { NPC_OUTLINE_COLORS } from './npcOutline';
 import { characterVisualAsset } from './characterManifest';
+import {
+  resolveSupervisedCutscene, SUPERVISED_CUTSCENE_REQUEST,
+  type SupervisedCutscene, type SupervisedCutsceneRequest,
+} from './supervisedCutscene';
 import { AiBasicsApp } from './modules/ai-basics/AiBasicsApp';
 import { AriDialogue } from './modules/ai-basics/AriDialogue';
 import { UnsupervisedApp } from './modules/unsupervised/UnsupervisedApp';
@@ -188,6 +192,7 @@ function App() {
   const [flow, setFlow] = useState<GameFlowState>(createGameFlow);
   const [guideStep, setGuideStep] = useState<AriGuideStep>(debugMode ? null : 'START');
   const [trackingHistory, setTrackingHistory] = useState<readonly BehaviorHistoryEntry[]>([]);
+  const [cutscene, setCutscene] = useState<SupervisedCutscene | null>(null);
 
   useEffect(() => {
     const validation = new ScaleValidationScene(setStats);
@@ -212,20 +217,35 @@ function App() {
       }
     };
     const plazaLoaded = () => setSupervisedReady(true);
+    const openCutscene = (request: SupervisedCutsceneRequest) => {
+      const resolved = resolveSupervisedCutscene(request);
+      if (resolved) setCutscene(resolved);
+    };
     const failed = (event: ErrorEvent) => setError(event.message);
     game.events.once('validation-ready', loaded);
     game.events.once('supervised-plaza-ready', plazaLoaded);
+    game.events.on(SUPERVISED_CUTSCENE_REQUEST, openCutscene);
     window.addEventListener('error', failed);
     return () => {
       finalScanTimers.current.forEach(window.clearTimeout);
       window.removeEventListener('error', failed);
       game.events.off('validation-ready', loaded);
       game.events.off('supervised-plaza-ready', plazaLoaded);
+      game.events.off(SUPERVISED_CUTSCENE_REQUEST, openCutscene);
       game.destroy(true);
       scene.current = null;
       gameRef.current = null;
     };
   }, [debugMode]);
+
+  useEffect(() => {
+    if (!cutscene) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setCutscene(null);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [cutscene]);
 
   useEffect(() => { if (ready) scene.current?.applyControls(controls); }, [controls, ready]);
   const change = (next: Partial<Controls>) => {
@@ -460,13 +480,24 @@ function App() {
 
           <ul className="history-list">
             {trackingHistory.length === 0 && <li className="history-empty">기록 없음</li>}
-            {trackingHistory.map((entry, i) => (
-              <li key={i} className={`history-entry prim-${entry.behavior.primitive.toLowerCase()}`}>
+            {trackingHistory.map((entry, i) => {
+              const eventCutscene = flow.trackingNpcId ? resolveSupervisedCutscene({
+                npcId: flow.trackingNpcId,
+                behavior: entry.behavior.semantic,
+                moment: entry.simulationTime < 0 || entry.location === 'OFFSCREEN' ? 'HISTORY' : 'CURRENT',
+              }) : null;
+              const content = <>
                 <span className="history-time">{entry.simulationTime.toFixed(1)}초</span>
                 <span className="history-zone">{ZONE_MAPPING[entry.zone] ?? entry.zone}</span>
                 <span className="history-behavior">{formatBehavior(entry)}</span>
-              </li>
-            ))}
+                {eventCutscene && <span className="history-cutscene-cta">장면 보기</span>}
+              </>;
+              return <li key={i} className={`history-entry prim-${entry.behavior.primitive.toLowerCase()}`}>
+                {eventCutscene
+                  ? <button type="button" className="history-entry-content" onClick={() => setCutscene(eventCutscene)} aria-label={`${formatBehavior(entry)} 컷신 보기`}>{content}</button>
+                  : <div className="history-entry-content">{content}</div>}
+              </li>;
+            })}
           </ul>
           {trackingVerified && (
             <div className="verified-reveal">
@@ -485,6 +516,22 @@ function App() {
             )}>닫기</button>
           </div>
         </div>
+      </div>
+    )}
+
+    {cutscene && (
+      <div className="overlay supervised-cutscene-overlay noto-font" role="dialog" aria-modal="true" aria-label={`${cutscene.npcId} 행동 컷신`}>
+        <article className="supervised-cutscene-card">
+          <header>
+            <div>
+              <span>{cutscene.moment === 'HISTORY' ? '과거 사건 기록' : '현재 행동'}</span>
+              <h2>{cutscene.npcId} · {SEMANTIC_MAPPING[cutscene.behavior] ?? cutscene.behavior}</h2>
+            </div>
+            <button type="button" className="supervised-cutscene-close" onClick={() => setCutscene(null)} aria-label="컷신 닫기">×</button>
+          </header>
+          <img src={cutscene.imageUrl} alt={`${cutscene.npcId}의 ${SEMANTIC_MAPPING[cutscene.behavior] ?? cutscene.behavior} 장면`} />
+          <button type="button" className="btn-close supervised-cutscene-done" onClick={() => setCutscene(null)}>닫기</button>
+        </article>
       </div>
     )}
 

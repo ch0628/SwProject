@@ -535,11 +535,33 @@ footer {
 }
 
 .history-entry {
-  display: flex;
-  gap: 1cqw;
-  padding: .5cqw .4cqw;
   border-bottom: 1px solid #263640;
   font-size: 1.25cqw;
+}
+
+.history-entry-content {
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+  box-sizing: border-box;
+  width: 100%;
+  padding: .5cqw .4cqw;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+button.history-entry-content {
+  cursor: pointer;
+}
+
+button.history-entry-content:hover,
+button.history-entry-content:focus-visible {
+  background: rgba(255, 213, 79, .12);
+  outline: 1px solid #ffd54f;
+  outline-offset: -1px;
 }
 
 .history-entry.prim-suspicious_action {
@@ -564,6 +586,81 @@ footer {
 .history-behavior {
   color: #eceff1;
   font-weight: 600;
+}
+
+.history-cutscene-cta {
+  margin-left: auto;
+  color: #ffd54f;
+  font-size: 1.05cqw;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.supervised-cutscene-overlay {
+  z-index: 50;
+}
+
+.supervised-cutscene-card {
+  position: relative;
+  width: 38%;
+  height: 88%;
+  display: flex;
+  flex-direction: column;
+  gap: .8cqw;
+  box-sizing: border-box;
+  padding: 1.2cqw;
+  border: .16cqw solid #ffd54f;
+  border-radius: 1.1cqw;
+  background: #111d27;
+  box-shadow: 0 0 3cqw #000b;
+}
+
+.supervised-cutscene-card header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1cqw;
+}
+
+.supervised-cutscene-card header span {
+  color: #ffd54f;
+  font-size: 1cqw;
+  font-weight: 800;
+}
+
+.supervised-cutscene-card h2 {
+  margin: .15cqw 0 0;
+  color: #f4f7f8;
+  font-size: 1.5cqw;
+}
+
+.supervised-cutscene-card img {
+  min-height: 0;
+  width: 100%;
+  flex: 1;
+  object-fit: contain;
+  border-radius: .7cqw;
+  background: #081119;
+}
+
+.supervised-cutscene-close {
+  width: 2.2cqw;
+  height: 2.2cqw;
+  flex: 0 0 auto;
+  border: 1px solid #78909c;
+  border-radius: 50%;
+  background: #263844;
+  color: #fff;
+  font-size: 1.6cqw;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.supervised-cutscene-done {
+  align-self: center;
+  min-width: 8cqw;
+  padding: .55cqw 1.4cqw;
+  font-size: 1.15cqw;
 }
 
 .verified-reveal {
