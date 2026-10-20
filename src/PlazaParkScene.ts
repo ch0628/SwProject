@@ -16,6 +16,12 @@ import { createRound1Group, DEFAULT_ROUND1_CONFIG, round1TrainingState, stepRoun
 import { applyRound2ToGroup, getPostRetrainingPrediction, MONITORING_TARGET_IDS, prepareMonitoringTargets, ROUND2_COMPARISON_PLAN, round2TargetStatus, round2TrainingState, submitRound2Comparison, verifyMonitoringTarget } from './plazaRound2';
 import { labelAndVerifyRound1Sample } from './supervisedGameFlow';
 import { npcOutlineStyle } from './npcOutline';
+import { actionBubbleTextureKey } from './npcActionBubble';
+import suspiciousSpeechBalloonUrl from '../assets/suspicious_speech_baloon.png';
+import stealingIconUrl from '../assets/thief_icon.png';
+import snatchingIconUrl from '../assets/snatching_icon.png';
+import threateningIconUrl from '../assets/threatening_icon.png';
+import manholeTamperIconUrl from '../assets/manhole_tamper_icon.png';
 
 const CCTV_VIEW_WIDTH = LOGICAL.width * .75;
 const CCTV_PREVIEW_GAP = 6;
@@ -24,6 +30,11 @@ const CCTV_MAIN_HEIGHT = LOGICAL.height - CCTV_PREVIEW_HEIGHT - CCTV_PREVIEW_GAP
 const CCTV_PREVIEW_WIDTH = (CCTV_VIEW_WIDTH - CCTV_PREVIEW_GAP * 3) / 4;
 const CCTV_CAMERA_SCALE = .88;
 const CCTV_VERTICAL_HEADROOM = 70;
+const ACTION_BUBBLE_BACKGROUND = 'action-bubble-background';
+const ACTION_BUBBLE_SIZE = 44;
+const ACTION_ICON_SIZE = 23;
+
+type ActionBubble = Phaser.GameObjects.Container & { icon: Phaser.GameObjects.Image };
 
 export class PlazaParkScene extends Phaser.Scene {
   private mapData!: GrayboxMap;
@@ -72,6 +83,11 @@ export class PlazaParkScene extends Phaser.Scene {
     private reportManual: (value:ManualLabelingState)=>void = ()=>{},
   ) { super('PlazaParkScene'); }
   private architecture(x:number,y:number){return plazaArchitecture(this.mapData,x,y);}
+  private createActionBubble(characterHeight:number):ActionBubble{
+    const background=this.add.image(0,0,ACTION_BUBBLE_BACKGROUND).setDisplaySize(ACTION_BUBBLE_SIZE,ACTION_BUBBLE_SIZE);
+    const icon=this.add.image(0,-3,'action-icon-stealing').setDisplaySize(ACTION_ICON_SIZE,ACTION_ICON_SIZE);
+    return Object.assign(this.add.container(0,-characterHeight-26,[background,icon]).setVisible(false),{icon});
+  }
   private manualNpcs(){return this.round1?.npcs??this.supervised?.npcs??[];}
   private blockers(){return [
     ...this.solids,
@@ -104,6 +120,11 @@ export class PlazaParkScene extends Phaser.Scene {
       ['main_route_base', '/assets/environment/terrain/road/main_route_base.png']
     ];
     for (const [k, p] of ASSETS) this.load.image(k, p);
+    this.load.image(ACTION_BUBBLE_BACKGROUND,suspiciousSpeechBalloonUrl);
+    this.load.image('action-icon-stealing',stealingIconUrl);
+    this.load.image('action-icon-snatching',snatchingIconUrl);
+    this.load.image('action-icon-threatening',threateningIconUrl);
+    this.load.image('action-icon-manhole-tamper',manholeTamperIconUrl);
 
     for (const species of SPECIES_LIST) {
       for (const gender of GENDER_LIST) {
@@ -254,9 +275,10 @@ export class PlazaParkScene extends Phaser.Scene {
       if(outlineGlow){outlineGlow.setPaddingOverride(null);outlineGlow.active=false;}
       const label=this.add.text(0,-visualHeight[species]-10,`${id} ${npc.phase}`,{fontSize:'10px',color:'#fff',backgroundColor:'#000'}).setOrigin(.5).setVisible(this.debug);
       const selectionRing=this.add.ellipse(0,-7,42,22).setStrokeStyle(3,0xffe66d).setVisible(false);
-      const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing]);
+      const actionBubble=this.createActionBubble(visualHeight[species]);
+      const container=this.add.container(npc.position.x,npc.position.y,[sprite,label,selectionRing,actionBubble]);
       (container as any).lastX=npc.position.x;(container as any).lastY=npc.position.y;(container as any).facing='down' as Facing;(container as any).visualHeight=visualHeight[species];(container as any).animated=animated;
-      (container as any).debugText=label;(container as any).selectionRing=selectionRing;(container as any).outlineGlow=outlineGlow;
+      (container as any).debugText=label;(container as any).selectionRing=selectionRing;(container as any).outlineGlow=outlineGlow;(container as any).actionBubble=actionBubble;
       this.supervisedSprites.push(container);
     }
     this.routeDebug.clear();
@@ -677,6 +699,12 @@ export class PlazaParkScene extends Phaser.Scene {
       }
       if((container as any).animated)sprite.setScale((container as any).visualHeight/sprite.height);
       container.setPosition(n.position.x,n.position.y).setDepth(n.position.y);
+      const actionBubble=(container as any).actionBubble as ActionBubble|undefined;
+      if(actionBubble){
+        const iconKey='assignment' in n?actionBubbleTextureKey(n.phase,n.assignment.mainBehavior):null;
+        actionBubble.setVisible(n.active&&n.visible&&!this.finalScanActive&&iconKey!==null);
+        if(iconKey)actionBubble.icon.setTexture(iconKey);
+      }
       const state='assignment' in n?n.phase:(n.phase==='EXITED'?'EXITED':n.intents[n.intentIndex]);
       (container as any).debugText?.setText(`${n.definition.id} ${state}${n.stopPoint?` @ ${n.stopPoint}`:''}`);
       if(this.debug&&n.active&&n.visible){
