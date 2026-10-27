@@ -27,14 +27,7 @@ import { isSuspiciousTrackingBehavior, trackingEntryKind, trackingPeriod, type T
 import { AiBasicsApp } from './modules/ai-basics/AiBasicsApp';
 import { AriDialogue } from './modules/ai-basics/AriDialogue';
 import { UnsupervisedApp } from './modules/unsupervised/UnsupervisedApp';
-import { ReinforcementFloor1DebugApp } from './modules/reinforcement/debug/ReinforcementFloor1DebugApp';
-import { ReinforcementFloor2DebugApp } from './modules/reinforcement/debug/ReinforcementFloor2DebugApp';
-import { ReinforcementFloor3DebugApp } from './modules/reinforcement/debug/ReinforcementFloor3DebugApp';
-import { ReinforcementFloor4DebugApp } from './modules/reinforcement/debug/ReinforcementFloor4DebugApp';
-import { ReinforcementRuntimeDebugApp } from './modules/reinforcement/runtime/ReinforcementRuntimeDebugApp';
 import { ReinforcementTrainingApp } from './modules/reinforcement/runtime/ReinforcementTrainingApp';
-import { ReinforcementFloor5DebugApp } from './modules/reinforcement/debug/ReinforcementFloor5DebugApp';
-import { ReinforcementBuildingDebugApp } from './modules/reinforcement/debug/ReinforcementBuildingDebugApp';
 import mainImage from '../assets/main_image.png';
 import mainSecondImage from '../assets/main_second_image.png';
 import mainMachineImage from '../assets/main_machine.png';
@@ -790,11 +783,11 @@ function App() {
           <button aria-pressed={manual.selectedCharacter.userLabel === 'VILLAIN'} onClick={() => labelSelected('VILLAIN')}>악당</button>
         </div>
       </> : <p>선택된 캐릭터 없음</p>}
-    </aside> : corridor ? <><output className="corridor-stats" data-testid="corridor-stats">{capacityStats}</output><aside className="corridor-notes"><b>Capacity validation only</b><p>48px/s · blocked → 0.35s wait → side-step<br />Endpoint pause 0.6s → reverse</p><p>Yellow/red: footprint / blocked<br />Purple: architecture clearance<br />v / ^: direction</p><p>S: 56px / 18×12<br />M: 68px / 22×14<br />L: 80px / 26×16</p><p>Large clearance: existing values<br />C/D: same six mixed NPCs</p><p>Waiting includes endpoint pause.<br />Longest wait = forward blockage.<br />최종 통로 폭은 사용자 판단.</p></aside></> : <output className="stats" aria-live="off" data-testid="stats">
+    </aside> : corridor ? <><output className="corridor-stats" data-testid="corridor-stats">{capacityStats}</output><aside className="corridor-notes"><b>Capacity validation only</b><p>48px/s · blocked → 0.35s wait → side-step<br />Endpoint pause 0.6s → reverse</p><p>Yellow/red: footprint / blocked<br />Purple: architecture clearance<br />v / ^: direction</p><p>S: 56px / 18×12<br />M: 68px / 22×14<br />L: 80px / 26×16</p><p>Large clearance: existing values<br />C/D: same six mixed NPCs</p><p>Waiting includes endpoint pause.<br />Longest wait = forward blockage.<br />최종 통로 폭은 사용자 판단.</p></aside></> : !plaza ? <output className="stats" aria-live="off" data-testid="stats">
       {error ? `ERROR: ${error}` : ready ? 'Scene READY' : 'Loading...'} · FPS {stats.fps.toFixed(1)} · logical 960×540 · zoom {controls.zoom.toFixed(2)}<br />
       Tiger {stats.height.toFixed(0)}px · ({stats.x.toFixed(1)}, {stats.y.toFixed(1)}) · {stats.direction} · footprint {TIGER_FOOTPRINT.width}×{TIGER_FOOTPRINT.height}<br />
       NPC {controls.density} · {controls.gameplay ? 'Gameplay 75/25' : 'Full World'} · selected {stats.selected ?? '—'}
-    </output>}
+    </output> : null}
     {!plaza && !corridor && controls.gameplay && debugMode && <aside className="panel"><h1>Gameplay Layout</h1><p>UI 공간 25%<br />World viewport 720×540</p><hr /><p>Placeholder panel</p><p>실제 게임 UI가 들어올 공간입니다.</p><p>NPC 선택: {stats.selected ?? '없음'}</p><p>밀도·겹침·이동 여유·선택 가독성을 비교하세요.</p><small>최종 Scale 승인 전<br />검증 전용 Scene</small></aside>}
     {debugMode && (
       <footer style={{ display: (plaza || corridor) ? 'none' : undefined }}>
@@ -879,5 +872,5 @@ function Hub() {
 const entryParams = new URLSearchParams(window.location.search);
 const mode = entryParams.get('mode');
 createRoot(document.getElementById('root')!).render(
-  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'ml' ? <MachineLearningMap /> : mode === 'supervised' ? <App /> : mode === 'unsupervised' ? <UnsupervisedApp /> : mode === 'reinforcement-training' ? <ReinforcementTrainingApp /> : mode === 'reinforcement-runtime-debug' ? <ReinforcementRuntimeDebugApp /> : mode === 'reinforcement-building-debug' ? <ReinforcementBuildingDebugApp /> : mode === 'reinforcement-floor1-debug' ? <ReinforcementFloor1DebugApp /> : mode === 'reinforcement-floor2-debug' ? <ReinforcementFloor2DebugApp /> : mode === 'reinforcement-floor3-debug' ? <ReinforcementFloor3DebugApp /> : mode === 'reinforcement-floor4-debug' ? <ReinforcementFloor4DebugApp /> : mode === 'reinforcement-floor5-debug' ? <ReinforcementFloor5DebugApp /> : <Hub />,
+  mode === 'ai-basics' ? <AiBasicsApp /> : mode === 'ml' ? <MachineLearningMap /> : mode === 'supervised' ? <App /> : mode === 'unsupervised' ? <UnsupervisedApp /> : mode === 'reinforcement-training' ? <ReinforcementTrainingApp /> : <Hub />,
 );

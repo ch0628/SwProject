@@ -13,6 +13,14 @@ import {
 const app = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementTrainingApp.tsx', 'utf8');
 const labels = fs.readFileSync('src/modules/reinforcement/runtime/trainingLabels.ts', 'utf8');
 const scene = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
+const entry = fs.readFileSync('src/main.tsx', 'utf8');
+const html = fs.readFileSync('index.html', 'utf8');
+
+test('deployment UI hides validation output and uses the game title', () => {
+  assert.match(entry, /: !plaza \? <output className="stats"/);
+  assert.doesNotMatch(entry, /Reinforcement(?:Runtime|Building|Floor\d)DebugApp/);
+  assert.match(html, /<title>AI 탐험대: 고장 난 마을을 구하라<\/title>/);
+});
 
 test('A/B/J: final reward UI has exactly the canonical three categories and six-star budget', () => {
   assert.deepEqual(REWARD_LABELS, {

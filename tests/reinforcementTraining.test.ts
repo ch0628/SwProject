@@ -225,7 +225,7 @@ test('training production entry renders checkpoint Korean Ari result, review and
   assert.match(app, /메인으로 돌아가기/);
   assert.doesNotMatch(app, /setTimeout|COMPRESSED|TRAINING_OBSERVATION|20 Rounds|100 Episodes/);
   assert.match(main, /mode === 'reinforcement-training' \? <ReinforcementTrainingApp \/>/);
-  assert.match(main, /mode === 'reinforcement-runtime-debug' \? <ReinforcementRuntimeDebugApp \/>/);
+  assert.doesNotMatch(main, /reinforcement-(?:runtime|building|floor\d)-debug/);
 
   const scene = fs.readFileSync('src/modules/reinforcement/runtime/ReinforcementRuntimeScene.ts', 'utf8');
   assert.match(scene, /movementPlaybackSpeed/);
